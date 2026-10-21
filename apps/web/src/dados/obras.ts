@@ -147,3 +147,108 @@ export function useInvalidarObras() {
 }
 
 export type LinhaLancamento = T["lancamentos"]["Row"];
+
+// ── detalhe da obra ──────────────────────────────────────────────────────────
+
+export interface DetalheObra extends ObraBanco {
+  realocacoes: T["realocacoes"]["Row"][];
+  notas: T["notas_fiscais"]["Row"][];
+  erp: T["erp_realizado"]["Row"][];
+}
+
+export function useObra(id: string | undefined) {
+  return useQuery({
+    queryKey: chavesObras.obra(id ?? ""),
+    enabled: !!id,
+    queryFn: async (): Promise<DetalheObra | null> => {
+      const [b] = await carregarObrasBanco([id!]);
+      if (!b) return null;
+      const [realocacoes, notas, erp] = await Promise.all([
+        ok(supabase.from("realocacoes").select("*").eq("obra_id", id!).order("mes_ini")),
+        ok(supabase.from("notas_fiscais").select("*").eq("obra_id", id!).order("mes_idx")),
+        ok(supabase.from("erp_realizado").select("*").eq("obra_id", id!).order("mes_idx")),
+      ]);
+      return { ...b, realocacoes, notas, erp };
+    },
+  });
+}
+
+/** Lançamentos por matrícula com as rubricas (só quem carrega lê: RLS devolve vazio aos demais). */
+export function useLancamentos(id: string | undefined, ativo: boolean) {
+  return useQuery({
+    queryKey: ["obras", "lancamentos", id ?? ""],
+    enabled: !!id && ativo,
+    queryFn: async () => {
+      const [lancamentos, rubricas] = await Promise.all([
+        todas((de, ate) =>
+          supabase
+            .from("lancamentos")
+            .select("*")
+            .eq("obra_id", id!)
+            .order("mes_idx")
+            .order("matricula")
+            .range(de, ate),
+        ),
+        todas((de, ate) =>
+          supabase
+            .from("lancamento_rubricas")
+            .select("mes_idx, matricula, funcao_id, rubrica_codigo, referencia, valor")
+            .eq("obra_id", id!)
+            .order("mes_idx")
+            .order("matricula")
+            .order("rubrica_codigo")
+            .range(de, ate),
+        ),
+      ]);
+      return { lancamentos, rubricas };
+    },
+  });
+}
+
+// ── edição de premissas e ausências (decisão M5: quem carrega; RLS no banco) ─────
+
+async function okLinhas<R>(p: PromiseLike<{ data: R[] | null; error: unknown }>): Promise<R[]> {
+  const linhas = await ok(p);
+  if (!linhas.length) throw { code: "SEM_LINHAS", message: "nenhuma linha afetada" };
+  return linhas;
+}
+
+export const edicao = {
+  obra: (id: string, patch: T["obras"]["Update"]) =>
+    okLinhas(supabase.from("obras").update(patch).eq("id", id).select("id")),
+  competencia: (id: string, mes: number, patch: T["competencias"]["Update"]) =>
+    okLinhas(
+      supabase
+        .from("competencias")
+        .update(patch)
+        .eq("obra_id", id)
+        .eq("mes_idx", mes)
+        .select("mes_idx"),
+    ),
+  regime: async (id: string, funcao: string, sp: boolean) =>
+    sp
+      ? ok(
+          supabase
+            .from("obra_regime")
+            .insert({ obra_id: id, funcao_id: funcao, regime: "sp" })
+            .select(),
+        )
+      : okLinhas(
+          supabase.from("obra_regime").delete().eq("obra_id", id).eq("funcao_id", funcao).select(),
+        ),
+  adicionarTroca: (id: string, mes: number, dataBase: number) =>
+    ok(
+      supabase
+        .from("obra_trocas_tabela")
+        .insert({ obra_id: id, mes_idx: mes, data_base: dataBase, motivo: "" })
+        .select(),
+    ),
+  removerTroca: (id: string, mes: number) =>
+    okLinhas(
+      supabase.from("obra_trocas_tabela").delete().eq("obra_id", id).eq("mes_idx", mes).select(),
+    ),
+  adicionarFeriado: (id: string, data: string, nome: string) =>
+    ok(supabase.from("obra_feriados").insert({ obra_id: id, data, nome }).select()),
+  removerFeriado: (id: string, data: string) =>
+    okLinhas(supabase.from("obra_feriados").delete().eq("obra_id", id).eq("data", data).select()),
+};

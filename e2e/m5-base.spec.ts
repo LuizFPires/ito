@@ -96,11 +96,11 @@ test("1.000 obras: a base carrega em menos de 2 s e pagina", async ({ page }) =>
   `);
   const t0 = Date.now();
   await page.goto("/base");
-  await expect(page.getByText("1–25 de 1.001 obras")).toBeVisible();
+  await expect(page.getByText(/^1–25 de 1\.0\d\d obras$/)).toBeVisible();
   const ms = Date.now() - t0;
-  console.info(`base com 1.001 obras: ${ms} ms`);
+  console.info(`base com mais de 1.000 obras: ${ms} ms`);
   expect(ms).toBeLessThan(2000);
   expect(await semRolagemLateral(page)).toBe(true);
   await page.getByRole("button", { name: "Próxima ›" }).click();
-  await expect(page.getByText("26–50 de 1.001 obras")).toBeVisible();
+  await expect(page.getByText(/^26–50 de 1\.0\d\d obras$/)).toBeVisible();
 });

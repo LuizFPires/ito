@@ -1,0 +1,86 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshot dos números das abas (aceite M5) > época e atualizado, mês a mês e por componente, travados no centavo 1`] = `
+[
+  {
+    "porGrupo": {
+      "adm": 0,
+      "direta": 12337.8,
+      "indireta": 0,
+    },
+    "porMes": [
+      {
+        "benef": 400,
+        "caixa": 3351.55,
+        "dsr": 36.78,
+        "enc": 1308.16,
+        "exames": 167.5,
+        "extras": 80.04,
+        "he": 191.25,
+        "prov": 673.92,
+        "resc": 0,
+        "salv": 2668.03,
+        "total": 5811.13,
+        "vt": 285.45,
+        "x": 2,
+      },
+      {
+        "benef": 300,
+        "caixa": 7735.07,
+        "dsr": 0,
+        "enc": 1120.54,
+        "exames": 313.13,
+        "extras": 74.25,
+        "he": 0,
+        "prov": 577.26,
+        "resc": 1485,
+        "salv": 2475,
+        "total": 6526.67,
+        "vt": 181.5,
+        "x": 1.5,
+      },
+    ],
+    "visao": "epoca",
+  },
+  {
+    "porGrupo": {
+      "adm": 0,
+      "direta": 13281.14,
+      "indireta": 0,
+    },
+    "porMes": [
+      {
+        "benef": 400,
+        "caixa": 3563.69,
+        "dsr": 40.12,
+        "enc": 1427.08,
+        "exames": 167.5,
+        "extras": 87.32,
+        "he": 208.64,
+        "prov": 735.19,
+        "resc": 0,
+        "salv": 2910.58,
+        "total": 6246.87,
+        "vt": 270.45,
+        "x": 2,
+      },
+      {
+        "benef": 300,
+        "caixa": 8352.52,
+        "dsr": 0,
+        "enc": 1222.4,
+        "exames": 313.13,
+        "extras": 81,
+        "he": 0,
+        "prov": 629.74,
+        "resc": 1620,
+        "salv": 2700,
+        "total": 7034.27,
+        "vt": 168,
+        "x": 1.5,
+      },
+    ],
+    "visao": "atualizado",
+  },
+]
+`;

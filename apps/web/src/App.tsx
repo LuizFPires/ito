@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       })),
       {
         path: "obras/:id",
-        lazy: async () => ({ Component: (await import("./paginas/telas")).TelaObra }),
+        lazy: async () => ({ Component: (await import("./paginas/obra/TelaObra")).TelaObra }),
       },
       {
         path: "projecoes/:id",

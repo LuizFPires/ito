@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nomeDe } from "./EtapaFuncoes";
+import { nomeDe } from "./estado";
 
 describe("nome da função criada a partir da folha (como no protótipo)", () => {
   it("até 3 palavras, sem ' de obra' no fim", () => {

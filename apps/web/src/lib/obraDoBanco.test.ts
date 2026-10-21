@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 // fixtures sintéticas da carga (só matrícula)
 import { CADASTRO, CTX, DADOS, FOLHA, TABELA } from "../../../../packages/carga/src/fixtures";
 import type { ObraBanco } from "./obraDoBanco";
-import { diasDoPeriodo, obraDoBanco, resumoDaObra } from "./obraDoBanco";
+import { calcular, diasDoPeriodo, obraDoBanco, resumoDaObra } from "./obraDoBanco";
 
 const ESCOLHAS = {
   ...ESCOLHAS_VAZIAS,
@@ -97,5 +97,40 @@ describe("obra da base histórica → motor", () => {
   it("dias corridos das competências", () => {
     expect(diasDoPeriodo("2025-03-01", 2)).toBe(61);
     expect(diasDoPeriodo("2024-02-01", 1)).toBe(29);
+  });
+});
+
+describe("snapshot dos números das abas (aceite M5)", () => {
+  it("época e atualizado, mês a mês e por componente, travados no centavo", () => {
+    const m = montarCarga(DADOS, { folha: FOLHA }, CADASTRO, ESCOLHAS, TABELA);
+    const banco = comoNoBanco(m.payload);
+    const tabelas = {
+      2025: TABELA,
+      2026: { ...TABELA, salarios: { ...TABELA.salarios, ped: 1800, serv: 1200 } },
+    };
+    const c = (v: number) => Math.round(v * 100) / 100;
+    const foto = (["epoca", "atualizado"] as const).map((visao) => {
+      const r = calcular(banco, CTX, tabelas, 2026, visao);
+      return {
+        visao,
+        porMes: r.porMes.map((x) => ({
+          x: c(x.x),
+          salv: c(x.salv),
+          extras: c(x.extras),
+          he: c(x.he),
+          dsr: c(x.dsr),
+          enc: c(x.enc),
+          prov: c(x.prov),
+          vt: c(x.vt),
+          benef: c(x.benef),
+          exames: c(x.exames),
+          resc: c(x.resc),
+          total: c(x.total),
+          caixa: c(x.caixa),
+        })),
+        porGrupo: Object.fromEntries(Object.entries(r.porGrupo).map(([g, v]) => [g, c(v)])),
+      };
+    });
+    expect(foto).toMatchSnapshot();
   });
 });
