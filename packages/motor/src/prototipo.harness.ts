@@ -168,3 +168,72 @@ export function obraDe(P: Prototipo, o: Qualquer): Obra {
     ...(o.vtDia && { vtDiariaPorFuncao: o.vtDia }),
   };
 }
+
+// ── projeção ─────────────────────────────────────────────────────────────────
+
+export function cidadeDe(c: Qualquer) {
+  return {
+    id: c.id,
+    tarifaLocal: c.tarifa,
+    conducoes: c.cond || 1,
+    passagens: Object.fromEntries(
+      Object.entries((c.vtDe ?? {}) as Record<string, number>).filter(([, v]) => Number(v) > 0),
+    ),
+    issPct: Number(c.iss) || 0,
+    feriados: (c.fer ?? []).map((f: Qualquer) => {
+      const [mm, dd] = String(f.md).split("-");
+      return { mes: Number(mm), dia: Number(dd), nome: f.n };
+    }),
+  };
+}
+
+export function cctDe(t: Qualquer) {
+  return {
+    mesDataBase: t.mesBase + 1,
+    reajusteEstimadoPct: Number(t.reajEst) || 0,
+    salarios: t.sal,
+    gratificacoes: t.grat ?? {},
+    beneficios: t.ben,
+  };
+}
+
+export function entradaProjecaoDe(P: Prototipo, p: Qualquer, origem?: Record<string, string>) {
+  const cid = p.cidade ? P.D.cidades.find((c: Qualquer) => c.id === p.cidade) : null;
+  const de = P.D.cidades.find((c: Qualquer) => c.id === (p.origemCid || "bh"));
+  const mix = p.heMix;
+  return {
+    id: p.id || "nova",
+    inicio: { ano: p.ini.y, mes: p.ini.m + 1 },
+    prazo: p.prazo,
+    area: p.area,
+    referencias: p.refs
+      .map((id: string) => P.D.obras.find((o: Qualquer) => o.id === id))
+      .filter(Boolean)
+      .map((o: Qualquer) => obraDe(P, o)),
+    estatistica: p.stat === "mediana" ? ("mediana" as const) : ("media" as const),
+    ajustesPct: p.ajustes ?? {},
+    quantidadesManuais: p.manual ?? null,
+    heMedia: p.heOverride != null && p.heOverride !== "" ? Number(p.heOverride) : null,
+    absenteismoPct: p.absP != null ? Number(p.absP) : null,
+    rotatividadePct: p.turn != null ? Number(p.turn) : null,
+    licencaPorPm: p.licP != null ? Number(p.licP) : null,
+    feriasPorPm: p.ferP != null ? Number(p.ferP) : null,
+    heMixPct: mix
+      ? {
+          util: mix.a * 100,
+          sabado: mix.sab * 100,
+          intervalo: mix.int * 100,
+          feriado: mix.fer * 100,
+        }
+      : null,
+    premissas: p.prem ? obraDe(P, { ini: p.ini, he: [], q: {}, prem: p.prem }).premissas : {},
+    regime: Object.fromEntries(
+      Object.entries(p.regime ?? {}).map(([k, v]) => [k, v === "SP" ? "sp" : "clt"]),
+    ) as Record<string, "clt" | "sp">,
+    origem: (origem ?? p.origem ?? {}) as Record<string, "local" | "diaria" | "aloj">,
+    cidade: cid ? cidadeDe(cid) : null,
+    cidadeOrigem: de ? cidadeDe(de) : null,
+    vtDiariaReferencia: P.pVig().vt,
+    feriadosMunicipais: (p.ferLoc ?? []).map((x: Qualquer) => ({ data: x.d, nome: x.n })),
+  };
+}
