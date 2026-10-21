@@ -106,6 +106,8 @@
 
 **Aceite:** carga de uma obra real (Mart Minas Paracatu) com conferência de rubricas "Confere" em todos os meses e apropriação × ERP justificada.
 
+> Decisões (21/10/2026): leitores no layout padrão do ITO; adaptadores das exportações reais e o aceite com a Paracatu dependem das amostras anonimizadas. Carga por DP/RH, controladoria e admin; originais não guardados; rascunho no banco por usuário (CLAUDE.md, M4).
+
 ---
 
 ## M5 — Base histórica e detalhe da obra

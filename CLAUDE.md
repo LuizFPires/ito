@@ -127,6 +127,13 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - O M3 começou empilhado no M2 (`feat/m3-motor` a partir de `feat/m2-cidades-cct`), pela mesma pendência do CI.
 - **Pendência externa (para resolver no futuro):** o CI do GitHub está bloqueado por cobrança da conta (Billing & plans). Os PRs seguem empilhados (#1 M0 → #2 M1 → M2) e só entram na `main` quando o CI rodar verde.
 
+### M4 — Carga de dados (21/10/2026)
+- **Formato dos arquivos:** layout padrão do ITO agora — modelo .xlsx para baixar na tela (folha por competência com matrícula, função e rubricas; ponto; VT; realizado do ERP) e XML de NF. Os adaptadores para as exportações reais do sistema de folha e do ERP entram quando chegarem amostras anonimizadas; **o aceite com a Mart Minas Paracatu fica pendente até lá**.
+- **Quem carrega:** DP/RH, controladoria e admin; os demais perfis só leem (regra no banco).
+- **Arquivos originais não são guardados:** a leitura descarta nomes e guarda só os dados com matrícula (regra 2). Para recarregar, envia-se o arquivo de novo.
+- **Rascunho da carga no banco, por usuário:** guarda só dados lidos (sem nomes) e as escolhas de mapeamento; quem carrega vê os próprios, admin vê todos.
+- O M4 começou empilhado no M3 (`feat/m4-carga` a partir de `feat/m3-motor`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
