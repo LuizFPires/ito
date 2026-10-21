@@ -8,3 +8,5 @@ export * from "./modelo";
 export * from "./parametros";
 export * from "./calendarioObra";
 export * from "./custo";
+export * from "./movimentos";
+export * from "./obra";
