@@ -400,7 +400,13 @@ export function Resultado({
                           <span className={o.amostra} style={{ background: fun(k).cor }} />
                           {fun(k).nome}
                           <div className="sub">
-                            {moeda(linha[0]!.salario)} ·{" "}
+                            {moeda(linha[0]!.salario)}
+                            {(() => {
+                              // reajuste no prazo: mostra o salário novo e o mês
+                              const j = linha.findIndex((c) => c.salario !== linha[0]!.salario);
+                              return j > 0 ? ` → ${moeda(linha[j]!.salario)} em ${rotulos[j]}` : "";
+                            })()}{" "}
+                            ·{" "}
                             {linha[0]!.regime === "sp"
                               ? "prestador S/P"
                               : linha[0]!.regime === "estagio"
@@ -491,7 +497,7 @@ export function Resultado({
         </Cartao>
       )}
 
-      <div className={s.grade2}>
+      <div className={`${s.grade2} ${s.largo}`}>
         <Cartao aria-label="Curva S">
           <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 12 }}>
             <span className="rotulo">Curva S · custo acumulado</span>
@@ -515,8 +521,7 @@ export function Resultado({
               <tr>
                 <th>Obra</th>
                 <th className={f.r}>Área · prazo</th>
-                <th className={f.r}>Pico</th>
-                <th className={f.r}>PM/1.000 m²</th>
+                <th className={f.r}>Pico · PM/1.000 m²</th>
                 <th className={f.r}>Custo</th>
               </tr>
             </thead>
@@ -530,8 +535,10 @@ export function Resultado({
                       {numero(area)} m²
                       <div className="sub">{numero(b.obra.meses)} meses</div>
                     </td>
-                    <td className={f.r}>{numero(x.pico, 1)}</td>
-                    <td className={f.r}>{numero((x.pessoa_mes / area) * 1000, 1)}</td>
+                    <td className={f.r}>
+                      {numero(x.pico, 1)}
+                      <div className="sub">{numero((x.pessoa_mes / area) * 1000, 1)} PM</div>
+                    </td>
                     <td className={`${f.r} ${s.nowrap}`}>
                       {moeda(x.custo_atual, 0)}
                       <div className="sub">{moeda(x.custo_atual / area, 0)} /m²</div>
@@ -547,8 +554,10 @@ export function Resultado({
                   {numero(e.area)} m²
                   <div className="sub">{numero(e.prazo)} meses</div>
                 </td>
-                <td className={f.r}>{numero(r.pico)}</td>
-                <td className={f.r}>{numero((r.pessoaMes / e.area) * 1000, 1)}</td>
+                <td className={f.r}>
+                  {numero(r.pico)}
+                  <div className="sub">{numero((r.pessoaMes / e.area) * 1000, 1)} PM</div>
+                </td>
                 <td className={`${f.r} ${s.nowrap}`}>
                   {moeda(r.total, 0)}
                   <div className="sub">{moeda(r.total / e.area, 0)} /m²</div>

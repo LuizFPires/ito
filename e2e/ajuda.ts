@@ -22,8 +22,12 @@ export async function semRolagemLateral(page: Page) {
   return page.evaluate(() => {
     const doc = document.documentElement;
     if (doc.scrollWidth > doc.clientWidth) return false;
+    // tabelas mês a mês rolam dentro do próprio cartão (overflow-x: auto), como manda a regra 8
     return [...document.querySelectorAll("table")].every(
-      (t) => !t.parentElement || t.scrollWidth <= t.parentElement.clientWidth + 1,
+      (t) =>
+        !t.parentElement ||
+        getComputedStyle(t.parentElement).overflowX === "auto" ||
+        t.scrollWidth <= t.parentElement.clientWidth + 1,
     );
   });
 }
