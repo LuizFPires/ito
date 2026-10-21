@@ -108,3 +108,8 @@
   flex-wrap: nowrap;
   white-space: nowrap;
 }
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

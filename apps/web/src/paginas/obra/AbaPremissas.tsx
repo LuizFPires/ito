@@ -32,8 +32,16 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
     Object.fromEntries(TIPOS_HE.map((t) => [t, Number(o[`he_mix_${t}`])])),
   );
 
-  /** Aplica no cache (recálculo imediato), grava e, se falhar, volta. */
-  async function salvar(aplicar: (x: DetalheObra) => DetalheObra, gravar: () => Promise<unknown>) {
+  /**
+   * Aplica no cache (recálculo imediato) e grava. Se falhar, desfaz só esta mudança (outra
+   * edição feita logo depois continua na tela). No fim, relê a obra do banco.
+   */
+  async function salvar(
+    aplicar: (x: DetalheObra) => DetalheObra,
+    desfazer: (atual: DetalheObra, antes: DetalheObra) => DetalheObra,
+    gravar: () => Promise<unknown>,
+  ) {
+    await qc.cancelQueries({ queryKey: chave });
     const antes = qc.getQueryData<DetalheObra>(chave);
     if (antes) qc.setQueryData(chave, aplicar(antes));
     try {
@@ -41,16 +49,34 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
       avisar("Salvo");
       void qc.invalidateQueries({ queryKey: ["obras", "lista"] });
     } catch (e) {
-      if (antes) qc.setQueryData(chave, antes);
+      const atual = qc.getQueryData<DetalheObra>(chave);
+      if (antes && atual) qc.setQueryData(chave, desfazer(atual, antes));
       avisar(mensagemErroBanco(e));
       throw e;
+    } finally {
+      void qc.invalidateQueries({ queryKey: chave });
     }
   }
   const premissa = (patch: Partial<LinhaObra>) =>
     salvar(
       (x) => ({ ...x, obra: { ...x.obra, ...patch } }),
+      (atual, antes) => ({
+        ...atual,
+        obra: {
+          ...atual.obra,
+          ...Object.fromEntries(
+            Object.keys(patch).map((k) => [k, antes.obra[k as keyof LinhaObra]]),
+          ),
+        },
+      }),
       () => edicao.obra(id, patch),
     );
+  /** Desfaz uma lista inteira (regime, trocas, feriados) ao estado de antes. */
+  const lista =
+    (k: "regime" | "trocas" | "feriados") => (atual: DetalheObra, antes: DetalheObra) => ({
+      ...atual,
+      [k]: antes[k],
+    });
   const ausencia = (
     mes: number,
     campo: "absenteismo_pct" | "licenca_pessoa_dias" | "ferias_pessoa_dias",
@@ -60,6 +86,14 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
       (x) => ({
         ...x,
         competencias: x.competencias.map((c) => (c.mes_idx === mes ? { ...c, [campo]: v } : c)),
+      }),
+      (atual, antes) => ({
+        ...atual,
+        competencias: atual.competencias.map((c) =>
+          c.mes_idx === mes
+            ? { ...c, [campo]: antes.competencias.find((x) => x.mes_idx === mes)?.[campo] ?? 0 }
+            : c,
+        ),
       }),
       () => edicao.competencia(id, mes, { [campo]: v }),
     );
@@ -108,8 +142,9 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
   return (
     <>
       <p className="sub" style={{ margin: 0 }}>
-        Premissas registradas na carga desta obra. Alterar qualquer uma recalcula todos os custos e
-        indicadores dela.
+        Premissas registradas na carga desta obra. Alterar qualquer uma recalcula os custos e os
+        indicadores dela (a rotatividade é só referência para projeções: os movimentos vêm da
+        folha).
         {!pode && " Só DP/RH, controladoria ou um administrador alteram."}
       </p>
       <div className={s.dois}>
@@ -122,7 +157,11 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
               {numeroCampo("risco_pct", "Risco", "%")}
               {numeroCampo("lucro_pct", "Lucro", "%")}
               {numeroCampo("trib_lucro_pct", "Tributos sobre o lucro (IR, CSLL)", "%")}
-              {numeroCampo("rotatividade_pct", "Rotatividade", "% ao mês")}
+              {numeroCampo(
+                "rotatividade_pct",
+                "Rotatividade (referência para projeções)",
+                "% ao mês",
+              )}
               {numeroCampo("adiantamento_pct", "Adiantamento salarial", "% no dia 20", 0)}
             </div>
             <div>
@@ -188,6 +227,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                                       ]
                                     : x.regime.filter((y) => y.funcao_id !== k),
                               }),
+                              lista("regime"),
                               () => edicao.regime(id, k, v === "sp"),
                             ).catch(() => {});
                           }}
@@ -246,7 +286,13 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                     setMix(novo);
                     if (Math.abs(soma(Object.values(novo)) - 100) >= 0.01) return;
                     const patch = Object.fromEntries(TIPOS_HE.map((x) => [`he_mix_${x}`, novo[x]]));
-                    return premissa(patch as Partial<LinhaObra>);
+                    return premissa(patch as Partial<LinhaObra>).catch((e) => {
+                      const salvo = qc.getQueryData<DetalheObra>(chave)?.obra ?? o;
+                      setMix(
+                        Object.fromEntries(TIPOS_HE.map((x) => [x, Number(salvo[`he_mix_${x}`])])),
+                      );
+                      throw e;
+                    });
                   }}
                 />
               ))}
@@ -278,6 +324,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                                   ...x,
                                   trocas: x.trocas.filter((y) => y.mes_idx !== t.mes_idx),
                                 }),
+                                lista("trocas"),
                                 () => edicao.removerTroca(id, t.mes_idx),
                               ).catch(() => {})
                             }
@@ -295,6 +342,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
             )}
             {pode && o.meses > 1 && (
               <NovaTroca
+                key={d.trocas.map((t) => t.mes_idx).join(",")}
                 meses={meses}
                 datasBase={ctx.datasBase.filter((a) => a !== o.data_base)}
                 ocupados={d.trocas.map((t) => t.mes_idx)}
@@ -307,6 +355,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                         { obra_id: id, mes_idx: mes, data_base: base, motivo: "" },
                       ],
                     }),
+                    lista("trocas"),
                     () => edicao.adicionarTroca(id, mes, base),
                   ).catch(() => {})
                 }
@@ -335,6 +384,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                       onClick={() =>
                         void salvar(
                           (y) => ({ ...y, feriados: y.feriados.filter((z) => z.data !== x.data) }),
+                          lista("feriados"),
                           () => edicao.removerFeriado(id, x.data),
                         ).catch(() => {})
                       }
@@ -377,6 +427,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                         { obra_id: id, data: iso, nome: novoFer.nome.trim() },
                       ],
                     }),
+                    lista("feriados"),
                     () => edicao.adicionarFeriado(id, iso, novoFer.nome.trim()),
                   )
                     .then(() => setNovoFer({ data: "", nome: "" }))

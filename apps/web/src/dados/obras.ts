@@ -2,6 +2,7 @@
  * Base histórica (M5): lista de obras com o resumo em cache, obra completa para o detalhe e
  * recálculo dos resumos desatualizados (obra editada, tabela vigente nova, versão do cálculo).
  */
+import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ContextoCarga } from "./carga";
 import type { ObraBanco, Resumo } from "../lib/obraDoBanco";
@@ -55,7 +56,9 @@ export function useListaObras() {
     queryFn: async (): Promise<ObraLista[]> => {
       const [obras, resumos] = await Promise.all([
         todas((de, ate) => supabase.from("obras").select(COLUNAS).order("nome").range(de, ate)),
-        todas((de, ate) => supabase.from("obra_resumo").select("*").range(de, ate)),
+        todas((de, ate) =>
+          supabase.from("obra_resumo").select("*").order("obra_id").range(de, ate),
+        ),
       ]);
       const por = new Map(resumos.map((r) => [r.obra_id, r]));
       return obras.map((o) => {
@@ -68,6 +71,8 @@ export function useListaObras() {
                 obra_id: r.obra_id,
                 vigente: r.vigente,
                 versao: r.versao,
+                contexto: r.contexto,
+                revisao: r.revisao,
                 pico: Number(r.pico),
                 pessoa_mes: Number(r.pessoa_mes),
                 he_por_pessoa: Number(r.he_por_pessoa),
@@ -83,9 +88,12 @@ export function useListaObras() {
   });
 }
 
-/** Resumo que precisa ser recalculado (não existe, obra editada, outra vigente, outra versão). */
-export const desatualizado = (o: ObraLista, vigente: number) =>
-  !o.resumo || o.resumo.versao !== VERSAO_RESUMO || o.resumo.vigente !== vigente;
+/**
+ * Resumo que precisa ser recalculado: não existe, obra editada (versão 0), outra versão do cálculo
+ * ou parâmetros diferentes (tabela vigente nova, salário, encargo, função, calendário).
+ */
+export const desatualizado = (r: Resumo | null, vigente: number, contexto: string) =>
+  !r || r.versao !== VERSAO_RESUMO || r.vigente !== vigente || r.contexto !== contexto;
 
 /** Dados de cálculo de várias obras (para o resumo), em lotes de 50. */
 export async function carregarObrasBanco(ids: readonly string[]): Promise<ObraBanco[]> {
@@ -94,15 +102,53 @@ export async function carregarObrasBanco(ids: readonly string[]): Promise<ObraBa
     const lote = ids.slice(k, k + 50);
     const [obras, comps, efetivo, regime, trocas, feriados] = await Promise.all([
       ok(supabase.from("obras").select("*").in("id", lote)),
+      // ordem estável entre páginas (LIMIT/OFFSET sem ORDER BY pula ou repete linhas)
       todas((de, ate) =>
-        supabase.from("competencias").select("*").in("obra_id", lote).range(de, ate),
+        supabase
+          .from("competencias")
+          .select("*")
+          .in("obra_id", lote)
+          .order("obra_id")
+          .order("mes_idx")
+          .range(de, ate),
       ),
       todas((de, ate) =>
-        supabase.from("efetivo_mes").select("*").in("obra_id", lote).range(de, ate),
+        supabase
+          .from("efetivo_mes")
+          .select("*")
+          .in("obra_id", lote)
+          .order("obra_id")
+          .order("funcao_id")
+          .order("mes_idx")
+          .range(de, ate),
       ),
-      ok(supabase.from("obra_regime").select("*").in("obra_id", lote)),
-      ok(supabase.from("obra_trocas_tabela").select("*").in("obra_id", lote)),
-      ok(supabase.from("obra_feriados").select("*").in("obra_id", lote)),
+      todas((de, ate) =>
+        supabase
+          .from("obra_regime")
+          .select("*")
+          .in("obra_id", lote)
+          .order("obra_id")
+          .order("funcao_id")
+          .range(de, ate),
+      ),
+      todas((de, ate) =>
+        supabase
+          .from("obra_trocas_tabela")
+          .select("*")
+          .in("obra_id", lote)
+          .order("obra_id")
+          .order("mes_idx")
+          .range(de, ate),
+      ),
+      todas((de, ate) =>
+        supabase
+          .from("obra_feriados")
+          .select("*")
+          .in("obra_id", lote)
+          .order("obra_id")
+          .order("data")
+          .range(de, ate),
+      ),
     ]);
     for (const o of obras)
       saida.push({
@@ -124,26 +170,29 @@ export async function carregarObrasBanco(ids: readonly string[]): Promise<ObraBa
 export async function atualizarResumos(
   ids: readonly string[],
   ctx: ContextoCarga,
+  contexto: string,
   podeGravar: boolean,
-): Promise<Resumo[]> {
-  if (!ids.length) return [];
+): Promise<{ resumos: Resumo[]; falhas: Record<string, string> }> {
+  if (!ids.length) return { resumos: [], falhas: {} };
   const obras = await carregarObrasBanco(ids);
   const resumos: Resumo[] = [];
+  const falhas: Record<string, string> = {};
   for (const b of obras) {
     try {
-      resumos.push(resumoDaObra(b, ctx.ctx, ctx.tabelas, ctx.vigente));
-    } catch {
-      // obra que o motor recusa (cadastro mudou): fica sem resumo e aparece com "—"
+      resumos.push(resumoDaObra(b, ctx.ctx, ctx.tabelas, ctx.vigente, contexto));
+    } catch (e) {
+      // obra que o motor recusa (cadastro mudou): fica sem resumo, com o motivo na linha
+      falhas[b.obra.id] = e instanceof Error ? e.message : "A obra não pôde ser calculada.";
     }
   }
   if (podeGravar && resumos.length)
     await ok(supabase.rpc("gravar_resumos", { p: resumos as unknown as Json }));
-  return resumos;
+  return { resumos, falhas };
 }
 
 export function useInvalidarObras() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: ["obras"] });
+  return useCallback(() => qc.invalidateQueries({ queryKey: ["obras"] }), [qc]);
 }
 
 export type LinhaLancamento = T["lancamentos"]["Row"];

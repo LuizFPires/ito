@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { moeda, mesAno, numero, percentual } from "@ito/formato";
 import { anoMes } from "@ito/motor";
 import { useSessao } from "../../auth/sessao";
 import { useContextoCarga } from "../../dados/carga";
 import type { Resumo } from "../../lib/obraDoBanco";
-import { diasDoPeriodo, inicioDe } from "../../lib/obraDoBanco";
+import { diasDoPeriodo, impressaoContexto, inicioDe } from "../../lib/obraDoBanco";
 import {
   atualizarResumos,
   desatualizado,
@@ -47,6 +47,10 @@ export function TelaBase() {
   // resumos recalculados na tela (obra editada, tabela vigente nova)
   const [novos, setNovos] = useState<Record<string, Resumo>>({});
   const [recalculando, setRecalculando] = useState(0);
+  const [falhas, setFalhas] = useState<Record<string, string>>({});
+  // obras já tratadas nesta visita (impressão|id), para não recalcular de novo
+  const tratados = useRef(new Set<string>());
+  const vivo = useRef(true);
 
   const ctx = contexto.data;
   const cidades = useMemo(() => new Map((ctx?.cidades ?? []).map((c) => [c.id, c.nome])), [ctx]);
@@ -60,37 +64,56 @@ export function TelaBase() {
     [lista.data, cidades, novos],
   );
 
-  // recalcula, em lotes, os resumos desatualizados (grava quando o usuário pode)
-  useEffect(() => {
-    if (!ctx || !lista.data) return;
-    const ids = lista.data.filter((o) => desatualizado(o, ctx.vigente)).map((o) => o.id);
-    if (!ids.length) return;
-    let parar = false;
-    (async () => {
-      setRecalculando(ids.length);
-      const feitos: Record<string, Resumo> = {};
-      for (let k = 0; k < ids.length && !parar; k += LOTE) {
-        try {
-          const r = await atualizarResumos(ids.slice(k, k + LOTE), ctx, gravaResumo);
-          for (const x of r) feitos[x.obra_id] = x;
-          setNovos((a) => ({ ...a, ...Object.fromEntries(r.map((x) => [x.obra_id, x])) }));
-        } catch {
-          break; // sem conexão: tenta de novo ao voltar à tela
-        }
-        setRecalculando(Math.max(0, ids.length - k - LOTE));
-      }
-      if (!parar && gravaResumo && Object.keys(feitos).length) await invalidar();
-    })();
-    return () => {
-      parar = true;
-    };
-  }, [ctx, lista.data, gravaResumo, invalidar]);
-
   const presentes = new Set(linhas.map((o) => o.grupo));
   const filtradas = ordenarBase(filtrar(linhas, grupo, q), ordem);
   const k = indicadores(filtradas);
   const pg = paginar(filtradas, pagina, POR_PAGINA);
   const vigente = ctx?.vigente;
+
+  // Recalcula os resumos desatualizados em lotes, uma vez por obra nesta visita. Quem grava
+  // (quem carrega, controladoria) atualiza a base inteira; quem só lê, a página que está vendo.
+  const impressao = useMemo(
+    () => (ctx ? impressaoContexto(ctx.ctx, ctx.tabelas, ctx.vigente) : ""),
+    [ctx],
+  );
+  const alvo = (gravaResumo ? linhas : pg.itens)
+    .filter((o) => ctx && desatualizado(o.resumo, ctx.vigente, impressao))
+    .map((o) => o.id);
+  // candidatas (desatualizadas); o efeito tira as já tratadas
+  const chaveAlvo = alvo.join(",");
+  useEffect(() => {
+    vivo.current = true;
+    return () => {
+      vivo.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (!ctx || !chaveAlvo) return;
+    const ids = chaveAlvo.split(",").filter((id) => !tratados.current.has(`${impressao}|${id}`));
+    if (!ids.length) return;
+    for (const id of ids) tratados.current.add(`${impressao}|${id}`);
+    void (async () => {
+      setRecalculando((n) => n + ids.length);
+      let gravou = false;
+      for (let k = 0; k < ids.length && vivo.current; k += LOTE) {
+        const lote = ids.slice(k, k + LOTE);
+        try {
+          const r = await atualizarResumos(lote, ctx, impressao, gravaResumo);
+          gravou ||= gravaResumo && r.resumos.length > 0;
+          if (!vivo.current) return;
+          setNovos((a) => ({ ...a, ...Object.fromEntries(r.resumos.map((x) => [x.obra_id, x])) }));
+          setFalhas((a) => ({ ...a, ...r.falhas }));
+        } catch {
+          // sem conexão: estas obras voltam a ser tentadas na próxima visita
+          for (const id of ids.slice(k)) tratados.current.delete(`${impressao}|${id}`);
+          setRecalculando((n) => Math.max(0, n - (ids.length - k)));
+          return;
+        }
+        setRecalculando((n) => Math.max(0, n - lote.length));
+      }
+      if (gravou && vivo.current) await invalidar();
+    })();
+  }, [ctx, chaveAlvo, impressao, gravaResumo, invalidar]);
   const mudarFiltro = (fn: () => void) => {
     fn();
     setPagina(1);
@@ -346,6 +369,11 @@ export function TelaBase() {
                         <div className="sub">
                           {o.cidade || o.cliente || "Sem cliente"} · CCT {o.data_base}
                         </div>
+                        {falhas[o.id] && (
+                          <div className="sub" role="note" style={{ color: "var(--err)" }}>
+                            Sem resumo: {falhas[o.id]}
+                          </div>
+                        )}
                       </td>
                       <td className={f.r}>{numero(o.area_m2)}</td>
                       <td className={s.nowrap}>

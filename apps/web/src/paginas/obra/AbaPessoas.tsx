@@ -37,6 +37,11 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
       (rub.data ?? []).filter((r) => r.tipo === "desconto").map((r) => r.codigo),
     );
     const por = new Map<string, Pessoa>();
+    const realocado = new Set(
+      (q.data?.lancamentos ?? [])
+        .filter((l) => l.realocada_para)
+        .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}`),
+    );
     for (const l of q.data?.lancamentos ?? []) {
       if (l.realocada_para) continue;
       const p = por.get(l.matricula) ?? {
@@ -62,6 +67,8 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
     for (const r of q.data?.rubricas ?? []) {
       const p = por.get(r.matricula);
       if (!p || !noCusto.has(r.rubrica_codigo)) continue;
+      // como na Folha: o mês em que trabalhou em outra obra fica fora
+      if (realocado.has(`${r.mes_idx}|${r.matricula}|${r.funcao_id}`)) continue;
       const v = Number(r.valor);
       p.remun += desconto.has(r.rubrica_codigo) ? -Math.abs(v) : v;
     }
@@ -71,7 +78,15 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
   }, [q.data, rub.data]);
 
   if (!pode) return <Restrito oque="A lista de pessoas" />;
-  if (q.isLoading)
+  if (q.isError || rub.isError)
+    return (
+      <Cartao>
+        <p className="sub" style={{ padding: 22, margin: 0 }} role="alert">
+          Não foi possível carregar as pessoas. Atualize a página.
+        </p>
+      </Cartao>
+    );
+  if (q.isLoading || rub.isLoading)
     return (
       <Cartao>
         <p className="sub" style={{ padding: 22, margin: 0 }}>

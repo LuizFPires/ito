@@ -1012,6 +1012,7 @@ export type Database = {
       obra_resumo: {
         Row: {
           atualizado_em: string;
+          contexto: string;
           custo_atual: number;
           custo_epoca: number;
           he_por_pessoa: number;
@@ -1020,12 +1021,14 @@ export type Database = {
           obra_id: string;
           pessoa_mes: number;
           pico: number;
+          revisao: number;
           versao: number;
           vigente: number;
         };
         ComputedFields: never;
         Insert: {
           atualizado_em?: string;
+          contexto?: string;
           custo_atual?: number;
           custo_epoca?: number;
           he_por_pessoa?: number;
@@ -1034,11 +1037,13 @@ export type Database = {
           obra_id: string;
           pessoa_mes?: number;
           pico?: number;
+          revisao?: number;
           versao?: number;
           vigente: number;
         };
         Update: {
           atualizado_em?: string;
+          contexto?: string;
           custo_atual?: number;
           custo_epoca?: number;
           he_por_pessoa?: number;
@@ -1047,6 +1052,7 @@ export type Database = {
           obra_id?: string;
           pessoa_mes?: number;
           pico?: number;
+          revisao?: number;
           versao?: number;
           vigente?: number;
         };
@@ -1121,6 +1127,7 @@ export type Database = {
           meses: number;
           nome: string;
           provisionar: boolean;
+          revisao: number;
           risco_pct: number;
           rotatividade_pct: number;
           tipologia: string;
@@ -1151,6 +1158,7 @@ export type Database = {
           meses: number;
           nome: string;
           provisionar?: boolean;
+          revisao?: number;
           risco_pct?: number;
           rotatividade_pct?: number;
           tipologia?: string;
@@ -1180,6 +1188,7 @@ export type Database = {
           meses?: number;
           nome?: string;
           provisionar?: boolean;
+          revisao?: number;
           risco_pct?: number;
           rotatividade_pct?: number;
           tipologia?: string;

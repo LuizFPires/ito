@@ -47,6 +47,14 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
   }, [q.data, n]);
 
   if (!pode) return <Restrito oque="A folha por rubrica" />;
+  if (q.isError || rub.isError)
+    return (
+      <Cartao>
+        <p className="sub" style={{ padding: 22, margin: 0 }} role="alert">
+          Não foi possível carregar a folha. Atualize a página.
+        </p>
+      </Cartao>
+    );
   if (q.isLoading || rub.isLoading)
     return (
       <Cartao>

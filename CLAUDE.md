@@ -161,6 +161,10 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Edição grava ao sair do campo** ("Salvo"), como no M1, com recálculo imediato na tela. (auto — recomendado)
 - Tabelas **mês a mês** do detalhe da obra (24+ colunas) rolam dentro do próprio cartão, com a primeira coluna fixa; a página e as tabelas principais (base, médias por função) não rolam de lado (regra 8). (auto — recomendado)
 - Apropriação × ERP no detalhe usa os valores gravados na carga (caixa do ITO × ERP, M4); a tabela por conta mostra a competência da época, como no protótipo. MDO realocada e justificativas ficam como a carga gravou (só leitura no M5). (auto — recomendado)
+- Revisão do M5 (21/10/2026):
+  - **Resumo em cache** guarda a impressão digital dos parâmetros (tabelas, funções, benefícios, calendário) e a revisão da obra: editar um salário ou encargo deixa o resumo velho, e o banco só grava o resumo calculado sobre a revisão atual. Quem só lê recalcula na tela só a página que está vendo. (auto — recomendado)
+  - Troca de tabela editada na obra precisa cair no período; funções transferidas precisam existir; resumo sem números negativos.
+  - Aceito sem correção: quem carrega ou a controladoria pode gravar um resumo com números quaisquer (modelo de confiança interno; o detalhe da obra sempre recalcula pelo motor).
 - O M5 começou empilhado no M4 (`feat/m5-base-historica` a partir de `feat/m4-carga`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)

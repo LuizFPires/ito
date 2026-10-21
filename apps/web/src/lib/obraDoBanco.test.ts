@@ -1,11 +1,20 @@
 import { ESCOLHAS_VAZIAS, montarCarga } from "@ito/carga";
 import type { CargaParaGravar } from "@ito/carga";
-import { calcularObra } from "@ito/motor";
+import { calcularObra, tabelaDoMes } from "@ito/motor";
 import { describe, expect, it } from "vitest";
 // fixtures sintéticas da carga (só matrícula)
 import { CADASTRO, CTX, DADOS, FOLHA, TABELA } from "../../../../packages/carga/src/fixtures";
 import type { ObraBanco } from "./obraDoBanco";
-import { calcular, diasDoPeriodo, obraDoBanco, resumoDaObra } from "./obraDoBanco";
+import { desatualizado } from "../dados/obras";
+import { apropriacaoPorConta } from "../paginas/obra/calculos";
+import {
+  calcular,
+  diasDoPeriodo,
+  impressaoContexto,
+  obraDoBanco,
+  parametrosDe,
+  resumoDaObra,
+} from "./obraDoBanco";
 
 const ESCOLHAS = {
   ...ESCOLHAS_VAZIAS,
@@ -132,5 +141,76 @@ describe("snapshot dos números das abas (aceite M5)", () => {
       };
     });
     expect(foto).toMatchSnapshot();
+  });
+});
+
+describe("revisão do M5", () => {
+  const m = montarCarga(DADOS, { folha: FOLHA }, CADASTRO, ESCOLHAS, TABELA);
+  const base = comoNoBanco(m.payload);
+
+  it("conversão leva premissas, regime, trocas (época) e feriados do banco", () => {
+    const b: ObraBanco = {
+      ...base,
+      obra: { ...base.obra, grat_premios_pct: 7, fora_da_sede: true, provisionar: false },
+      regime: [{ funcao_id: "serv", regime: "sp" }],
+      trocas: [{ mes_idx: 1, data_base: 2026, motivo: "" }],
+      feriados: [{ data: "2025-04-21", nome: "Tiradentes" }],
+    };
+    const { obra } = obraDoBanco(b);
+    expect(obra.premissas).toMatchObject({
+      gratPremiosPct: 7,
+      foraDaSede: true,
+      provisionar: false,
+    });
+    expect(obra.regime).toEqual({ serv: "sp" });
+    expect(obra.feriadosMunicipais).toEqual([{ data: "2025-04-21", nome: "Tiradentes" }]);
+    const t26 = { ...TABELA, salarios: { ...TABELA.salarios, ped: 9999 } };
+    const p = parametrosDe(b, { 2025: TABELA, 2026: t26 }, 2026, "epoca");
+    expect(tabelaDoMes(p, 0).salarios.ped).toBe(TABELA.salarios.ped);
+    expect(tabelaDoMes(p, 1).salarios.ped).toBe(9999);
+    expect(
+      tabelaDoMes(parametrosDe(b, { 2025: TABELA, 2026: t26 }, 2026, "atualizado"), 0).salarios.ped,
+    ).toBe(9999);
+  });
+
+  it("impressão dos parâmetros muda quando um salário muda; resumo velho fica desatualizado", () => {
+    const i1 = impressaoContexto(CTX, { 2025: TABELA }, 2025);
+    const i2 = impressaoContexto(
+      CTX,
+      { 2025: { ...TABELA, salarios: { ...TABELA.salarios, ped: 1651 } } },
+      2025,
+    );
+    expect(i1).not.toBe(i2);
+    const r = resumoDaObra(base, CTX, { 2025: TABELA }, 2025, i1);
+    expect(desatualizado(r, 2025, i1)).toBe(false);
+    expect(desatualizado(r, 2025, i2)).toBe(true);
+    expect(desatualizado(r, 2026, i1)).toBe(true);
+    expect(desatualizado({ ...r, versao: 0 }, 2025, i1)).toBe(true);
+    expect(desatualizado(null, 2025, i1)).toBe(true);
+  });
+
+  it("apropriação: a soma das contas é o custo total (competência) de cada mês", () => {
+    const r = calcular(base, CTX, { 2025: TABELA }, 2025, "epoca");
+    const fun = (id: string) => ({
+      id,
+      nome: id,
+      grupo: "direta" as const,
+      cor: "",
+      conta: id === "ped" ? "04.03.01" : "04.03.02",
+    });
+    const contas = apropriacaoPorConta(r, fun, [
+      { id: "refeicao", nome: "Refeição", conta_pc: "04.02.04" },
+    ]);
+    for (let i = 0; i < r.n; i++)
+      expect(Math.abs(contas.reduce((t, l) => t + l.v[i]!, 0) - r.porMes[i]!.total)).toBeLessThan(
+        0.005,
+      );
+    expect(contas.map((l) => l.conta)).toEqual([
+      "04.01.03",
+      "04.02.04",
+      "04.02.07",
+      "04.03.01",
+      "04.03.02",
+    ]);
   });
 });

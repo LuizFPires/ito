@@ -136,6 +136,10 @@ export interface Resumo {
   obra_id: string;
   vigente: number;
   versao: number;
+  /** impressão dos parâmetros usados (tabelas, funções, benefícios, calendário) */
+  contexto: string;
+  /** revisão da obra sobre a qual o resumo foi calculado */
+  revisao: number;
   pico: number;
   pessoa_mes: number;
   he_por_pessoa: number;
@@ -153,6 +157,7 @@ export function resumoDaObra(
   ctx: Contexto,
   tabelas: Readonly<Record<number, Tabela>>,
   vigente: number,
+  contexto = impressaoContexto(ctx, tabelas, vigente),
 ): Resumo {
   const { obra } = obraDoBanco(b);
   const n = b.obra.meses;
@@ -169,6 +174,8 @@ export function resumoDaObra(
     obra_id: b.obra.id,
     vigente,
     versao: VERSAO_RESUMO,
+    contexto,
+    revisao: b.obra.revisao,
     pico: r2(Math.max(0, ...totais)),
     pessoa_mes: r2(pm),
     he_por_pessoa: r2(he),
@@ -185,4 +192,22 @@ export function diasDoPeriodo(inicioIso: string, meses: number): number {
   const ini = Date.UTC(ano, mes - 1, 1);
   const fim = Date.UTC(ano, mes - 1 + meses, 1);
   return Math.round((fim - ini) / 86_400_000);
+}
+
+/**
+ * Impressão digital dos parâmetros do cálculo (FNV-1a sobre o JSON): muda quando a controladoria
+ * edita salários, encargos, benefícios, funções ou calendário, e o resumo em cache fica velho.
+ */
+export function impressaoContexto(
+  ctx: Contexto,
+  tabelas: Readonly<Record<number, Tabela>>,
+  vigente: number,
+): string {
+  const txt = JSON.stringify({ v: VERSAO_RESUMO, vigente, tabelas, ctx });
+  let h = 0x811c9dc5;
+  for (let i = 0; i < txt.length; i++) {
+    h ^= txt.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return `${h.toString(16)}-${txt.length}`;
 }

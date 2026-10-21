@@ -18,6 +18,8 @@ const obra = (id: string, p: Partial<LinhaBase> = {}): LinhaBase => ({
     obra_id: id,
     vigente: 2026,
     versao: 1,
+    contexto: "x",
+    revisao: 0,
     pico: 10,
     pessoa_mes: 20,
     he_por_pessoa: 12,

@@ -126,7 +126,7 @@ export function AbaVisao({
             rotulos={rotulos}
             series={series}
             agrupadas={vista.agrupadas}
-            formatar={(v) => numero(v, metrica === "pessoas" ? 0 : 0)}
+            formatar={(v) => numero(v)}
             titulo={
               metrica === "pessoas"
                 ? "Pessoas por função por mês"

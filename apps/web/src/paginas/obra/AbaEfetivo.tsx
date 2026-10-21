@@ -211,7 +211,10 @@ export function AbaEfetivo({ dados, setVista }: { dados: DadosAba; setVista: Set
                     <td />
                   </tr>
                   {d.realocacoes
-                    .filter((x) => ids.includes(x.funcao_id) || x.tipo === "cedida")
+                    .filter(
+                      (x) =>
+                        vista.grupo === "todas" || dados.fun(x.funcao_id).grupo === vista.grupo,
+                    )
                     .map((x) =>
                       linhaExtra(
                         `${x.tipo === "cedida" ? "Cedidos a" : "Recebidos de"} ${x.outra_obra} · ${fun(x.funcao_id).nome.toLowerCase()} ${x.tipo === "cedida" ? "(fora do histograma)" : "(incluídos acima)"}`,

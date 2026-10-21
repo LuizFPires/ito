@@ -5,12 +5,10 @@ import { Badge, Cartao } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import u from "../../ui/ui.module.css";
+import { apropriacaoPorConta } from "./calculos";
 import type { DadosAba } from "./comum";
 import { soma } from "./comum";
 import s from "./obra.module.css";
-
-const CONTA_VT = "04.02.07";
-const CONTA_EXAMES = "04.01.03";
 
 /**
  * Apropriação por conta (protótipo): cada função na conta dela (salário, adicionais, HE, DSR,
@@ -20,33 +18,7 @@ const CONTA_EXAMES = "04.01.03";
 export function AbaApropriacao({ dados }: { dados: DadosAba }) {
   const { epoca, fun, rotulos, d } = dados;
   const ben = useBeneficios();
-  const n = rotulos.length;
-  const linhas = new Map<string, { conta: string; nome: string; v: number[] }>();
-  const add = (conta: string, nome: string, i: number, v: number) => {
-    const l = linhas.get(conta) ?? { conta, nome, v: Array(n).fill(0) };
-    l.v[i] += v;
-    linhas.set(conta, l);
-  };
-  const porBen = new Map((ben.data ?? []).map((b) => [b.id, b]));
-  for (const k of epoca.funcoes)
-    epoca.porFuncao[k]!.forEach((c, i) => {
-      const fn = fun(k);
-      add(
-        fn.conta,
-        fn.nome,
-        i,
-        c.salv + c.extras + c.he + c.dsr + c.enc + c.prov + c.resc + c.nf + c.rl + c.ferr,
-      );
-      add(CONTA_VT, "Vale-transporte", i, c.vt);
-      for (const [b, v] of Object.entries(c.beneficiosItem)) {
-        const x = porBen.get(b);
-        add(x?.conta_pc || "—", x?.nome ?? b, i, v);
-      }
-      add(CONTA_EXAMES, "Exames admissionais, periódicos e demissionais", i, c.exames);
-    });
-  const R = [...linhas.values()]
-    .filter((l) => soma(l.v) > 0.5)
-    .sort((a, b) => a.conta.localeCompare(b.conta));
+  const R = apropriacaoPorConta(epoca, fun, ben.data ?? []).filter((l) => soma(l.v) > 0.5);
   const tot = rotulos.map((_, i) => soma(R.map((l) => l.v[i]!)));
   const comErp = d.erp.length > 0;
   const comp = (i: number) => d.competencias.find((c) => c.mes_idx === i);

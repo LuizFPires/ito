@@ -9,7 +9,7 @@ import { useContextoCarga } from "../../dados/carga";
 import { useObra } from "../../dados/obras";
 import { diasDoPeriodo, inicioDe, obraDoBanco, parametrosDe } from "../../lib/obraDoBanco";
 import { podeCarregar } from "../../lib/permissoes";
-import { Cartao, Chip, Segmento } from "../../ui/componentes";
+import { Cartao, Segmento } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import u from "../../ui/ui.module.css";
@@ -55,13 +55,21 @@ export function TelaObra() {
 
   const d = obraQ.data;
   const ctx = contexto.data;
-  const dados = useMemo((): DadosAba | null => {
+  // o motor roda quando a obra ou os cadastros mudam, não a cada alternância de tela
+  const calculo = useMemo(() => {
     if (!d || !ctx) return null;
-    const { obra, movimentos } = obraDoBanco(d);
-    const calc = (v: Vista["visao"]) =>
-      calcularObra(obra, parametrosDe(d, ctx.tabelas, ctx.vigente, v), ctx.ctx, { movimentos });
-    const epoca = calc("epoca");
-    const atual = calc("atualizado");
+    try {
+      const { obra, movimentos } = obraDoBanco(d);
+      const calc = (v: Vista["visao"]) =>
+        calcularObra(obra, parametrosDe(d, ctx.tabelas, ctx.vigente, v), ctx.ctx, { movimentos });
+      return { obra, movimentos, epoca: calc("epoca"), atual: calc("atualizado"), erro: null };
+    } catch (e) {
+      return { erro: e instanceof Error ? e.message : "A obra não pôde ser calculada." };
+    }
+  }, [d, ctx]);
+  const dados = useMemo((): DadosAba | null => {
+    if (!d || !ctx || !calculo || calculo.erro !== null) return null;
+    const { obra, movimentos, epoca, atual } = calculo;
     const usa = USA_VISAO.includes(aba) ? vista.visao : "epoca";
     const porId = new Map((funcoesQ.data ?? []).map((x) => [x.id, x]));
     const fun = (fid: string): FuncaoInfo => {
@@ -98,7 +106,7 @@ export function TelaObra() {
       cidade: ctx.cidades.find((c) => c.id === d.obra.cidade_id)?.nome ?? "",
       pode,
     };
-  }, [d, ctx, funcoesQ.data, vista, aba, pode]);
+  }, [d, ctx, calculo, funcoesQ.data, vista, aba, pode]);
 
   if (obraQ.isError || contexto.isError)
     return (
@@ -106,6 +114,22 @@ export function TelaObra() {
         <Cartao>
           <p className="sub" style={{ padding: 22, margin: 0 }} role="alert">
             Não foi possível carregar a obra. Atualize a página.
+          </p>
+        </Cartao>
+      </Pagina>
+    );
+  if (calculo?.erro)
+    return (
+      <Pagina
+        grupo="Base histórica · Obra"
+        titulo={d?.obra.nome ?? "Obra"}
+        resumo=""
+        milestone="M5"
+      >
+        <Cartao>
+          <p className="sub" style={{ padding: 22, margin: 0 }} role="alert">
+            Não foi possível calcular esta obra: {calculo.erro} Confira os cadastros de funções e
+            parâmetros ou recarregue a obra.
           </p>
         </Cartao>
       </Pagina>
@@ -158,15 +182,32 @@ export function TelaObra() {
       <div className={f.linha} style={{ justifyContent: "space-between" }}>
         <div className={s.abas} role="tablist" aria-label="Abas da obra">
           {ABAS.map(([k, nome]) => (
-            <Chip
+            <button
               key={k}
-              ativo={aba === k}
+              type="button"
+              id={`aba-${k}`}
+              className={u.chip}
               role="tab"
               aria-selected={aba === k}
+              aria-controls="painel-obra"
+              tabIndex={aba === k ? 0 : -1}
               onClick={() => irPara(k)}
+              onKeyDown={(e) => {
+                const i = ABAS.findIndex(([x]) => x === k);
+                const prox =
+                  e.key === "ArrowRight"
+                    ? ABAS[(i + 1) % ABAS.length]
+                    : e.key === "ArrowLeft"
+                      ? ABAS[(i - 1 + ABAS.length) % ABAS.length]
+                      : null;
+                if (!prox) return;
+                e.preventDefault();
+                irPara(prox[0]);
+                document.getElementById(`aba-${prox[0]}`)?.focus();
+              }}
             >
               {nome}
-            </Chip>
+            </button>
           ))}
         </div>
         <span className={f.linha}>
@@ -214,16 +255,18 @@ export function TelaObra() {
 
       {(aba === "visao" || aba === "custos") && <KpisObra dados={dados} />}
 
-      {aba === "visao" && <AbaVisao dados={dados} setVista={setVista} irPara={irPara} />}
-      {aba === "efetivo" && <AbaEfetivo dados={dados} setVista={setVista} />}
-      {aba === "custos" && <AbaCustos dados={dados} setVista={setVista} />}
-      {aba === "he" && <AbaHE dados={dados} setVista={setVista} />}
-      {aba === "folha" && <AbaFolha dados={dados} irPara={irPara} />}
-      {aba === "pessoas" && <AbaPessoas dados={dados} />}
-      {aba === "aprop" && <AbaApropriacao dados={dados} />}
-      {aba === "ind" && <AbaIndicadores dados={dados} setVista={setVista} />}
-      {aba === "realoc" && <AbaRealocada dados={dados} />}
-      {aba === "prem" && <AbaPremissas dados={dados} />}
+      <div id="painel-obra" role="tabpanel" aria-labelledby={`aba-${aba}`} className={s.painel}>
+        {aba === "visao" && <AbaVisao dados={dados} setVista={setVista} irPara={irPara} />}
+        {aba === "efetivo" && <AbaEfetivo dados={dados} setVista={setVista} />}
+        {aba === "custos" && <AbaCustos dados={dados} setVista={setVista} />}
+        {aba === "he" && <AbaHE dados={dados} setVista={setVista} />}
+        {aba === "folha" && <AbaFolha dados={dados} irPara={irPara} />}
+        {aba === "pessoas" && <AbaPessoas dados={dados} />}
+        {aba === "aprop" && <AbaApropriacao dados={dados} />}
+        {aba === "ind" && <AbaIndicadores dados={dados} setVista={setVista} />}
+        {aba === "realoc" && <AbaRealocada dados={dados} />}
+        {aba === "prem" && <AbaPremissas dados={dados} />}
+      </div>
     </Pagina>
   );
 }

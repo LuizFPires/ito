@@ -66,8 +66,8 @@ export function AbaHE({ dados, setVista }: { dados: DadosAba; setVista: SetVista
         />
         <Kpi
           rotulo="Mês de maior gasto"
-          valor={rotulos[iPk] ?? "—"}
-          sub={moeda(mesTot[iPk] ?? 0, 0)}
+          valor={total > 0 ? (rotulos[iPk] ?? "—") : "—"}
+          sub={total > 0 ? moeda(mesTot[iPk] ?? 0, 0) : "sem horas extras"}
         />
         <Kpi
           rotulo="Hora extra de oficial"
