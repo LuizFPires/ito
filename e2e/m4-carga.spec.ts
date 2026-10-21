@@ -4,7 +4,7 @@ import writeXlsxFile from "write-excel-file/node";
 import { apiAdmin, entrar, semRolagemLateral } from "./ajuda";
 
 // Folha sintética no layout do ITO (só matrícula; a coluna Nome tem de ser ignorada).
-// mar/25: pedreiro 9001 (admitido, 10 h HE) e ajudante 9002; abr/25: 9002 trabalhou na Obra B.
+// mar/25: pedreiro 9001 (admitido, 10 h HE) e auxiliar 9002; abr/25: 9002 trabalhou na Obra B.
 const RUB = [
   "Competência",
   "Matrícula",
@@ -36,10 +36,10 @@ async function folhaXlsx(): Promise<Buffer> {
         RUB,
         ["03/2025", 9001, "TRABALHADOR FICTICIO", "PEDREIRO", 1, "HORAS NORMAIS", 220, 1650],
         ["03/2025", 9001, "TRABALHADOR FICTICIO", "PEDREIRO", 200, "HE 100%", 10, 150],
-        ["03/2025", 9002, "OUTRO FICTICIO", "AJUDANTE GERAL", 1, "HORAS NORMAIS", 220, 1100],
-        ["03/2025", 9002, "OUTRO FICTICIO", "AJUDANTE GERAL", 7777, "PRÊMIO E2E", 0, 80],
+        ["03/2025", 9002, "OUTRO FICTICIO", "AUXILIAR E2E", 1, "HORAS NORMAIS", 220, 1100],
+        ["03/2025", 9002, "OUTRO FICTICIO", "AUXILIAR E2E", 7777, "PRÊMIO E2E", 0, 80],
         ["04/2025", 9001, "TRABALHADOR FICTICIO", "PEDREIRO", 1, "HORAS NORMAIS", 220, 1650],
-        ["04/2025", 9002, "OUTRO FICTICIO", "AJUDANTE GERAL", 1, "HORAS NORMAIS", 220, 1100],
+        ["04/2025", 9002, "OUTRO FICTICIO", "AUXILIAR E2E", 1, "HORAS NORMAIS", 220, 1100],
       ].map(linha),
     },
     {
@@ -47,9 +47,9 @@ async function folhaXlsx(): Promise<Buffer> {
       data: [
         PES,
         ["03/2025", 9001, "PEDREIRO", "", "S", "", 0, ""],
-        ["03/2025", 9002, "AJUDANTE GERAL", "", "", "", 0, ""],
+        ["03/2025", 9002, "AUXILIAR E2E", "", "", "", 0, ""],
         ["04/2025", 9001, "PEDREIRO", "", "", "", 0, ""],
-        ["04/2025", 9002, "AJUDANTE GERAL", "", "", "", 0, "OBRA B E2E"],
+        ["04/2025", 9002, "AUXILIAR E2E", "", "", "", 0, "OBRA B E2E"],
       ].map(linha),
     },
     {
@@ -69,7 +69,7 @@ async function limpar() {
   const api = await apiAdmin();
   await api.inserir("rpc/excluir_obra", { p_id: "obra_e2e_carga" }).catch(() => {});
   await api.apagar("rubricas?codigo=eq.7777");
-  await api.apagar("funcao_sinonimos?texto=eq.AJUDANTE%20GERAL");
+  await api.apagar("funcao_sinonimos?texto=eq.AUXILIAR%20E2E");
   await api.apagar("carga_rascunhos?titulo=like.*E2E*");
 }
 
@@ -115,10 +115,10 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
   await expect(page.getByText("TRABALHADOR FICTICIO")).toHaveCount(0);
   await continuar(page);
 
-  // 3. Funções: pedreiro reconhecido pelo nome; ajudante mapeado para servente
+  // 3. Funções: pedreiro reconhecido pelo nome; auxiliar mapeado para servente
   await expect(page.getByRole("row", { name: /^PEDREIRO / })).toContainText("reconhecida");
-  await page.getByLabel("Função padrão para AJUDANTE GERAL").selectOption({ label: "Servente" });
-  await expect(page.getByRole("row", { name: /^AJUDANTE GERAL / })).toContainText("mapeada agora");
+  await page.getByLabel("Função padrão para AUXILIAR E2E").selectOption({ label: "Servente" });
+  await expect(page.getByRole("row", { name: /^AUXILIAR E2E / })).toContainText("mapeada agora");
   expect(await semRolagemLateral(page)).toBe(true);
   await continuar(page);
 
@@ -157,8 +157,8 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
     "realocacoes?obra_id=eq.obra_e2e_carga",
   );
   expect(realoc).toMatchObject([{ outra_obra: "OBRA B E2E", qtd: 1 }]);
-  expect(await api.ler("funcao_sinonimos?texto=eq.AJUDANTE%20GERAL")).toEqual([
-    { texto: "AJUDANTE GERAL", funcao_id: "serv" },
+  expect(await api.ler("funcao_sinonimos?texto=eq.AUXILIAR%20E2E")).toEqual([
+    { texto: "AUXILIAR E2E", funcao_id: "serv" },
   ]);
   expect(await api.ler("rubricas?codigo=eq.7777&select=componente")).toEqual([
     { componente: "extras" },

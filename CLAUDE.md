@@ -132,6 +132,14 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Quem carrega:** DP/RH, controladoria e admin; os demais perfis só leem (regra no banco).
 - **Arquivos originais não são guardados:** a leitura descarta nomes e guarda só os dados com matrícula (regra 2). Para recarregar, envia-se o arquivo de novo.
 - **Rascunho da carga no banco, por usuário:** guarda só dados lidos (sem nomes) e as escolhas de mapeamento; quem carrega vê os próprios, admin vê todos.
+- **Leitura no navegador** (`packages/carga`, puro): o arquivo com nomes não sai da máquina de quem carrega; só os dados com matrícula vão para o rascunho e para o banco. Substitui, para a carga, a "biblioteca .xlsx no servidor" da stack. (auto — recomendado)
+- **Gravação só pela função `gravar_carga`** (uma transação; pendências bloqueantes recusadas no banco); as tabelas da base histórica são só leitura pela API. Código de obra repetido exige confirmar a substituição. (auto — recomendado)
+- **Layout da folha:** abas Rubricas, Pessoas e Resumo; HE por tipo pela nova coluna `rubricas.tipo_he` (200/201/205/210 já classificadas). Quantidades = inversas das fórmulas do motor (SPEC §6.4). (auto — recomendado)
+- **Bloqueia:** proventos × resumo com diferença, função/rubrica pendente, competência fora do período, NF sem competência e diferença com o ERP sem justificativa. **Alerta:** ponto × folha, VT ausente, MDO realocada sem destino e conferência rubricas × custo. (auto — recomendado)
+- **Apropriação × ERP** = caixa do ITO (tabela da época) × soma das contas do ERP, por mês. (auto — recomendado)
+- Funções por prestador **S/P** são marcadas na etapa Funções; a obra de destino da MDO realocada é uma obra da base ou "fora da base" (mantém o nome). (auto — recomendado)
+- Coluna "Obras" de Funções (pendente do M1) entrou como "N obras" na segunda linha da função (regra 8), pela view `funcao_obras`. (auto — recomendado)
+- **Risco do aceite:** com folha real, a conferência rubricas × custo compara a folha com o custo modelado pelo motor na tabela da época; pode não fechar no centavo. Avaliar quando chegarem as amostras.
 - O M4 começou empilhado no M3 (`feat/m4-carga` a partir de `feat/m3-motor`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)
