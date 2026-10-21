@@ -185,6 +185,13 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Percentuais com 2 casas (convenção do ITO, como 43,96%), não 1 como no protótipo; cores das obras da paleta de séries do Canteiro.
 - O M6 começou empilhado no M5 (`feat/m6-comparar` a partir de `feat/m5-base-historica`), pela mesma pendência do CI.
 
+### M7 — Projeções (21/10/2026)
+- **Quem edita:** planejamento, engenharia, controladoria e admin criam e editam projeções; DP/RH e diretoria leem. Marcar **Aprovada** só controladoria, diretoria ou admin (regra no banco). (auto — recomendado)
+- **"Copiar para Excel"** copia para a área de transferência em texto tabulado no formato BR (cola direto no Excel); o arquivo .xlsx fica para o M8. (auto — recomendado)
+- **"5 mais parecidas":** mesma tipologia primeiro, depois área e prazo mais próximos (distância em escala logarítmica). (auto — recomendado)
+- **Guarda só as entradas** da projeção; o motor recalcula na tela. Um resumo (total, pico, pessoa-mês) é gravado junto para a lista. (auto — recomendado)
+- O M7 começou empilhado no M6 (`feat/m7-projecoes` a partir de `feat/m6-comparar`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

@@ -165,6 +165,8 @@
 
 **Aceite:** os golden tests de reajuste automático e de origem (SPEC §8) passam pela interface; uma projeção completa leva menos de 10 minutos.
 
+> Decisões (21/10/2026): edição por planejamento, engenharia, controladoria e admin (Aprovada só controladoria, diretoria, admin); copiar para Excel pela área de transferência; 5 mais parecidas por tipologia, área e prazo; grava entradas + resumo (CLAUDE.md, M7).
+
 ---
 
 ## M8 — Exportações e relatórios
