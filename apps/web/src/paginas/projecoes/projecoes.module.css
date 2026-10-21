@@ -1,0 +1,194 @@
+/* Projeções: lista, assistente e resultado sem rolagem lateral em 1.280 px (regra 8). */
+
+.tabela td,
+.tabela th {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.sel {
+  width: 36px;
+  padding-right: 0 !important;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.nome {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+}
+.nome:hover {
+  text-decoration: underline;
+}
+.conta {
+  font-family: var(--mono);
+  font-size: 11px;
+  opacity: 0.7;
+}
+.selecao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 22px;
+}
+
+/* passos do assistente */
+.passos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.passo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--body);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.passo:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.passo[aria-current="step"] {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.passo small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.ponto {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.passo[aria-current="step"] .ponto {
+  background: var(--active-bg);
+  color: var(--active-fg);
+  border-color: var(--active-bg);
+}
+.feito {
+  background: var(--amber);
+  color: var(--on-amber);
+  border-color: var(--amber);
+}
+.rodape {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* candidatas a referência */
+.candidatas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.candidata {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--body);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.candidata[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--amber-tint);
+}
+.caixa {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.candidata[aria-pressed="true"] .caixa {
+  background: var(--active-bg);
+  color: var(--active-fg);
+  border-color: var(--active-bg);
+}
+.cresce {
+  flex: 1;
+  min-width: 0;
+}
+
+/* tabelas mês a mês: rolam dentro do cartão, com a primeira coluna fixa (regra 8) */
+.rola {
+  overflow-x: auto;
+}
+.rola th:first-child,
+.rola td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.celula {
+  width: 64px;
+  min-width: 56px;
+  padding: 2px 4px;
+  text-align: right;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  color: var(--body);
+  font-size: 13px;
+}
+.cor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 3px;
+  vertical-align: baseline;
+}
+.destaque td {
+  background: var(--amber-tint);
+}
+.grade2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+}
+.alternador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 900px) {
+  .passos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

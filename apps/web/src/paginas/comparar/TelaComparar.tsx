@@ -156,7 +156,7 @@ export function TelaComparar() {
             <Botao
               pequeno
               variante="primario"
-              onClick={() => navegar(`/projecoes?refs=${ids.join(",")}`)}
+              onClick={() => navegar(`/projecoes/nova?refs=${ids.join(",")}`)}
             >
               Projetar com estas →
             </Botao>

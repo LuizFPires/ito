@@ -76,7 +76,7 @@ test("seleção para comparar e projetar", async ({ page }) => {
   await expect(barra).toContainText("1 obra selecionada");
   await expect(barra.getByRole("button", { name: "Comparar" })).toBeDisabled();
   await barra.getByRole("button", { name: "Projetar com estas →" }).click();
-  await expect(page).toHaveURL(/\/projecoes\?refs=obra_e2e_base$/);
+  await expect(page).toHaveURL(/\/projecoes\/nova\?refs=obra_e2e_base$/);
 });
 
 test("1.000 obras: a base carrega em menos de 2 s e pagina", async ({ page }) => {
