@@ -9,6 +9,7 @@ import {
   useCriarFuncao,
   useDataBase,
   useFuncoes,
+  useObrasPorFuncao,
   useParametros,
   useRemoverSinonimo,
 } from "../dados/cadastros";
@@ -42,6 +43,7 @@ export function TelaFuncoes() {
   const { data: params } = useParametros();
   const vigente = params?.data_base_vigente ?? undefined;
   const { data: db } = useDataBase(vigente);
+  const { data: obrasPor } = useObrasPorFuncao();
 
   const [q, setQ] = useState("");
   const [grupo, setGrupo] = useState<GrupoFuncao | "todas">("todas");
@@ -185,7 +187,9 @@ export function TelaFuncoes() {
                         {!x.ativo && <Badge>inativa</Badge>}
                         <div className="sub">
                           {x.conta_pc || "sem conta"} · {x.sinonimos.length}{" "}
-                          {x.sinonimos.length === 1 ? "sinônimo" : "sinônimos"}
+                          {x.sinonimos.length === 1 ? "sinônimo" : "sinônimos"} ·{" "}
+                          {numero(obrasPor?.[x.id] ?? 0)}{" "}
+                          {obrasPor?.[x.id] === 1 ? "obra" : "obras"}
                         </div>
                       </td>
                       <td>{NOME_GRUPO[x.grupo]}</td>

@@ -1,5 +1,5 @@
 begin;
-select plan(28);
+select plan(29);
 
 -- Estrutura e privacidade (regra 2): só matrícula
 select has_table('public', 'obras', 'tabela obras');
@@ -57,6 +57,8 @@ select is((select funcao_id from public.funcao_sinonimos where texto = 'PEDREIRO
   'sinônimo gravado em caixa alta');
 select is((select carregada_por::text from public.obras where id = 'teste_carga'),
   '00000000-0000-4000-8000-000000000004', 'carimbo de quem carregou');
+
+select is((select obras from public.funcao_obras where funcao_id = 'ped'), 1, 'Funções: pedreiro em 1 obra');
 
 -- Repetir sem confirmar a substituição é recusado; com confirmação, substitui
 select throws_ok($$select public.gravar_carga((select p from carga))$$, '23505', null, 'código repetido pede confirmação');

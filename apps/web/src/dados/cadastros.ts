@@ -253,6 +253,17 @@ export function useFuncoes(ativo = true) {
   });
 }
 
+/** Em quantas obras da base cada função teve efetivo (view funcao_obras). */
+export function useObrasPorFuncao() {
+  return useQuery({
+    queryKey: ["obras", "por-funcao"],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const r = await ok(supabase.from("funcao_obras").select("funcao_id, obras"));
+      return Object.fromEntries(r.map((x) => [x.funcao_id ?? "", x.obras ?? 0]));
+    },
+  });
+}
+
 export function useAtualizarFuncao() {
   return useGravar(
     ({ id, patch }: { id: string; patch: T["funcoes"]["Update"] }) =>

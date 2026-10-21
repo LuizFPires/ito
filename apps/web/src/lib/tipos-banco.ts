@@ -1314,7 +1314,22 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      funcao_obras: {
+        Row: {
+          funcao_id: string | null;
+          obras: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "efetivo_mes_funcao_id_fkey";
+            columns: ["funcao_id"];
+            isOneToOne: false;
+            referencedRelation: "funcoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
       ajustar_cct: { Args: { p_cct: string; p_pct: number }; Returns: number };
