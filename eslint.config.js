@@ -21,6 +21,14 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node } },
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      // Regra 3 do CLAUDE.md: texto exibido usa @ito/formato, nunca toFixed.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.property.name='toFixed']",
+          message: "Use numero/moeda/percentual de @ito/formato.",
+        },
+      ],
     },
   },
   {
