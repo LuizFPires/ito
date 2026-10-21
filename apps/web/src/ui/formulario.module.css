@@ -151,7 +151,7 @@
 .tabela tr.clicavel:hover td {
   background: var(--surface-muted);
 }
-.tabela tr[aria-selected="true"] td {
+.tabela tr[data-selecionada] td {
   background: var(--amber-tint);
   color: var(--ink);
 }

@@ -23,6 +23,14 @@ test("busca global acha rubrica pelo código e filtra a lista", async ({ page })
   await busca.fill("2126");
   await page.getByRole("option", { name: /2126 · PRÊMIO/ }).click();
   await expect(page).toHaveURL(/\/rubricas$/);
-  await expect(page.getByRole("searchbox", { name: "Buscar rubrica" })).toHaveValue("2126");
+  await expect(page.getByRole("searchbox", { name: "Buscar rubrica" })).toHaveValue("2126 PRÊMIO");
+  await expect(page.getByRole("row")).toHaveCount(2);
+});
+
+test("rubrica 1 na busca mostra só ela, não todas as que têm 1 no código", async ({ page }) => {
+  await entrar(page, "engenharia@ito.local");
+  const busca = page.getByRole("combobox", { name: "Buscar no ITO" });
+  await busca.fill("horas normais");
+  await page.getByRole("option", { name: /^1 · HORAS NORMAIS/ }).click();
   await expect(page.getByRole("row")).toHaveCount(2);
 });

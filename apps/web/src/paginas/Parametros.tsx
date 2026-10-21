@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { data as fmtData, moeda, numero, parseData, percentual, MESES } from "@ito/formato";
+import {
+  data as fmtData,
+  moeda,
+  numero,
+  parseData,
+  parseNumero,
+  percentual,
+  MESES,
+} from "@ito/formato";
 import { calendarioMes, taxasEncargos } from "@ito/motor";
 import type { ItemEncargo } from "@ito/motor";
 import { useSessao } from "../auth/sessao";
@@ -21,10 +29,20 @@ import {
   useRemoverFeriado,
 } from "../dados/cadastros";
 import type { DataBase, DetalheDataBase, Encargo } from "../dados/cadastros";
+import { alternarOrdem, contemTermos, ordenar } from "../lib/lista";
+import type { Ordem } from "../lib/lista";
 import { podeEditarConfig } from "../lib/permissoes";
 import { MENU } from "../shell/rotas";
 import { Badge, Botao, Cartao, Chip, Segmento } from "../ui/componentes";
-import { Campo, CampoNumero, Interruptor, Kpi, Selecao } from "../ui/formulario";
+import {
+  Campo,
+  CampoBusca,
+  CampoNumero,
+  Interruptor,
+  Kpi,
+  Selecao,
+  ThOrdem,
+} from "../ui/formulario";
 import f from "../ui/formulario.module.css";
 import { Pagina } from "./Pagina";
 
@@ -156,22 +174,72 @@ function AbaSalarios({
   const { data: funcoes } = useFuncoes();
   const { data: ant } = useDataBase(anterior);
   const gravar = useGravarSalario(ano);
-  const lista = (funcoes ?? []).filter((x) => x.ativo || det.salarios[x.id] !== undefined);
+  const [q, setQ] = useState("");
+  const [ordem, setOrdem] = useState<Ordem<"nome" | "grupo" | "salario" | "variacao">>({
+    chave: "grupo",
+    dir: 1,
+  });
+  const variacao = (id: string) => {
+    const v = det.salarios[id];
+    const a = ant?.salarios[id];
+    return v !== undefined && a ? v / a - 1 : -Infinity;
+  };
+  const ordemGrupo = { direta: 0, indireta: 1, adm: 2 };
+  const lista = ordenar(
+    (funcoes ?? []).filter(
+      (x) =>
+        (x.ativo || det.salarios[x.id] !== undefined) &&
+        contemTermos(`${x.nome} ${NOME_GRUPO[x.grupo]}`, q),
+    ),
+    ordem,
+    (x, k) =>
+      k === "nome"
+        ? x.nome
+        : k === "grupo"
+          ? `${ordemGrupo[x.grupo]} ${x.nome}`
+          : k === "salario"
+            ? (det.salarios[x.id] ?? -1)
+            : variacao(x.id),
+  );
+  const ordenarPor = (k: typeof ordem.chave) => setOrdem(alternarOrdem(ordem, k));
   return (
     <Secao
       titulo={`Salário base por função · ${ano}`}
       sub="R$ por mês. Na projeção, a CCT da cidade substitui estes valores."
     >
+      <div className={f.barra}>
+        <CampoBusca
+          rotulo="Buscar função"
+          placeholder="Função ou grupo"
+          valor={q}
+          onChange={setQ}
+        />
+      </div>
       <table className={f.tabela}>
         <thead>
           <tr>
-            <th>Função padrão</th>
-            <th>Grupo</th>
-            <th className={f.r}>Salário {ano}</th>
-            <th className={f.r}>{anterior ? `${anterior} → ${ano}` : "Variação"}</th>
+            <ThOrdem chave="nome" ordem={ordem} onOrdenar={ordenarPor}>
+              Função padrão
+            </ThOrdem>
+            <ThOrdem chave="grupo" ordem={ordem} onOrdenar={ordenarPor}>
+              Grupo
+            </ThOrdem>
+            <ThOrdem chave="salario" ordem={ordem} onOrdenar={ordenarPor} direita>
+              Salário {ano}
+            </ThOrdem>
+            <ThOrdem chave="variacao" ordem={ordem} onOrdenar={ordenarPor} direita>
+              {anterior ? `${anterior} → ${ano}` : "Variação"}
+            </ThOrdem>
           </tr>
         </thead>
         <tbody>
+          {!lista.length && (
+            <tr>
+              <td colSpan={4} className="sub" style={{ textAlign: "center", padding: 24 }}>
+                Nenhuma função encontrada. Limpe a busca.
+              </td>
+            </tr>
+          )}
           {lista.map((x) => {
             const v = det.salarios[x.id];
             const a = ant?.salarios[x.id];
@@ -194,7 +262,7 @@ function AbaSalarios({
                       compacto
                       rotulo={`Salário de ${x.nome}`}
                       valor={v ?? 0}
-                      onSalvar={(valor) => gravar.mutate({ funcao_id: x.id, valor })}
+                      onSalvar={(valor) => gravar.gravar({ funcao_id: x.id, valor })}
                     />
                   ) : (
                     moeda(v)
@@ -229,7 +297,7 @@ function AbaEncargos({ ano, det, pode }: { ano: number; det: DetalheDataBase; po
         max={100}
         rotulo={`${rot} de ${e.nome}`}
         valor={Number(e[k])}
-        onSalvar={(v) => atualizar.mutate({ id: e.id, patch: { [k]: v } })}
+        onSalvar={(v) => atualizar.gravar({ id: e.id, patch: { [k]: v } })}
       />
     ) : (
       percentual(Number(e[k]), 4)
@@ -294,12 +362,21 @@ function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode
 
 function AbaBeneficios({ ano, det, pode }: { ano: number; det: DetalheDataBase; pode: boolean }) {
   const { data: bens } = useBeneficios();
+  const [qBen, setQBen] = useState("");
   const gravar = useGravarBeneficio(ano);
   return (
     <Secao
       titulo={`Benefícios · ${ano}`}
       sub="R$ por pessoa·mês. A CCT da cidade substitui estes valores na projeção."
     >
+      <div className={f.barra}>
+        <CampoBusca
+          rotulo="Buscar benefício"
+          placeholder="Benefício ou conta"
+          valor={qBen}
+          onChange={setQBen}
+        />
+      </div>
       <table className={f.tabela}>
         <thead>
           <tr>
@@ -310,31 +387,33 @@ function AbaBeneficios({ ano, det, pode }: { ano: number; det: DetalheDataBase; 
           </tr>
         </thead>
         <tbody>
-          {(bens ?? []).map((b) => (
-            <tr key={b.id}>
-              <td className={f.forte}>{b.nome}</td>
-              <td className="mono" style={{ fontSize: 12 }}>
-                {b.conta_pc}
-              </td>
-              <td>
-                {b.so_fora_sede
-                  ? "Só MO alojada / obra fora da sede"
-                  : "Todos (estágio: só seguro)"}
-              </td>
-              <td className={f.r}>
-                {pode ? (
-                  <CampoNumero
-                    compacto
-                    rotulo={`Valor de ${b.nome}`}
-                    valor={det.beneficios[b.id] ?? 0}
-                    onSalvar={(valor) => gravar.mutate({ beneficio_id: b.id, valor })}
-                  />
-                ) : (
-                  moeda(det.beneficios[b.id])
-                )}
-              </td>
-            </tr>
-          ))}
+          {(bens ?? [])
+            .filter((b) => contemTermos(`${b.nome} ${b.conta_pc}`, qBen))
+            .map((b) => (
+              <tr key={b.id}>
+                <td className={f.forte}>{b.nome}</td>
+                <td className="mono" style={{ fontSize: 12 }}>
+                  {b.conta_pc}
+                </td>
+                <td>
+                  {b.so_fora_sede
+                    ? "Só MO alojada / obra fora da sede"
+                    : "Todos (estágio: só seguro)"}
+                </td>
+                <td className={f.r}>
+                  {pode ? (
+                    <CampoNumero
+                      compacto
+                      rotulo={`Valor de ${b.nome}`}
+                      valor={det.beneficios[b.id] ?? 0}
+                      onSalvar={(valor) => gravar.gravar({ beneficio_id: b.id, valor })}
+                    />
+                  ) : (
+                    moeda(det.beneficios[b.id])
+                  )}
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </Secao>
@@ -343,7 +422,7 @@ function AbaBeneficios({ ano, det, pode }: { ano: number; det: DetalheDataBase; 
 
 function AbaHe({ db, pode }: { db: DataBase; pode: boolean }) {
   const atualizar = useAtualizarDataBase(db.ano);
-  const s = (patch: Parameters<typeof atualizar.mutate>[0]) => atualizar.mutate(patch);
+  const s = (patch: Parameters<typeof atualizar.mutate>[0]) => atualizar.gravar(patch);
   const fixo = db.modo_dias === "fixo";
   return (
     <Secao titulo={`Horas extras, VT e rescisões · ${db.ano}`}>
@@ -456,7 +535,7 @@ function AbaHe({ db, pode }: { db: DataBase; pode: boolean }) {
 
 function AbaAdicionais({ db, pode }: { db: DataBase; pode: boolean }) {
   const atualizar = useAtualizarDataBase(db.ano);
-  const s = (patch: Parameters<typeof atualizar.mutate>[0]) => atualizar.mutate(patch);
+  const s = (patch: Parameters<typeof atualizar.mutate>[0]) => atualizar.gravar(patch);
   return (
     <Secao titulo={`Adicionais e verbas · ${db.ano}`}>
       <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
@@ -508,6 +587,7 @@ function AbaCalendario({ pode }: { pode: boolean }) {
   const adicionar = useAdicionarFeriado();
   const remover = useRemoverFeriado();
   const [ano, setAno] = useState(new Date().getFullYear());
+  const [qFer, setQFer] = useState("");
   const [dataTxt, setDataTxt] = useState("");
   const [nome, setNome] = useState("");
   const [erro, setErro] = useState<string | null>(null);
@@ -547,19 +627,27 @@ function AbaCalendario({ pode }: { pode: boolean }) {
             texto="Carnaval (segunda e terça)"
             ligado={params.carnaval}
             desabilitado={!pode}
-            onChange={(v) => atualizar.mutate({ carnaval: v })}
+            onChange={(v) => atualizar.gravar({ carnaval: v })}
           />
           <Interruptor
             rotulo="Corpus Christi é feriado"
             texto="Corpus Christi"
             ligado={params.corpus_christi}
             desabilitado={!pode}
-            onChange={(v) => atualizar.mutate({ corpus_christi: v })}
+            onChange={(v) => atualizar.gravar({ corpus_christi: v })}
           />
         </div>
       </Secao>
 
       <Secao titulo="Feriados da empresa">
+        <div className={f.barra}>
+          <CampoBusca
+            rotulo="Buscar feriado"
+            placeholder="Data ou descrição"
+            valor={qFer}
+            onChange={setQFer}
+          />
+        </div>
         <table className={f.tabela}>
           <thead>
             <tr>
@@ -569,19 +657,28 @@ function AbaCalendario({ pode }: { pode: boolean }) {
             </tr>
           </thead>
           <tbody>
-            {(feriados ?? []).map((x) => (
-              <tr key={x.data}>
-                <td>{fmtData(x.data)}</td>
-                <td>{x.nome}</td>
-                {pode && (
-                  <td className={f.r}>
-                    <Botao pequeno variante="fantasma" onClick={() => remover.mutate(x.data)}>
-                      Remover
-                    </Botao>
-                  </td>
-                )}
-              </tr>
-            ))}
+            {(feriados ?? [])
+              .filter((x) => contemTermos(`${fmtData(x.data)} ${x.nome}`, qFer))
+              .map((x) => (
+                <tr key={x.data}>
+                  <td>{fmtData(x.data)}</td>
+                  <td>{x.nome}</td>
+                  {pode && (
+                    <td className={f.r}>
+                      <Botao
+                        pequeno
+                        variante="fantasma"
+                        onClick={() =>
+                          window.confirm(`Remover o feriado de ${fmtData(x.data)} (${x.nome})?`) &&
+                          remover.mutate(x.data)
+                        }
+                      >
+                        Remover
+                      </Botao>
+                    </td>
+                  )}
+                </tr>
+              ))}
             {!feriados?.length && (
               <tr>
                 <td colSpan={3} className="sub">
@@ -688,7 +785,8 @@ function AbaDatasBase({
   const proximo = (datas[0]?.ano ?? new Date().getFullYear()) + 1;
   const [ano, setAno] = useState(String(proximo));
   const [origem, setOrigem] = useState(vigente ?? datas[0]?.ano ?? proximo - 1);
-  const [reajuste, setReajuste] = useState(0);
+  // Texto do reajuste validado só no envio: valor inválido nunca vira "0%" em silêncio.
+  const [reajusteTxt, setReajusteTxt] = useState("0");
   const [erro, setErro] = useState<string | null>(null);
 
   function enviar() {
@@ -697,6 +795,9 @@ function AbaDatasBase({
       return setErro("Informe o ano da nova data-base (ex.: 2027).");
     if (datas.some((x) => x.ano === a))
       return setErro(`A data-base ${a} já existe. Escolha outro ano.`);
+    const reajuste = parseNumero(reajusteTxt);
+    if (reajuste === null || reajuste < -50 || reajuste > 100)
+      return setErro("Informe um reajuste entre -50% e 100% (ex.: 6 ou 5,5).");
     setErro(null);
     criar.mutate({ ano: a, origem, reajuste });
   }
@@ -774,14 +875,14 @@ function AbaDatasBase({
                   ))}
                 </Selecao>
               </Campo>
-              <CampoNumero
-                rotulo="Reajuste"
-                sufixo="%"
-                min={-50}
-                max={100}
-                valor={reajuste}
-                onSalvar={setReajuste}
-              />
+              <Campo rotulo="Reajuste (%)">
+                <input
+                  className={`${f.input} ${f.num}`}
+                  inputMode="decimal"
+                  value={reajusteTxt}
+                  onChange={(e) => setReajusteTxt(e.target.value)}
+                />
+              </Campo>
             </div>
             {erro && (
               <p className={f.erro} role="alert" style={{ margin: 0 }}>
@@ -816,7 +917,7 @@ function AcoesDataBase({
   return (
     <div className={f.linha} style={{ justifyContent: "flex-end" }}>
       {db.a_revisar && (
-        <Botao pequeno variante="fantasma" onClick={() => atualizar.mutate({ a_revisar: false })}>
+        <Botao pequeno variante="fantasma" onClick={() => atualizar.gravar({ a_revisar: false })}>
           Marcar como revisada
         </Botao>
       )}

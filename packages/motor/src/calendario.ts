@@ -123,6 +123,8 @@ export function calendarioMes(
     ...municipais.map((f) => ({ ...f, tipo: "municipal" as const })),
   ]
     .filter((f) => f.data.startsWith(prefixo))
+    // mesma data duas vezes (ex.: municipal = nacional): fica a primeira (nacional antes)
+    .filter((f, i, todos) => todos.findIndex((g) => g.data === f.data) === i)
     .sort((x, y) => x.data.localeCompare(y.data));
   const datas = new Set(feriados.map((f) => f.data));
 
@@ -141,6 +143,11 @@ export function calendarioMes(
     else seg++;
   }
   const uteis = seg + sab;
+  if (uteis === 0) {
+    throw new RangeError(
+      `${dois(mes)}/${ano} ficou sem dias úteis. Confira os feriados cadastrados para esse mês.`,
+    );
+  }
   return {
     ano,
     mes,

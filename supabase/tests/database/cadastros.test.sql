@@ -1,5 +1,5 @@
 begin;
-select plan(25);
+select plan(31);
 
 -- Dados mínimos (como postgres)
 insert into public.funcoes (id, nome, grupo) values ('teste_f', 'Função teste', 'direta')
@@ -70,10 +70,25 @@ select throws_ok($$select public.criar_data_base(2091, 2090, 6)$$, '23505', null
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}', true);
 select throws_ok($$delete from public.funcoes where id = 'teste_f'$$, '23503', null,
   'função com salário não é apagada (inativar)');
-select throws_ok($$update public.funcoes set id = 'outro' where id = 'teste_f'$$, '23514', null,
-  'código da função é imutável');
+select throws_ok($$update public.funcoes set id = 'outro' where id = 'teste_f'$$, '42501', null,
+  'código da função é imutável (sem grant na coluna)');
 select is((select count(*)::int from public.data_base_salarios where funcao_id = 'teste_f'), 2,
   'salários intactos');
+
+-- Carimbo não é editável pela API (revisão M1)
+select throws_ok($$update public.funcoes set atualizado_por = '00000000-0000-4000-8000-000000000001' where id = 'teste_f'$$,
+  '42501', null, 'carimbo não é forjável');
+
+-- criar_funcao: atômica, recusa sinônimo já usado
+select is(public.criar_funcao('teste_g', 'Função G', 'indireta', ' função g '), 'teste_g', 'DP/RH cria função pela RPC');
+select is((select funcao_id from public.funcao_sinonimos where texto = 'FUNÇÃO G'), 'teste_g', 'sinônimo em caixa alta');
+select throws_ok($$select public.criar_funcao('teste_h', 'Função H', 'direta', 'FUNCAO TESTE')$$, '23505', null,
+  'sinônimo de outra função é recusado');
+select is((select count(*)::int from public.funcoes where id = 'teste_h'), 0, 'nada criado quando o sinônimo falha');
+
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+select throws_ok($$select public.criar_funcao('teste_i', 'Função I', 'direta')$$, '42501', null,
+  'engenharia não cria função pela RPC');
 
 -- Validação de dados
 reset role;

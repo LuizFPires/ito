@@ -80,6 +80,12 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Nova data-base = **cópia da vigente + reajuste %** em salários e benefícios (encargos e regras iguais). Só vira vigente quando alguém escolher.
 - Carga de **14 funções**: as 13 do SPEC §4.3 + Estagiário (vínculo estágio). (auto — recomendado)
 - Calendário e encargos são calculados no motor (`packages/motor`) já no M1; banco e telas só guardam e mostram. (auto — recomendado)
+- Revisão do M1 — aceito sem correção, com motivo:
+  - DP/RH edita valores das funções que mudam o custo (exames, adicionais, ferramentas, fator de HE). É o que a decisão de edição do M1 permite; **confirmar com a diretoria**.
+  - Funções e rubricas sem uso podem ser apagadas pela API. Quando o histórico (M3/M4) referenciar funções e rubricas, essas FKs serão `on delete restrict`.
+  - A incidência dos encargos usa os itens de id `ferias`, `terco` e `dec`. A interface não cria nem renomeia itens de encargo; se um dia criar, a regra de incidência vira um campo do item.
+  - O motor recebe feriados municipais com data completa; a cidade guarda dd-mm recorrente (SPEC §1.1). A conversão entra no M2.
+  - A lista de datas-base não tem busca: é uma linha por ano e fica curta.
 - O M1 começou empilhado na branch do M0 (`feat/m1-cadastros` a partir de `feat/m0-fundacao`) porque o CI do GitHub está bloqueado por cobrança; o PR do M1 aponta para a `main` depois do merge do M0.
 
 ## Design system "Canteiro" (ITO)

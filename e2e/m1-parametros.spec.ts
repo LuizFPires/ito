@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { entrar, semRolagemLateral } from "./ajuda";
+import { apiAdmin, entrar, semRolagemLateral } from "./ajuda";
 
 test("golden de encargos pela interface: 43,96% / 22,64% / 6,65%", async ({ page }) => {
   await entrar(page, "engenharia@ito.local");
@@ -47,50 +47,65 @@ test("DP/RH não edita parâmetros (só funções e rubricas)", async ({ page })
 
 test("controladoria cria data-base com reajuste de 6%: pedreiro 1.400 → 1.484", async ({
   page,
-}) => {
-  await entrar(page, "admin@ito.local");
-  await page.goto("/parametros");
-  await page.getByRole("button", { name: "Datas-base" }).click();
-  const ano = String(2040 + (Date.now() % 50));
-  const form = page.getByRole("region", { name: "Criar nova data-base" });
-  await form.getByLabel("Ano").fill(ano);
-  await form.getByLabel("Copiar de").selectOption("2026");
-  await form.getByLabel("Reajuste (%)").fill("6");
-  await form.getByLabel("Reajuste (%)").press("Enter");
-  await form.getByRole("button", { name: "Criar data-base" }).click();
-  await expect(page.getByRole("status")).toContainText("Data-base criada");
+}, testInfo) => {
+  const api = await apiAdmin();
+  // Um ano por worker: execuções em paralelo não disputam a mesma data-base.
+  const ano = String(2090 + (testInfo.parallelIndex % 10));
+  await api.apagar("datas_base?ano=eq." + ano); // sobra de execução anterior
+  try {
+    await entrar(page, "admin@ito.local");
+    await page.goto("/parametros");
+    await page.getByRole("button", { name: "Datas-base" }).click();
+    const form = page.getByRole("region", { name: "Criar nova data-base" });
+    await form.getByLabel("Ano").fill(ano);
+    await form.getByLabel("Copiar de").selectOption("2026");
 
-  await page
-    .getByRole("group", { name: "Data-base" })
-    .getByRole("button", { name: ano, exact: true })
-    .click();
-  await expect(page.getByText("a revisar pela controladoria")).toBeVisible();
-  await page.getByRole("button", { name: "Salários" }).click();
-  await expect(page.getByLabel("Salário de Pedreiro")).toHaveValue("1.484,00");
-  await expect(page.getByText("43,96%")).toBeVisible(); // encargos copiados sem reajuste
+    // reajuste inválido não cria nada
+    await form.getByLabel("Reajuste (%)").fill("150");
+    await form.getByRole("button", { name: "Criar data-base" }).click();
+    await expect(form.getByRole("alert")).toHaveText(
+      "Informe um reajuste entre -50% e 100% (ex.: 6 ou 5,5).",
+    );
+
+    await form.getByLabel("Reajuste (%)").fill("6");
+    await form.getByRole("button", { name: "Criar data-base" }).click();
+    await expect(page.getByRole("status")).toContainText("Data-base criada");
+
+    await page
+      .getByRole("group", { name: "Data-base" })
+      .getByRole("button", { name: ano, exact: true })
+      .click();
+    await expect(page.getByText("a revisar pela controladoria")).toBeVisible();
+    await page.getByRole("button", { name: "Salários" }).click();
+    await expect(page.getByLabel("Salário de Pedreiro")).toHaveValue("1.484,00");
+    await expect(page.getByText("43,96%")).toBeVisible(); // encargos copiados sem reajuste
+  } finally {
+    await api.apagar("datas_base?ano=eq." + ano);
+  }
 });
 
 test("controladoria edita salário e o valor fica salvo", async ({ page }) => {
-  await entrar(page, "admin@ito.local");
-  await page.goto("/parametros");
-  await page
-    .getByRole("group", { name: "Data-base" })
-    .getByRole("button", { name: "2023", exact: true })
-    .click();
-  const campo = page.getByLabel("Salário de Vigia");
-  await expect(campo).toHaveValue("1.150,00");
-  await campo.fill("1.151,5");
-  await campo.press("Enter");
-  await expect(page.getByRole("status")).toContainText("Salvo");
-  await page.reload();
-  await page
-    .getByRole("group", { name: "Data-base" })
-    .getByRole("button", { name: "2023", exact: true })
-    .click();
-  await expect(page.getByLabel("Salário de Vigia")).toHaveValue("1.151,50");
-  await page.getByLabel("Salário de Vigia").fill("1150");
-  await page.getByLabel("Salário de Vigia").press("Enter");
-  await expect(page.getByRole("status")).toContainText("Salvo");
+  const api = await apiAdmin();
+  try {
+    await entrar(page, "admin@ito.local");
+    await page.goto("/parametros");
+    const escolher2023 = () =>
+      page
+        .getByRole("group", { name: "Data-base" })
+        .getByRole("button", { name: "2023", exact: true })
+        .click();
+    await escolher2023();
+    const campo = page.getByLabel("Salário de Vigia");
+    await expect(campo).toHaveValue("1.150,00");
+    await campo.fill("1.151,5");
+    await campo.press("Enter");
+    await expect(page.getByRole("status")).toContainText("Salvo");
+    await page.reload();
+    await escolher2023();
+    await expect(page.getByLabel("Salário de Vigia")).toHaveValue("1.151,50");
+  } finally {
+    await api.alterar("data_base_salarios?ano=eq.2023&funcao_id=eq.vigia", { valor: 1150 });
+  }
 });
 
 test("feriado da empresa: data inválida pede o formato e válida entra no calendário", async ({

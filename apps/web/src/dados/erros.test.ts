@@ -24,4 +24,7 @@ describe("mensagemErroBanco", () => {
     expect(mensagemErroBanco({ message: "Failed to fetch" })).toMatch(/conexão/);
     expect(mensagemErroBanco(null)).toMatch(/Tente de novo/);
   });
+  it("gravação barrada pela RLS (nenhuma linha)", () => {
+    expect(mensagemErroBanco({ code: "SEM_LINHAS" })).toMatch(/Nada foi gravado/);
+  });
 });

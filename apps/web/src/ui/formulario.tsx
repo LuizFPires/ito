@@ -1,13 +1,16 @@
-import { useId, useState } from "react";
+import { cloneElement, isValidElement, useId, useState } from "react";
 import type { ReactNode, SelectHTMLAttributes } from "react";
-import { numero, parseNumero } from "@ito/formato";
+import { arredondar, numero, parseNumero } from "@ito/formato";
 import { Botao, Cartao } from "./componentes";
 import type { Direcao, Ordem, Pagina } from "../lib/lista";
 import s from "./formulario.module.css";
 
 const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
-/** Rótulo + controle. */
+/**
+ * Rótulo + controle. Erro e dica ficam fora do rótulo (não entram no nome do campo) e
+ * são ligados ao controle por aria-describedby.
+ */
 export function Campo({
   rotulo,
   dica,
@@ -22,16 +25,30 @@ export function Campo({
   ocultarRotulo?: boolean;
   children: ReactNode;
 }) {
+  const idDesc = useId();
+  const temDesc = !!(erro || dica);
+  const controle =
+    temDesc && isValidElement<{ "aria-describedby"?: string }>(children)
+      ? cloneElement(children, { "aria-describedby": idDesc })
+      : children;
   return (
-    <label className={s.campo}>
-      {ocultarRotulo ? <span className="sr-only">{rotulo}</span> : rotulo}
-      {children}
+    <div className={s.campo}>
+      <label className={s.campo}>
+        {ocultarRotulo ? <span className="sr-only">{rotulo}</span> : rotulo}
+        {controle}
+      </label>
       {erro ? (
-        <span className={s.erro}>{erro}</span>
+        <span id={idDesc} className={s.erro} role="alert">
+          {erro}
+        </span>
       ) : (
-        dica && <span className={s.dica}>{dica}</span>
+        dica && (
+          <span id={idDesc} className={s.dica}>
+            {dica}
+          </span>
+        )
       )}
-    </label>
+    </div>
   );
 }
 
@@ -46,8 +63,11 @@ interface CampoNumeroProps {
   dica?: string;
   /** Para células de tabela: rótulo oculto e campo estreito. */
   compacto?: boolean;
-  /** Chamado ao sair do campo (ou Enter) quando o número é válido e mudou. */
-  onSalvar: (v: number) => void;
+  /**
+   * Chamado ao sair do campo (ou Enter) quando o número é válido e mudou, já arredondado
+   * para `casas`. Se devolver uma promessa que falha, o campo volta ao valor anterior.
+   */
+  onSalvar: (v: number) => void | Promise<unknown>;
 }
 
 /** Número no formato BR (1.234,56), validado ao sair do campo. */
@@ -75,7 +95,8 @@ export function CampoNumero({
   }
 
   function confirmar() {
-    const v = parseNumero(txt);
+    const lido = parseNumero(txt);
+    const v = lido === null ? null : arredondar(lido, casas);
     if (v === null) {
       setErro("Use números no formato 1.234,56.");
       return;
@@ -90,7 +111,10 @@ export function CampoNumero({
     }
     setErro(null);
     setTxt(numero(v, casas));
-    if (v !== valor) onSalvar(v);
+    if (v === valor) return;
+    const r = onSalvar(v);
+    // Gravação recusada: mostra de novo o valor que está salvo.
+    if (r instanceof Promise) r.catch(() => setTxt(numero(valor, casas)));
   }
 
   return (

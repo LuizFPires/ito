@@ -73,3 +73,27 @@ test("DP/RH cria uma função nova", async ({ page }) => {
     .getByRole("button", { name: "Inativar função" })
     .click();
 });
+
+test("nome repetido é recusado e o campo volta ao nome salvo", async ({ page }) => {
+  await entrar(page, "dprh@ito.local");
+  await page.goto("/funcoes");
+  await page.getByRole("button", { name: "Eletricista", exact: true }).click();
+  const painel = page.getByRole("region", { name: "Função Eletricista" });
+  await painel.getByLabel("Nome").fill("Servente");
+  await painel.getByLabel("Nome").blur();
+  await expect(page.getByRole("status")).toContainText("Já existe");
+  await expect(painel.getByLabel("Nome")).toHaveValue("Eletricista");
+});
+
+test("sinônimo de outra função é recusado dizendo onde ele está", async ({ page }) => {
+  await entrar(page, "dprh@ito.local");
+  await page.goto("/funcoes");
+  await page.getByRole("button", { name: "Nova função" }).click();
+  const painel = page.getByRole("region", { name: "Nova função" });
+  await painel.getByLabel("Nome").fill(`Ajudante teste ${Date.now()}`);
+  await painel.getByLabel("Como aparece na folha (opcional)").fill("ajudante geral");
+  await painel.getByRole("button", { name: "Criar função" }).click();
+  await expect(
+    painel.getByText('O sinônimo "AJUDANTE GERAL" já está na função Servente. Use outro texto.'),
+  ).toBeVisible();
+});

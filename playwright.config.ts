@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 // e2e contra o Supabase local (pnpm db:start) e o Vite em dev.
 export default defineConfig({
   testDir: "e2e",
-  fullyParallel: true,
+  // Testes de um mesmo arquivo em série (escrevem nas mesmas linhas); arquivos em paralelo.
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",

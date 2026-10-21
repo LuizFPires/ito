@@ -68,22 +68,47 @@ async function ok<R>(p: PromiseLike<{ data: R; error: unknown }>): Promise<NonNu
   return data as NonNullable<R>;
 }
 
-/** Mutação com aviso: "Salvo" no sucesso, frase de ação no erro, e recarrega as chaves. */
+/**
+ * Para UPDATE/DELETE: a RLS barra em silêncio (PostgREST devolve 200 com lista vazia).
+ * Nenhuma linha afetada = nada foi gravado; vira erro para não mostrar "Salvo".
+ */
+async function okLinhas<R>(p: PromiseLike<{ data: R[] | null; error: unknown }>): Promise<R[]> {
+  const linhas = await ok(p);
+  if (!linhas.length) throw { code: "SEM_LINHAS", message: "nenhuma linha afetada" };
+  return linhas;
+}
+
+/**
+ * Mutação com aviso: "Salvo" no sucesso, frase de ação no erro, e recarrega as chaves.
+ * `gravar` devolve uma promessa (para o campo voltar ao valor anterior se falhar) sem
+ * deixar rejeição solta.
+ */
 function useGravar<A>(
   fn: (a: A) => Promise<unknown>,
   recarregar: readonly (readonly unknown[])[],
   sucesso = "Salvo",
+  duplicado?: string,
 ) {
   const qc = useQueryClient();
   const avisar = useToast();
-  return useMutation({
+  const m = useMutation({
     mutationFn: fn,
     onSuccess: () => {
       if (sucesso) avisar(sucesso);
     },
-    onError: (e) => avisar(mensagemErroBanco(e)),
+    onError: (e) => {
+      const err = e as { code?: string; message?: string };
+      const propria = /\.\s*Use outro/.test(err.message ?? "");
+      avisar(err.code === "23505" && duplicado && !propria ? duplicado : mensagemErroBanco(e));
+    },
     onSettled: () => Promise.all(recarregar.map((k) => qc.invalidateQueries({ queryKey: k }))),
   });
+  const gravar = (a: A) => {
+    const p = m.mutateAsync(a);
+    p.catch(() => {});
+    return p;
+  };
+  return { ...m, gravar };
 }
 
 // ── parâmetros e datas-base ──────────────────────────────────────────────────
@@ -144,7 +169,7 @@ export function useFeriadosEmpresa() {
 export function useAtualizarParametros() {
   return useGravar(
     (patch: T["parametros"]["Update"]) =>
-      ok(supabase.from("parametros").update(patch).eq("id", true).select()),
+      okLinhas(supabase.from("parametros").update(patch).eq("id", true).select()),
     [chaves.parametros],
   );
 }
@@ -152,7 +177,7 @@ export function useAtualizarParametros() {
 export function useAtualizarDataBase(ano: number) {
   return useGravar(
     (patch: T["datas_base"]["Update"]) =>
-      ok(supabase.from("datas_base").update(patch).eq("ano", ano).select()),
+      okLinhas(supabase.from("datas_base").update(patch).eq("ano", ano).select()),
     [chaves.datasBase, chaves.dataBase(ano)],
   );
 }
@@ -176,7 +201,9 @@ export function useGravarBeneficio(ano: number) {
 export function useAtualizarEncargo(ano: number) {
   return useGravar(
     ({ id, patch }: { id: string; patch: T["data_base_encargos"]["Update"] }) =>
-      ok(supabase.from("data_base_encargos").update(patch).eq("ano", ano).eq("id", id).select()),
+      okLinhas(
+        supabase.from("data_base_encargos").update(patch).eq("ano", ano).eq("id", id).select(),
+      ),
     [chaves.dataBase(ano)],
   );
 }
@@ -201,12 +228,14 @@ export function useAdicionarFeriado() {
     (f: { data: string; nome: string }) => ok(supabase.from("feriados_empresa").insert(f).select()),
     [chaves.feriados],
     "Feriado da empresa adicionado",
+    "Já existe um feriado da empresa nessa data.",
   );
 }
 
 export function useRemoverFeriado() {
   return useGravar(
-    (data: string) => ok(supabase.from("feriados_empresa").delete().eq("data", data).select()),
+    (data: string) =>
+      okLinhas(supabase.from("feriados_empresa").delete().eq("data", data).select()),
     [chaves.feriados],
     "Feriado removido",
   );
@@ -232,25 +261,25 @@ export function useFuncoes(ativo = true) {
 export function useAtualizarFuncao() {
   return useGravar(
     ({ id, patch }: { id: string; patch: T["funcoes"]["Update"] }) =>
-      ok(supabase.from("funcoes").update(patch).eq("id", id).select()),
+      okLinhas(supabase.from("funcoes").update(patch).eq("id", id).select()),
     [chaves.funcoes],
   );
 }
 
 export function useCriarFuncao() {
   return useGravar(
-    async (f: { id: string; nome: string; grupo: GrupoFuncao; sinonimo?: string }) => {
-      await ok(
-        supabase.from("funcoes").insert({ id: f.id, nome: f.nome, grupo: f.grupo }).select(),
-      );
-      if (f.sinonimo) {
-        await ok(
-          supabase.from("funcao_sinonimos").insert({ texto: f.sinonimo, funcao_id: f.id }).select(),
-        );
-      }
-    },
+    (f: { id: string; nome: string; grupo: GrupoFuncao; sinonimo?: string }) =>
+      ok(
+        supabase.rpc("criar_funcao", {
+          p_id: f.id,
+          p_nome: f.nome,
+          p_grupo: f.grupo,
+          p_sinonimo: f.sinonimo,
+        }),
+      ),
     [chaves.funcoes],
     "Função criada. Defina o salário em Parâmetros.",
+    "Já existe uma função com esse código. Use outro nome.",
   );
 }
 
@@ -260,12 +289,14 @@ export function useAdicionarSinonimo() {
       ok(supabase.from("funcao_sinonimos").insert(a).select()),
     [chaves.funcoes],
     "Sinônimo adicionado",
+    "Esse texto já é sinônimo de outra função. Remova-o de lá antes.",
   );
 }
 
 export function useRemoverSinonimo() {
   return useGravar(
-    (texto: string) => ok(supabase.from("funcao_sinonimos").delete().eq("texto", texto).select()),
+    (texto: string) =>
+      okLinhas(supabase.from("funcao_sinonimos").delete().eq("texto", texto).select()),
     [chaves.funcoes],
     "Sinônimo removido",
   );
@@ -284,7 +315,7 @@ export function useRubricas(ativo = true) {
 export function useAtualizarRubrica() {
   return useGravar(
     ({ codigo, patch }: { codigo: number; patch: T["rubricas"]["Update"] }) =>
-      ok(supabase.from("rubricas").update(patch).eq("codigo", codigo).select()),
+      okLinhas(supabase.from("rubricas").update(patch).eq("codigo", codigo).select()),
     [chaves.rubricas],
   );
 }
@@ -294,5 +325,6 @@ export function useCriarRubrica() {
     (r: T["rubricas"]["Insert"]) => ok(supabase.from("rubricas").insert(r).select()),
     [chaves.rubricas],
     "Rubrica criada. Confira a classificação.",
+    "Já existe uma rubrica com esse código. Use outro.",
   );
 }

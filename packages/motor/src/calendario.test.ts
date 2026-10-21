@@ -138,3 +138,20 @@ describe("diasEDsr", () => {
     expect(r).toEqual({ diasTrabalhados: 22, dsr: 0.2 });
   });
 });
+
+describe("calendarioMes — revisão M1", () => {
+  it("feriado repetido aparece uma vez na lista (o nacional)", () => {
+    const c = calendarioMes(2024, 9, PADRAO, [{ data: "2024-09-07", nome: "Repetido" }]);
+    const dia7 = c.feriados.filter((f) => f.data === "2024-09-07");
+    expect(dia7).toHaveLength(1);
+    expect(dia7[0]?.tipo).toBe("nacional");
+  });
+
+  it("mês sem dias úteis avisa o que conferir", () => {
+    const todos = Array.from({ length: 28 }, (_, i) => ({
+      data: `2027-02-${String(i + 1).padStart(2, "0")}`,
+      nome: "Férias coletivas",
+    }));
+    expect(() => calendarioMes(2027, 2, PADRAO, todos)).toThrow(/sem dias úteis/);
+  });
+});

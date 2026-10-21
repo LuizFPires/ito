@@ -65,7 +65,7 @@ export function BuscaGlobal() {
         titulo: `${r.codigo} · ${r.nome}`,
         sub: "Rubrica da folha",
         caminho: "/rubricas",
-        estado: { q: String(r.codigo) },
+        estado: { q: `${r.codigo} ${r.nome}` },
       })),
   ].slice(0, 8);
 

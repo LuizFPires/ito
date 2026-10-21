@@ -51,17 +51,23 @@ export type Database = {
       data_base_beneficios: {
         Row: {
           ano: number;
+          atualizado_em: string;
+          atualizado_por: string | null;
           beneficio_id: string;
           valor: number;
         };
         ComputedFields: never;
         Insert: {
           ano: number;
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           beneficio_id: string;
           valor: number;
         };
         Update: {
           ano?: number;
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           beneficio_id?: string;
           valor?: number;
         };
@@ -87,6 +93,8 @@ export type Database = {
           aliq_clt: number;
           aliq_sp: number;
           ano: number;
+          atualizado_em: string;
+          atualizado_por: string | null;
           base_calc_pct: number;
           grupo: Database["public"]["Enums"]["grupo_encargo"];
           id: string;
@@ -98,6 +106,8 @@ export type Database = {
           aliq_clt?: number;
           aliq_sp?: number;
           ano: number;
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           base_calc_pct?: number;
           grupo: Database["public"]["Enums"]["grupo_encargo"];
           id: string;
@@ -108,6 +118,8 @@ export type Database = {
           aliq_clt?: number;
           aliq_sp?: number;
           ano?: number;
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           base_calc_pct?: number;
           grupo?: Database["public"]["Enums"]["grupo_encargo"];
           id?: string;
@@ -127,17 +139,23 @@ export type Database = {
       data_base_salarios: {
         Row: {
           ano: number;
+          atualizado_em: string;
+          atualizado_por: string | null;
           funcao_id: string;
           valor: number;
         };
         ComputedFields: never;
         Insert: {
           ano: number;
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           funcao_id: string;
           valor: number;
         };
         Update: {
           ano?: number;
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           funcao_id?: string;
           valor?: number;
         };
@@ -241,15 +259,21 @@ export type Database = {
       };
       feriados_empresa: {
         Row: {
+          atualizado_em: string;
+          atualizado_por: string | null;
           data: string;
           nome: string;
         };
         ComputedFields: never;
         Insert: {
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           data: string;
           nome: string;
         };
         Update: {
+          atualizado_em?: string;
+          atualizado_por?: string | null;
           data?: string;
           nome?: string;
         };
@@ -452,6 +476,15 @@ export type Database = {
       criar_data_base: {
         Args: { p_ano: number; p_origem: number; p_reajuste_pct: number };
         Returns: number;
+      };
+      criar_funcao: {
+        Args: {
+          p_grupo: Database["public"]["Enums"]["grupo_funcao"];
+          p_id: string;
+          p_nome: string;
+          p_sinonimo?: string;
+        };
+        Returns: string;
       };
       meu_perfil: {
         Args: Record<PropertyKey, never>;

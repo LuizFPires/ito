@@ -159,13 +159,14 @@ export function TelaFuncoes() {
                     <tr
                       key={x.id}
                       className={f.clicavel}
-                      aria-selected={sel === x.id}
+                      data-selecionada={sel === x.id || undefined}
                       onClick={() => setSel(x.id)}
                     >
                       <td>
                         <button
                           type="button"
                           className={f.thOrdem}
+                          aria-pressed={sel === x.id}
                           style={{
                             textTransform: "none",
                             letterSpacing: 0,
@@ -257,7 +258,7 @@ function DetalheFuncao({
   const [novoSin, setNovoSin] = useState("");
   const est = x.vinculo === "estagio";
   const salvar = (patch: Parameters<typeof atualizar.mutate>[0]["patch"]) =>
-    atualizar.mutate({ id: x.id, patch });
+    atualizar.gravar({ id: x.id, patch });
 
   return (
     <Cartao className={f.painel} aria-label={`Função ${x.nome}`}>
@@ -287,7 +288,11 @@ function DetalheFuncao({
             value={nome}
             disabled={!pode}
             onChange={(e) => setNome(e.target.value)}
-            onBlur={() => nome.trim() && nome.trim() !== x.nome && salvar({ nome: nome.trim() })}
+            onBlur={() => {
+              const n = nome.trim();
+              if (!n) return setNome(x.nome);
+              if (n !== x.nome) salvar({ nome: n }).catch(() => setNome(x.nome));
+            }}
           />
         </Campo>
         <Campo rotulo="Conta do plano">
@@ -296,7 +301,10 @@ function DetalheFuncao({
             value={conta}
             disabled={!pode}
             onChange={(e) => setConta(e.target.value)}
-            onBlur={() => conta.trim() !== x.conta_pc && salvar({ conta_pc: conta.trim() })}
+            onBlur={() => {
+              if (conta.trim() !== x.conta_pc)
+                salvar({ conta_pc: conta.trim() }).catch(() => setConta(x.conta_pc));
+            }}
           />
         </Campo>
         <Campo rotulo="Grupo">
@@ -478,6 +486,10 @@ function NovaFuncao({
     if (!nome.trim()) return setErro("Informe o nome da função.");
     if (funcoes.some((x) => x.id === id || x.nome.toLowerCase() === nome.trim().toLowerCase()))
       return setErro("Já existe uma função com esse nome. Use outro ou reative a existente.");
+    const sin = sinonimo.trim().toUpperCase();
+    const dona = sin && funcoes.find((x) => x.sinonimos.includes(sin));
+    if (dona)
+      return setErro(`O sinônimo "${sin}" já está na função ${dona.nome}. Use outro texto.`);
     setErro(null);
     criar.mutate(
       { id, nome: nome.trim(), grupo, sinonimo: sinonimo.trim().toUpperCase() || undefined },

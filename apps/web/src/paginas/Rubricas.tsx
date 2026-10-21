@@ -82,7 +82,7 @@ export function TelaRubricas() {
   };
   const ordenarPor = (k: Chave) => setOrdem(alternarOrdem(ordem, k));
   const salvar = (r: Rubrica, patch: Partial<Rubrica>) =>
-    atualizar.mutate({ codigo: r.codigo, patch });
+    atualizar.gravar({ codigo: r.codigo, patch });
 
   return (
     <Pagina grupo={d.grupo} titulo={d.nome} resumo={d.resumo} milestone={d.milestone}>
