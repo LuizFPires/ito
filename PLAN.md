@@ -8,7 +8,7 @@
 
 ## M0 — Fundação
 **Objetivo:** projeto rodando, com autenticação, design system e esqueleto de navegação.
-- [ ] Repositório, ambientes (dev/homologação/produção), CI com lint e testes — repositório, dev local e CI prontos; projetos Supabase de homologação e produção criados, **falta aplicar a migração neles e criar o projeto na Vercel** (passos em `docs/AMBIENTES.md`)
+- [x] Repositório, ambientes (dev/homologação/produção), CI com lint e testes — homologação e produção com migrações e Auth aplicados; Vercel ligada ao GitHub (`docs/AMBIENTES.md`)
 - [x] Banco de dados e migrações
 - [x] Autenticação e perfis (planejamento, engenharia, DP/RH, controladoria, diretoria). Permissões finais a confirmar com a diretoria.
 - [x] Design system "Canteiro" em tokens:

@@ -413,3 +413,53 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ── Ambientes remotos (docs/AMBIENTES.md). Aplicar com:
+#    pnpm exec supabase config push --project-ref <ref>
+[remotes.homologacao]
+project_id = "rtciuljdjdvocxitaepz"
+
+[remotes.homologacao.auth]
+site_url = "https://ito-three-beryl.vercel.app"
+additional_redirect_urls = ["https://ito-*-luiz-fp-ires.vercel.app/**", "http://localhost:5173/**"]
+
+[remotes.homologacao.auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+[remotes.homologacao.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.homologacao.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[remotes.homologacao.storage.analytics]
+enabled = true
+max_namespaces = 10
+
+[remotes.producao]
+project_id = "pntkdmzbuqvhypebbhhn"
+
+[remotes.producao.auth]
+site_url = "https://ito-three-beryl.vercel.app"
+additional_redirect_urls = ["https://ito-three-beryl.vercel.app/**"]
+
+[remotes.producao.auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+[remotes.producao.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.producao.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[remotes.producao.storage.analytics]
+enabled = true
+max_namespaces = 10

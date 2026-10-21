@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Desenvolvimento | Supabase local (`pnpm db:start`, portas 548xx) | `pnpm dev` (localhost:5173) | equipe de desenvolvimento, CI |
 | Homologação | Supabase `ito-homologacao` (ref `rtciuljdjdvocxitaepz`, sa-east-1) | Vercel **Preview** (cada PR) | validação com a Clássica |
-| Produção | Supabase `ito-producao` (ref `pntkdmzbuqvhypebbhhn`, sa-east-1) | Vercel **Production** (branch `main`) | usuários |
+| Produção | Supabase `ito-producao` (ref `pntkdmzbuqvhypebbhhn`, sa-east-1) | Vercel **Production** (branch `main`): https://ito-three-beryl.vercel.app | usuários |
 
 As senhas do banco dos projetos remotos ficam em `.env.supabase.local` (fora do git) na máquina de quem criou os projetos. Guarde-as também no cofre de senhas da empresa.
 
@@ -25,11 +25,13 @@ pnpm exec supabase unlink
 
 O `seed.sql` (usuários `*@ito.local`) **não** vai para homologação nem produção.
 
-## Auth nos projetos remotos (painel do Supabase → Authentication)
+## Auth nos projetos remotos
+
+Declarado em `supabase/config.toml` (`[remotes.homologacao]` e `[remotes.producao]`). Confira com `pnpm exec supabase config diff --project-ref <ref>` e aplique com `pnpm exec supabase config push --project-ref <ref>`. Os blocos `remotes` repetem alguns valores do remoto (confirmação de e-mail, MFA, pooler, storage) para o push não trocá-los pelos do ambiente local. Aplicado em 21/10/2026:
 
 - **Sign up**: desligado (acesso por convite).
 - **Senha mínima**: 10 caracteres.
-- **Site URL**: a URL da Vercel do ambiente; em **Redirect URLs**, inclua as URLs de Preview (`https://ito-*-luizfpires.vercel.app/**`) no projeto de homologação.
+- **Site URL**: `https://ito-three-beryl.vercel.app` nos dois. **Redirect URLs**: em homologação, as URLs de Preview (`https://ito-*-luiz-fp-ires.vercel.app/**`) e o localhost; em produção, só o domínio de produção. Preview não tem URL fixa: ao convidar alguém em homologação, informe o link do preview como redirecionamento.
 - Primeiro admin: convidar pelo painel (Authentication → Users → Invite) e, depois que a conta existir, rodar no SQL Editor:
   `update public.usuarios set admin = true, perfil = 'controladoria' where email = '<e-mail>';`
   Atenção: o perfil é lido do `app_metadata` **só na criação** da conta. Mudar o `app_metadata` depois não altera `public.usuarios`; para trocar perfil ou admin, altere `public.usuarios` (pelo SQL Editor ou, mais tarde, pela tela de usuários).
