@@ -154,3 +154,11 @@ export function parseNumero(txt: string): number | null {
   const n = Number(limpo.replace(/\./g, "").replace(",", "."));
   return n === 0 ? 0 : n;
 }
+
+/** Lê data digitada em dd/mm/aaaa e devolve ISO "aaaa-mm-dd"; inválida → null. */
+export function parseData(txt: string): string | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(txt.trim());
+  if (!m) return null;
+  const iso = `${m[3]}-${m[2]!.padStart(2, "0")}-${m[1]!.padStart(2, "0")}`;
+  return data(iso) === VAZIO ? null : iso;
+}

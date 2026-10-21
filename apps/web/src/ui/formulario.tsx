@@ -12,16 +12,19 @@ export function Campo({
   rotulo,
   dica,
   erro,
+  ocultarRotulo,
   children,
 }: {
   rotulo: string;
   dica?: string;
   erro?: string | null;
+  /** Rótulo só para leitor de tela (célula de tabela). */
+  ocultarRotulo?: boolean;
   children: ReactNode;
 }) {
   return (
     <label className={s.campo}>
-      {rotulo}
+      {ocultarRotulo ? <span className="sr-only">{rotulo}</span> : rotulo}
       {children}
       {erro ? (
         <span className={s.erro}>{erro}</span>
@@ -41,6 +44,8 @@ interface CampoNumeroProps {
   sufixo?: string;
   desabilitado?: boolean;
   dica?: string;
+  /** Para células de tabela: rótulo oculto e campo estreito. */
+  compacto?: boolean;
   /** Chamado ao sair do campo (ou Enter) quando o número é válido e mudou. */
   onSalvar: (v: number) => void;
 }
@@ -55,6 +60,7 @@ export function CampoNumero({
   sufixo,
   desabilitado,
   dica,
+  compacto,
   onSalvar,
 }: CampoNumeroProps) {
   const [txt, setTxt] = useState(numero(valor, casas));
@@ -88,9 +94,14 @@ export function CampoNumero({
   }
 
   return (
-    <Campo rotulo={sufixo ? `${rotulo} (${sufixo})` : rotulo} erro={erro} dica={dica}>
+    <Campo
+      rotulo={sufixo ? `${rotulo} (${sufixo})` : rotulo}
+      erro={erro}
+      dica={dica}
+      ocultarRotulo={compacto}
+    >
       <input
-        className={cx(s.input, s.num, erro && s.invalido)}
+        className={cx(s.input, s.num, erro && s.invalido, compacto && s.compacto)}
         inputMode="decimal"
         value={txt}
         disabled={desabilitado}

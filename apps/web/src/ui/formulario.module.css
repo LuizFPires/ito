@@ -284,3 +284,9 @@
   gap: 10px;
   align-items: center;
 }
+.compacto {
+  min-height: 34px;
+  width: 120px;
+  margin-left: auto;
+  border-radius: var(--raio-pill);
+}

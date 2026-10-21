@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   data,
   dataHora,
+  parseData,
   mesAno,
   mesDoIndice,
   moeda,
@@ -158,5 +159,17 @@ describe("parseNumero — espaços", () => {
   });
   it("-0 vira 0", () => {
     expect(Object.is(parseNumero("-0"), 0)).toBe(true);
+  });
+});
+
+describe("parseData", () => {
+  it("dd/mm/aaaa → ISO", () => {
+    expect(parseData("24/12/2026")).toBe("2026-12-24");
+    expect(parseData(" 1/5/2027 ")).toBe("2027-05-01");
+  });
+  it("inválida → null", () => {
+    expect(parseData("31/02/2026")).toBeNull();
+    expect(parseData("2026-12-24")).toBeNull();
+    expect(parseData("")).toBeNull();
   });
 });
