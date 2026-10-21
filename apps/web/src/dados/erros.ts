@@ -28,3 +28,24 @@ export function mensagemErroBanco(e: unknown): string {
   if (/fetch|network/i.test(msg)) return "Sem conexão com o servidor. Verifique a internet.";
   return "Não foi possível salvar. Tente de novo; se continuar, avise a controladoria.";
 }
+
+/**
+ * Erro da gravação da carga (`gravar_carga`): as mensagens próprias do banco dizem a etapa a
+ * corrigir; as genéricas viram o que costuma causá-las numa carga.
+ */
+export function mensagemErroCarga(e: unknown): string {
+  const err = (e ?? {}) as { code?: string; message?: string };
+  const msg = err.message ?? "";
+  if (/etapa|verificação|período|substituição|Já existe uma obra/i.test(msg)) return msg;
+  switch (err.code) {
+    case "23505":
+      return /obras_nome/i.test(msg)
+        ? "Já existe uma obra com esse nome. Use outro nome na etapa Obra."
+        : "Há registro repetido na carga (a mesma nota fiscal ou rubrica duas vezes). Confira os arquivos.";
+    case "23503":
+      return "A cidade, a data-base ou a justificativa escolhida não existe mais. Atualize a página e escolha de novo.";
+    case "23514":
+      return "Há valor fora do permitido na carga (negativo, acima de 100% ou matrícula sem número). Confira os arquivos.";
+  }
+  return mensagemErroBanco(e);
+}

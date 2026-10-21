@@ -13,6 +13,13 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
   const idTipos = useId();
   const idCidades = useId();
   const set = (p: Partial<DadosObra>) => mudar((x) => ({ ...x, dados: { ...x.dados, ...p } }));
+  // mudar o período desloca os meses: as escolhas por mês (NF, justificativa do ERP) recomeçam
+  const setPeriodo = (p: Partial<DadosObra>) =>
+    mudar((x) => ({
+      ...x,
+      dados: { ...x.dados, ...p, trocas: [] },
+      escolhas: { ...x.escolhas, nfMes: {}, justificativas: {} },
+    }));
   const troca = d.trocas[0];
   const cidade = ctx.cidades.find((c) => c.id === d.cidadeId);
   const fim = d.meses > 0 ? fimDe(d.inicio, d.meses) : null;
@@ -72,7 +79,8 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                 defaultValue={cidade?.nome ?? ""}
                 onChange={(e) => {
                   const c = ctx.cidades.find((x) => x.nome === e.target.value);
-                  if (c || !e.target.value) set({ cidadeId: c?.id ?? null });
+                  // texto que não é uma cidade da lista: sem cidade (não fica a anterior)
+                  if ((c?.id ?? null) !== d.cidadeId) set({ cidadeId: c?.id ?? null });
                 }}
               />
             </Campo>
@@ -97,7 +105,7 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                   const ini = doCampoMes(e.target.value);
                   if (!ini) return;
                   const n = fim ? mesesEntre(ini, fim) : 1;
-                  set({ inicio: ini, meses: Math.max(0, n), trocas: [] });
+                  setPeriodo({ inicio: ini, meses: Math.max(0, n) });
                 }}
               />
             </Campo>
@@ -109,7 +117,7 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                 onChange={(e) => {
                   const fm = doCampoMes(e.target.value);
                   if (!fm) return;
-                  set({ meses: Math.max(0, mesesEntre(d.inicio, fm)), trocas: [] });
+                  setPeriodo({ meses: Math.max(0, mesesEntre(d.inicio, fm)) });
                 }}
               />
             </Campo>

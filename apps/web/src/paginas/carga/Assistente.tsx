@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { dataHora } from "@ito/formato";
 import type { ContextoCarga, RascunhoCarga } from "../../dados/carga";
-import { salvarRascunho, useGravarCarga } from "../../dados/carga";
-import { mensagemErroBanco } from "../../dados/erros";
+import { RascunhoApagado, salvarRascunho, useGravarCarga } from "../../dados/carga";
+import { mensagemErroCarga } from "../../dados/erros";
 import { Botao } from "../../ui/componentes";
 import { useToast } from "../../ui/toast";
 import s from "./carga.module.css";
@@ -38,16 +38,22 @@ export function Assistente({
   const [etapa, setEtapa] = useState(inicial.etapa);
   const [sujo, setSujo] = useState(false);
   const [salvoEm, setSalvoEm] = useState<string | null>(null);
-  const [substituir, setSubstituir] = useState(false);
+  // a confirmação de substituir vale para o código confirmado, não para outro escolhido depois
+  const [substituirId, setSubstituirId] = useState<string | null>(null);
   const id = useRef(inicial.id);
   const fila = useRef<Promise<unknown>>(Promise.resolve());
+  // leituras já enviadas (a folha inteira só sobe quando um arquivo muda)
+  const enviadas = useRef(inicial.id ? inicial.conteudo.leituras : undefined);
+  // sem autossalvamento depois de gravar na base ou se o rascunho foi apagado
+  const parado = useRef(false);
+  const ultimo = useRef({ r, etapa, sujo });
   const qc = useQueryClient();
   const avisar = useToast();
   const navegar = useNavigate();
   const gravar = useGravarCarga();
 
-  const mudar: Mudar = (f) => {
-    setR(f);
+  const mudar: Mudar = (fn) => {
+    setR(fn);
     setSujo(true);
   };
   const irPara = (n: number) => {
@@ -55,35 +61,73 @@ export function Assistente({
     setSujo(true);
   };
 
+  const salvar = useCallback(
+    (x: RascunhoCarga, et: number) => {
+      if (parado.current) return;
+      const comLeituras = x.leituras !== enviadas.current;
+      fila.current = fila.current
+        .then(() =>
+          parado.current
+            ? id.current
+            : salvarRascunho(id.current, x.dados.nome.trim(), et, x, comLeituras),
+        )
+        .then((novo) => {
+          if (parado.current) return;
+          id.current = novo;
+          if (comLeituras) enviadas.current = x.leituras;
+          setSalvoEm(new Date().toISOString());
+          return qc.invalidateQueries({ queryKey: ["carga", "rascunhos"] });
+        })
+        .catch((e) => {
+          if (e instanceof RascunhoApagado) {
+            parado.current = true;
+            avisar("Este rascunho foi apagado. A carga continua só nesta tela até ser gravada.");
+          } else avisar("Não foi possível salvar o rascunho. Verifique a conexão.");
+        });
+    },
+    [qc, avisar],
+  );
+
   // rascunho salvo sozinho, um de cada vez (o primeiro cria a linha)
   useEffect(() => {
     if (!sujo) return;
     const t = setTimeout(() => {
       setSujo(false);
-      fila.current = fila.current
-        .then(() => salvarRascunho(id.current, r.dados.nome.trim(), etapa, r))
-        .then((novo) => {
-          id.current = novo;
-          setSalvoEm(new Date().toISOString());
-          return qc.invalidateQueries({ queryKey: ["carga", "rascunhos"] });
-        })
-        .catch(() => avisar("Não foi possível salvar o rascunho. Verifique a conexão."));
+      salvar(r, etapa);
     }, ESPERA_MS);
     return () => clearTimeout(t);
-  }, [sujo, r, etapa, qc, avisar]);
+  }, [sujo, r, etapa, salvar]);
 
-  const prep = useMemo(() => preparar(r, ctx), [r, ctx]);
+  useEffect(() => {
+    ultimo.current = { r, etapa, sujo };
+  });
+  // ao sair (nova carga, outro rascunho), a última mudança não se perde
+  useEffect(
+    () => () => {
+      if (ultimo.current.sujo) salvar(ultimo.current.r, ultimo.current.etapa);
+    },
+    [salvar],
+  );
+
+  // montagem e verificações só onde são usadas (a folha pode ter 100 mil linhas)
+  const prep = useMemo(() => (etapa >= 3 ? preparar(r, ctx) : null), [r, ctx, etapa]);
   const faltas = faltasDaObra(r.dados, ctx.obras);
-  const temFolha = !!r.leituras;
-  const liberada = (n: number) => n <= 2 || (temFolha && r.dados.meses > 0);
+  const temFolha = !!r.arquivos.folha && !!r.leituras;
+  const liberada = (n: number) =>
+    n === 1 || (faltas.length === 0 && (n === 2 || (temFolha && r.dados.meses > 0)));
   const podeSeguir =
     etapa === 1 ? faltas.length === 0 : etapa === 2 ? temFolha && r.dados.meses > 0 : true;
   const existe = ctx.obras.some((o) => o.id === r.dados.id);
-  const bloqueia = !prep || prep.verificacao.bloqueia || (existe && !substituir);
+  const substituir = existe && substituirId === r.dados.id;
+  const bloqueia =
+    faltas.length > 0 || !prep || prep.verificacao.bloqueia || (existe && !substituir);
 
   async function salvarNaBase() {
     if (!prep) return;
+    parado.current = true;
     try {
+      // espera o autossalvamento em andamento para não recriar o rascunho depois de gravar
+      await fila.current;
       const obra = await gravar.mutateAsync({
         payload: { ...prep.verificacao.payload, substituir },
         rascunho: id.current,
@@ -91,7 +135,8 @@ export function Assistente({
       avisar("Obra gravada na base histórica");
       navegar(`/obras/${obra}`);
     } catch (e) {
-      avisar(mensagemErroBanco(e));
+      parado.current = false;
+      avisar(mensagemErroCarga(e));
     }
   }
 
@@ -136,7 +181,7 @@ export function Assistente({
           prep={prep}
           existe={existe}
           substituir={substituir}
-          onSubstituir={setSubstituir}
+          onSubstituir={(v) => setSubstituirId(v ? r.dados.id : null)}
         />
       )}
 

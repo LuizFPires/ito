@@ -23,7 +23,7 @@ import type {
 } from "@ito/motor";
 import { HE_MIX_PADRAO, TIPOS_HE, tabelaDoMes } from "@ito/motor";
 import type { LeituraFolha, LinhaErp, LinhaPonto, LinhaVt, NotaFiscal } from "./leitores";
-import type { Competencia } from "./planilha";
+import type { Competencia, ErroLeitura } from "./planilha";
 
 export type TipoRubrica = "provento" | "desconto" | "informativo";
 export type ComponenteRubrica =
@@ -78,6 +78,8 @@ export interface DadosObra {
 
 export interface Leituras {
   folha: LeituraFolha;
+  /** erros de leitura dos demais arquivos (a folha traz os seus) */
+  errosArquivos?: Partial<Record<"ponto" | "vt" | "erp" | "nf", ErroLeitura[]>> | null;
   ponto?: readonly LinhaPonto[] | null;
   vt?: readonly LinhaVt[] | null;
   erp?: readonly LinhaErp[] | null;
@@ -196,6 +198,14 @@ export interface Montagem {
   heHorasPorTipo: Record<TipoHe, number>;
   /** a folha não tem a aba Pessoas: pessoa-mês = 1 por matrícula */
   semAbaPessoas: boolean;
+  /** com a aba Pessoas: matrícula com rubricas e sem linha em Pessoas no mês (pessoa-mês 0) */
+  semPessoa: { mesIdx: number; matricula: string }[];
+  /** estornos que deixam o mês negativo: HE (horas) e VT (R$) */
+  negativos: { mesIdx: number; matricula: string; campo: "HE" | "VT" }[];
+  /** a mesma nota (CNPJ + número) em mais de um arquivo: fica uma */
+  notasDuplicadas: number;
+  /** linhas de VT e do ERP com competência fora do período (descartadas) */
+  foraDoPeriodoArquivos: { vt: number; erp: number };
 }
 
 export const mesDaObra = (inicio: InicioObra, c: Competencia) =>
@@ -284,6 +294,7 @@ export function montarCarga(
   // lançamentos por (mês, matrícula, função)
   const lanc = new Map<string, LancamentoCarga>();
   const chave = (i: number, m: string, f: string) => `${i}|${m}|${f}`;
+  const semAbaPessoas = folha.pessoas.length === 0;
   const obter = (i: number, matricula: string, funcao_id: string) => {
     const k = chave(i, matricula, funcao_id);
     let l = lanc.get(k);
@@ -292,7 +303,8 @@ export function montarCarga(
         mes_idx: i,
         matricula,
         funcao_id,
-        equivalente: 1,
+        // sem a aba Pessoas, mês cheio; com ela, só quem tem linha em Pessoas tem pessoa-mês
+        equivalente: semAbaPessoas ? 1 : 0,
         horas_extras: 0,
         faltas_horas: 0,
         licenca_dias: 0,
@@ -309,21 +321,29 @@ export function montarCarga(
     return l;
   };
 
-  const semAbaPessoas = folha.pessoas.length === 0;
+  // Pessoas: dois textos da folha mapeados para a mesma função (troca de cargo no mês) somam
+  const dias = new Map<string, number | null>();
+  const origemRealocada = new Map<string, string>();
   for (const p of folha.pessoas) {
     const f = mapa.get(p.funcao);
     const i = noPeriodo(p.comp);
     if (!f || i < 0) continue;
+    const k = chave(i, p.matricula, f);
     const l = obter(i, p.matricula, f);
-    l.equivalente = p.dias === null ? 1 : r4(Math.min(1, p.dias / diasNoMes(p.comp)));
-    l.faltas_horas = p.faltasHoras;
-    l.licenca_dias = p.licencaDias;
-    l.ferias_dias = p.feriasDias;
-    l.admitido = p.admitido;
-    l.desligado = p.desligado;
-    if (p.obra) {
+    // dias vazios = mês cheio
+    const antes = dias.has(k) ? dias.get(k)! : 0;
+    const total = antes === null || p.dias === null ? null : antes + p.dias;
+    dias.set(k, total);
+    l.equivalente = total === null ? 1 : r4(Math.min(1, total / diasNoMes(p.comp)));
+    l.faltas_horas = r2(l.faltas_horas + p.faltasHoras);
+    l.licenca_dias = Math.min(31, l.licenca_dias + p.licencaDias);
+    l.ferias_dias = Math.min(31, l.ferias_dias + p.feriasDias);
+    l.admitido ||= p.admitido;
+    l.desligado ||= p.desligado;
+    if (p.obra && !l.realocada_para) {
       const destino = escolhas.realocacao[p.obra];
       l.realocada_para = destino?.nome || p.obra;
+      origemRealocada.set(k, p.obra);
     }
   }
 
@@ -333,26 +353,58 @@ export function montarCarga(
     const i = noPeriodo(r.comp);
     if (!f || i < 0) continue;
     const l = obter(i, r.matricula, f);
-    l.rubricas.push({ codigo: r.codigo, referencia: r.referencia, valor: r.valor });
+    // mesma rubrica vinda de dois textos de função mapeados para a mesma função padrão: soma
+    const ja = l.rubricas.find((x) => x.codigo === r.codigo);
+    if (ja) {
+      ja.referencia = r2(ja.referencia + r.referencia);
+      ja.valor = r2(ja.valor + r.valor);
+    } else l.rubricas.push({ codigo: r.codigo, referencia: r.referencia, valor: r.valor });
     const rub = rubricaDe(r.codigo, cadastro, escolhas);
     if (rub?.componente === "he") {
       l.horas_extras = r2(l.horas_extras + r.referencia);
-      if (!l.realocada_para) heTipo[rub.tipoHe ?? "util"] += r.referencia;
+      // estágio não faz HE no motor (§4.3): fica fora do mix e da HE média
+      if (!l.realocada_para && funcoes.get(f)!.vinculo !== "estagio")
+        heTipo[rub.tipoHe ?? "util"] += r.referencia;
     }
   }
+  const semPessoa = semAbaPessoas
+    ? []
+    : [...lanc.entries()]
+        .filter(([k]) => !dias.has(k))
+        .map(([, l]) => ({ mesIdx: l.mes_idx, matricula: l.matricula }));
 
-  // VT: valor por matrícula e quem ficou sem (confirmação na verificação)
+  // VT: valor por matrícula, uma vez no mês (no lançamento de maior pessoa-mês), e quem ficou
+  // sem (confirmação na verificação). Prestador S/P não recebe VT.
+  const foraDoPeriodoArquivos = { vt: 0, erp: 0 };
   if (leituras.vt) {
     const vt = new Map<string, number>();
     for (const v of leituras.vt) {
       const i = mesDaObra(dados.inicio, v.comp);
-      vt.set(`${i}|${v.matricula}`, (vt.get(`${i}|${v.matricula}`) ?? 0) + v.valor);
+      if (i < 0 || i >= N) {
+        foraDoPeriodoArquivos.vt++;
+        continue;
+      }
+      const k = `${i}|${v.matricula}`;
+      vt.set(k, (vt.get(k) ?? 0) + v.valor);
     }
-    for (const l of lanc.values()) {
-      const v = vt.get(`${l.mes_idx}|${l.matricula}`);
+    const porPessoaMes = [...lanc.values()].sort((a, b) => b.equivalente - a.equivalente);
+    const usado = new Set<string>();
+    for (const l of porPessoaMes) {
+      const k = `${l.mes_idx}|${l.matricula}`;
+      const v = usado.has(k) ? undefined : vt.get(k);
+      const outroTem = usado.has(k) || vt.has(k);
+      if (v !== undefined) usado.add(k);
       l.vt_valor = v === undefined ? null : r2(v);
-      l.sem_vt = v === undefined && escolhas.semVtConfirmado && !l.realocada_para;
+      l.sem_vt =
+        !outroTem &&
+        escolhas.semVtConfirmado &&
+        !l.realocada_para &&
+        dados.regime[l.funcao_id] !== "sp";
     }
+  }
+  for (const e of leituras.erp ?? []) {
+    const i = mesDaObra(dados.inicio, e.comp);
+    if (i < 0 || i >= N) foraDoPeriodoArquivos.erp++;
   }
 
   const lancamentos = [...lanc.values()].sort(
@@ -377,13 +429,13 @@ export function montarCarga(
   for (const l of daObra) {
     const i = l.mes_idx;
     equivalente[l.funcao_id]![i]! += l.equivalente;
-    cabecas[l.funcao_id]![i]! += 1;
+    if (l.equivalente > 0) cabecas[l.funcao_id]![i]! += 1;
     if (l.admitido) admissoes[l.funcao_id]![i]! += 1;
     if (l.desligado) desligamentos[l.funcao_id]![i]! += 1;
     lic[i]! += l.licenca_dias;
     fer[i]! += l.ferias_dias;
     faltas[i]! += l.faltas_horas;
-    he[i]! += l.horas_extras;
+    if (funcoes.get(l.funcao_id)!.vinculo !== "estagio") he[i]! += l.horas_extras;
   }
   for (const f of ids) equivalente[f] = equivalente[f]!.map(r4);
 
@@ -433,9 +485,7 @@ export function montarCarga(
     { ls: LancamentoCarga[]; destino: string; obraId: string | null }
   >();
   for (const l of lancamentos.filter((x) => x.realocada_para)) {
-    const origem = folha.pessoas.find(
-      (p) => p.matricula === l.matricula && mesDaObra(dados.inicio, p.comp) === l.mes_idx,
-    )?.obra;
+    const origem = origemRealocada.get(chave(l.mes_idx, l.matricula, l.funcao_id));
     const escolha = origem ? escolhas.realocacao[origem] : undefined;
     const k = `${l.realocada_para}|${l.funcao_id}`;
     if (!grupos.has(k))
@@ -477,6 +527,22 @@ export function montarCarga(
     .filter(
       (r) => descricoes.has(r.codigo) && !cadastro.rubricas.some((x) => x.codigo === r.codigo),
     );
+
+  const vistas = new Set<string>();
+  const notasUnicas = (leituras.notas ?? []).filter((n) => {
+    const k = `${n.prestadorCnpj}|${n.numero}`;
+    if (vistas.has(k)) return false;
+    vistas.add(k);
+    return true;
+  });
+
+  const negativos: Montagem["negativos"] = [];
+  for (const l of lancamentos) {
+    if (l.horas_extras < 0)
+      negativos.push({ mesIdx: l.mes_idx, matricula: l.matricula, campo: "HE" });
+    if (l.vt_valor !== null && l.vt_valor < 0)
+      negativos.push({ mesIdx: l.mes_idx, matricula: l.matricula, campo: "VT" });
+  }
 
   const pr = premissas;
   const payload: CargaParaGravar = {
@@ -538,11 +604,17 @@ export function montarCarga(
     })),
     lancamentos,
     realocacoes,
-    notas: (leituras.notas ?? []).map((n) => {
+    notas: notasUnicas.map((n) => {
       const k = `${n.prestadorCnpj}|${n.numero}`;
       // competência do XML dentro do período; senão, o mês escolhido na verificação
       const doXml = n.comp ? mesDaObra(dados.inicio, n.comp) : -1;
-      const i = doXml >= 0 && doXml < N ? doXml : escolhas.nfMes[k];
+      const escolhido = escolhas.nfMes[k];
+      const i =
+        doXml >= 0 && doXml < N
+          ? doXml
+          : escolhido !== undefined && escolhido >= 0 && escolhido < N
+            ? escolhido
+            : undefined;
       return {
         prestador_cnpj: n.prestadorCnpj,
         numero: n.numero,
@@ -572,5 +644,9 @@ export function montarCarga(
     pendencias: pend,
     heHorasPorTipo: heTipo,
     semAbaPessoas,
+    semPessoa,
+    negativos,
+    notasDuplicadas: (leituras.notas ?? []).length - notasUnicas.length,
+    foraDoPeriodoArquivos,
   };
 }

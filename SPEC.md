@@ -59,7 +59,7 @@ Lancamento    (obra, matricula, funcao, mes_idx) { equivalente, horas_extras, fa
 Realocacao    (obra) { tipo: cedida|recebida, funcao, mes_ini, mes_fim, qtd, outra_obra, saldo_vt }
 ```
 
-> **Implementação (M4):** `obras` (premissas em colunas, `meses` a partir de `inicio`), `obra_trocas_tabela`, `obra_feriados`, `obra_regime` (só S/P), `competencias` (+ `ito_apropriado`, `erp_realizado`, `justificativa` da lista `justificativas_erp`), `efetivo_mes` (+ `admissoes`, `desligamentos`; derivado dos lançamentos na gravação, sem a MDO realocada), `lancamentos` (+ `faltas_horas`, `licenca_dias`, `ferias_dias`, `admitido`, `vt_valor`, `realocada_para`) com `lancamento_rubricas` (`referencia`, `valor`), `realocacoes`, `notas_fiscais` (só CNPJ), `erp_realizado` (mês × conta) e `carga_rascunhos`. `rubricas.tipo_he` diz o tipo de cada rubrica de HE. Escrita só por `gravar_carga(jsonb)` e `excluir_obra`.
+> **Implementação (M4):** `obras` (premissas em colunas, `meses` a partir de `inicio`), `obra_trocas_tabela`, `obra_feriados`, `obra_regime` (só S/P), `competencias` (+ `ito_apropriado`, `erp_realizado`, `justificativa` da lista `justificativas_erp`), `efetivo_mes` (+ `admissoes`, `desligamentos`; derivado dos lançamentos na gravação, sem a MDO realocada), `lancamentos` (+ `faltas_horas`, `licenca_dias`, `ferias_dias`, `admitido`, `vt_valor`, `realocada_para`) com `lancamento_rubricas` (`referencia`, `valor`), `realocacoes`, `notas_fiscais` (só CNPJ), `erp_realizado` (mês × conta) e `carga_rascunhos`. `rubricas.tipo_he` diz o tipo de cada rubrica de HE. Escrita só por `gravar_carga(jsonb)` e `excluir_obra`; todo mês do payload é conferido contra o período. Lançamentos e rubricas por matrícula só são lidos por quem carrega (DP/RH, controladoria, admin); os demais perfis leem os agregados.
 
 ### 1.3 Projeção
 
@@ -252,8 +252,9 @@ Layout padrão do ITO (`packages/carga/src/layout.ts`): folha com as abas **Rubr
 
 Quantidades da obra, inversas das fórmulas do §4 (o motor reproduz as horas da folha):
 ```
-x(matrícula)  = dias de vínculo ÷ dias do mês      (vazio = 1; sem a aba Pessoas, 1)
-cabeças       = matrículas distintas na função e mês
+x(matrícula)  = Σ dias de vínculo ÷ dias do mês    (vazio = 1; sem a aba Pessoas, 1;
+                rubrica sem linha em Pessoas = 0)
+cabeças       = matrículas distintas com x > 0 na função e mês
 lic, fer      = Σ dias informados (pessoa-dias)
 a (abs.)      = Σ faltas_h ÷ ((Σx − (lic + fer) ÷ 30) × divisor)          (limite 0,9)
 HE média      = Σ horas das rubricas de HE ÷ Σ_f (xa_f × (1 − a) × fator_f)   (sem estágio)
@@ -261,11 +262,13 @@ mix de HE     = horas por tipo (rubricas.tipo_he; sem tipo = úteis) ÷ horas to
 rotatividade  = Σ_{i≥1,f} mín(adm, dem) ÷ Σ_{i≥1,f} cabeças                    (inversa do §4.6)
 ```
 MDO realocada (coluna "Obra onde trabalhou") fica fora do efetivo e das quantidades; vira `realocacoes` (cedida) com o saldo de VT.
+Dois textos da folha mapeados para a mesma função, na mesma matrícula e mês (troca de cargo), somam dias, faltas, licença, férias e rubricas. Estágio fica fora da HE média e do mix. O VT da matrícula entra uma vez no mês; S/P não recebe VT. Matrícula precisa ter ao menos um número (texto só de letras pode ser nome). Nota fiscal repetida (CNPJ + número) fica uma.
 
 Verificações (`verificarCarga`); **pendente** bloqueia a gravação:
 - proventos lidos × Resumo da folha, diferença ≥ R$ 1 → pendente (a folha veio incompleta);
+- erro de leitura do ERP ou das NFs, estorno que deixa HE ou VT negativos no mês, MDO realocada sem obra de destino → pendente; erro de leitura do ponto ou do VT, matrícula com rubricas e sem linha em Pessoas → alerta;
 - função sem função padrão, rubrica nova sem classificação, competência fora do período, NF sem competência → pendente;
-- apropriação × ERP: caixa do ITO (época) × Σ contas do ERP por mês; diferença ≥ R$ 1 sem justificativa → pendente;
+- apropriação × ERP: caixa do ITO (época) × Σ contas do ERP por mês (o banco soma as linhas do ERP; não usa o total enviado pela tela); diferença ≥ R$ 1 sem justificativa → pendente;
 - ponto × folha acima de 1%, VT ausente sem confirmação, MDO realocada sem destino → alerta;
 - conferência rubricas × custo (§6.1) com os **valores reais** da folha (descontos negativos) × `remun + resc + ferr` do motor na tabela da época → alerta quando não confere.
 

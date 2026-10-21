@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mensagemErroBanco } from "./erros";
+import { mensagemErroBanco, mensagemErroCarga } from "./erros";
 
 describe("mensagemErroBanco", () => {
   it("permissão negada pela RLS", () => {
@@ -32,5 +32,18 @@ describe("mensagemErroBanco", () => {
   });
   it("gravação barrada pela RLS (nenhuma linha)", () => {
     expect(mensagemErroBanco({ code: "SEM_LINHAS" })).toMatch(/Nada foi gravado/);
+  });
+});
+
+describe("mensagemErroCarga", () => {
+  it("repassa a mensagem do banco que diz a etapa; traduz as genéricas da carga", () => {
+    const m =
+      "Há mês com diferença de apropriação × ERP sem justificativa. Justifique na verificação.";
+    expect(mensagemErroCarga({ code: "23502", message: m })).toBe(m);
+    expect(
+      mensagemErroCarga({ code: "23505", message: "duplicate key notas_fiscais_pkey" }),
+    ).toMatch(/repetido/);
+    expect(mensagemErroCarga({ code: "23505", message: "obras_nome_unico" })).toMatch(/nome/);
+    expect(mensagemErroCarga({ code: "23514", message: "check" })).toMatch(/fora do permitido/);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { calcularObra } from "@ito/motor";
-import { CADASTRO, CTX, DADOS, FOLHA, RUB, TABELA } from "./fixtures";
+import { CADASTRO, CTX, DADOS, FOLHA, PES, RUB, TABELA } from "./fixtures";
 import { lerFolha } from "./leitores";
 import type { Escolhas } from "./montagem";
 import { ESCOLHAS_VAZIAS, montarCarga, periodoDaFolha } from "./montagem";
@@ -96,5 +96,110 @@ describe("montagem da obra a partir da folha", () => {
     const f3 = lerFolha({ Rubricas: [RUB, ["05/2025", 9, "PEDREIRO", 1, "", 220, 1]] });
     const m4 = montarCarga(DADOS, { folha: f3 }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
     expect(m4.pendencias.foraDoPeriodo).toEqual([{ ano: 2025, mes: 5 }]);
+  });
+});
+
+describe("casos da revisão do M4", () => {
+  const mar = { ano: 2025, mes: 3 };
+
+  it("rubrica paga depois da saída (sem linha em Pessoas) não infla pessoa-mês nem cabeças", () => {
+    const f = lerFolha({
+      Rubricas: [
+        RUB,
+        ["03/2025", 1001, "PEDREIRO", 1, "", 220, 1650],
+        ["04/2025", 1001, "PEDREIRO", 29, "FÉRIAS PROPORCIONAIS", 0, 300],
+        ["04/2025", 1002, "PEDREIRO", 1, "", 220, 1650],
+      ],
+      Pessoas: [
+        PES,
+        ["03/2025", 1001, "PEDREIRO", "", "", "S", 0, 0, 0, ""],
+        ["04/2025", 1002, "PEDREIRO", "", "S", "", 0, 0, 0, ""],
+      ],
+    });
+    const m = montarCarga(DADOS, { folha: f }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
+    expect(m.obra.equivalente.ped).toEqual([1, 1]);
+    expect(m.obra.cabecas!.ped).toEqual([1, 1]);
+    expect(m.semPessoa).toEqual([{ mesIdx: 1, matricula: "1001" }]);
+  });
+
+  it("dois textos da folha na mesma função e matrícula no mês: soma dias, faltas e rubricas", () => {
+    const f = lerFolha({
+      Rubricas: [
+        RUB,
+        ["03/2025", 7, "SERVENTE", 1, "", 110, 550],
+        ["03/2025", 7, "SERVENTE DE OBRAS", 1, "", 110, 550],
+      ],
+      Pessoas: [
+        PES,
+        ["03/2025", 7, "SERVENTE", 15, "S", "", 4, 0, 0, ""],
+        ["03/2025", 7, "SERVENTE DE OBRAS", 16, "", "", 0, 0, 0, ""],
+      ],
+    });
+    const m = montarCarga(DADOS, { folha: f }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
+    const l = m.payload.lancamentos.filter((x) => x.matricula === "7");
+    expect(l).toHaveLength(1);
+    expect(l[0]).toMatchObject({ equivalente: 1, faltas_horas: 4, admitido: true });
+    expect(l[0]!.rubricas).toEqual([{ codigo: 1, referencia: 220, valor: 1100 }]);
+  });
+
+  it("estágio fica fora da HE média; VT entra uma vez por matrícula no mês", () => {
+    const f = lerFolha({
+      Rubricas: [
+        RUB,
+        ["03/2025", 1, "PEDREIRO", 200, "", 10, 150],
+        ["03/2025", 2, "ESTAGIÁRIO", 200, "", 50, 300],
+        ["03/2025", 3, "PEDREIRO", 1, "", 110, 825],
+        ["03/2025", 3, "SERVENTE", 1, "", 110, 550],
+      ],
+      Pessoas: [
+        PES,
+        ["03/2025", 1, "PEDREIRO", "", "", "", 0, 0, 0, ""],
+        ["03/2025", 2, "ESTAGIÁRIO", "", "", "", 0, 0, 0, ""],
+        ["03/2025", 3, "PEDREIRO", 15, "", "", 0, 0, 0, ""],
+        ["03/2025", 3, "SERVENTE", 16, "", "", 0, 0, 0, ""],
+      ],
+    });
+    const vt = [{ comp: mar, matricula: "3", valor: 200 }];
+    const m = montarCarga(DADOS, { folha: f, vt }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
+    expect(m.heHorasPorTipo.util).toBe(10);
+    expect(m.payload.lancamentos.filter((l) => l.matricula === "3").map((l) => l.vt_valor)).toEqual(
+      expect.arrayContaining([200, null]),
+    );
+  });
+
+  it("NF repetida fica uma; mês escolhido fora do período vira sem competência", () => {
+    const nota = {
+      arquivo: "a.xml",
+      numero: "9",
+      prestadorCnpj: "12345678000199",
+      comp: null,
+      valor: 10,
+      iss: 0,
+      pis: 0,
+      cofins: 0,
+      inss: 0,
+      ir: 0,
+      csll: 0,
+    };
+    const e = { ...ESCOLHAS_VAZIAS, nfMes: { "12345678000199|9": 7 } };
+    const m = montarCarga(
+      DADOS,
+      { folha: FOLHA, notas: [nota, { ...nota, arquivo: "b.xml" }] },
+      CADASTRO,
+      e,
+      TABELA,
+    );
+    expect(m.payload.notas).toHaveLength(1);
+    expect(m.notasDuplicadas).toBe(1);
+    expect(m.payload.notas[0]!.mes_idx).toBeNull();
+  });
+
+  it("estorno maior que o lançamento deixa HE negativa: sinalizado", () => {
+    const f = lerFolha({
+      Rubricas: [RUB, ["03/2025", 1, "PEDREIRO", 200, "", -4, -60]],
+      Pessoas: [PES, ["03/2025", 1, "PEDREIRO", "", "", "", 0, 0, 0, ""]],
+    });
+    const m = montarCarga(DADOS, { folha: f }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
+    expect(m.negativos).toEqual([{ mesIdx: 0, matricula: "1", campo: "HE" }]);
   });
 });

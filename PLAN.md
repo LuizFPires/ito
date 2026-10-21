@@ -94,7 +94,7 @@
   - folha por competência com rubricas, matrícula e função, sem nomes;
   - ponto, VT, XML de NF, realizado do ERP.
 - [x] Mapeamento de funções (sinônimos) e classificação de rubricas novas (bloqueante)
-- [x] Leitura de HE por tipo, adicionais, licenças, férias, ferramentas, bolsa, salário-família, exames por tipo e marcação de **MDO realocada** (com a obra de destino)
+- [x] Leitura de HE por tipo, adicionais, licenças, férias, ferramentas, bolsa, salário-família, exames por tipo e marcação de **MDO realocada** (com a obra de destino) — HE por tipo, licenças, férias e realocada viram quantidades; adicionais, ferramentas, bolsa e salário-família ficam guardados por rubrica (para a aba Folha, M5); exames por tipo saem das admissões e desligamentos
 - [x] Troca de tabela no meio da obra
 - [x] **Verificações:**
   - proventos × resumo;

@@ -119,6 +119,9 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
       }
       mudar((x) => {
         const leituras: Leituras = { folha: FOLHA_VAZIA, ...x.leituras, ...parcial };
+        // erros dos demais arquivos entram na verificação (a folha traz os seus)
+        if (tipo !== "folha")
+          leituras.errosArquivos = { ...x.leituras?.errosArquivos, [tipo]: erros };
         let dados = x.dados;
         // sem datas na etapa Obra: o período sai das competências da folha
         if (parcial.folha && dados.meses < 1) {
@@ -145,7 +148,13 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
       delete arquivos[tipo];
       if (tipo === "folha") return { ...x, arquivos: {}, leituras: null };
       const chave = tipo === "nf" ? "notas" : tipo;
-      return { ...x, arquivos, leituras: x.leituras && { ...x.leituras, [chave]: null } };
+      const errosArquivos = { ...x.leituras?.errosArquivos };
+      delete errosArquivos[tipo];
+      return {
+        ...x,
+        arquivos,
+        leituras: x.leituras && { ...x.leituras, [chave]: null, errosArquivos },
+      };
     });
   }
 

@@ -13,6 +13,9 @@ export type EstadoVerificacao = "ok" | "aviso" | "erro";
 
 export type IdVerificacao =
   | "leitura"
+  | "leituraArquivos"
+  | "pessoas"
+  | "negativos"
   | "resumo"
   | "ponto"
   | "funcoes"
@@ -102,6 +105,42 @@ export function verificarCarga(
       estado: "erro",
       titulo: `${plural(errosFolha.length, "erro", "erros")} na leitura da folha`,
       detalhe: `${errosDe(errosFolha)}. Corrija o arquivo e envie de novo.`,
+    });
+
+  // erros de leitura dos demais arquivos: ERP e NF bloqueiam (a conferência ficaria incompleta)
+  const outros = leituras.errosArquivos ?? {};
+  const nomes = { erp: "ERP", nf: "notas fiscais", ponto: "ponto", vt: "VT" } as const;
+  const comErro = (["erp", "nf", "ponto", "vt"] as const).filter((k) => outros[k]?.length);
+  if (comErro.length) {
+    const graves = comErro.some((k) => k === "erp" || k === "nf");
+    add({
+      id: "leituraArquivos",
+      estado: graves ? "erro" : "aviso",
+      titulo: `Erros na leitura de ${lista(comErro.map((k) => nomes[k]))}`,
+      detalhe: `${errosDe(comErro.flatMap((k) => outros[k]!))}. ${
+        graves
+          ? "Corrija o arquivo e envie de novo: sem essas linhas a conferência fica incompleta."
+          : "As linhas com erro ficam fora da conferência."
+      }`,
+    });
+  }
+
+  // matrículas com rubricas e sem linha em Pessoas (pagamento depois da saída, função diferente)
+  if (m.semPessoa.length)
+    add({
+      id: "pessoas",
+      estado: "aviso",
+      titulo: `${plural(m.semPessoa.length, "lançamento", "lançamentos")} com rubricas e sem linha em Pessoas`,
+      detalhe: `${lista(m.semPessoa.map((x) => `${nomeMes(x.mesIdx)}: ${x.matricula}`))}. Entram com pessoa-mês 0 (não contam no efetivo). Se trabalharam no mês, inclua-os na aba Pessoas.`,
+    });
+
+  // estornos que deixam o mês negativo
+  if (m.negativos.length)
+    add({
+      id: "negativos",
+      estado: "erro",
+      titulo: "Valores negativos no mês",
+      detalhe: `${lista(m.negativos.map((x) => `${nomeMes(x.mesIdx)}: ${x.matricula} (${x.campo})`))}. Um estorno maior que o lançamento do mês: some-o ao lançamento original e envie o arquivo de novo.`,
     });
 
   // 2. proventos × resumo da folha
@@ -241,19 +280,27 @@ export function verificarCarga(
       detalhe: "O VT desta obra não será conferido por matrícula.",
     });
   else {
-    const estagio = new Set(ctx.funcoes.filter((f) => f.vinculo === "estagio").map((f) => f.id));
+    const comVt = new Set(
+      payload.lancamentos
+        .filter((l) => l.vt_valor !== null)
+        .map((l) => `${l.mes_idx}|${l.matricula}`),
+    );
     for (let i = 0; i < N; i++) {
       const ms = payload.lancamentos
         .filter(
           (l) =>
             l.mes_idx === i &&
             !l.realocada_para &&
-            l.vt_valor === null &&
-            !estagio.has(l.funcao_id),
+            l.equivalente > 0 &&
+            obra.regime?.[l.funcao_id] !== "sp" &&
+            !comVt.has(`${i}|${l.matricula}`),
         )
         .map((l) => l.matricula);
       if (ms.length) semVt.push({ mesIdx: i, matriculas: [...new Set(ms)] });
     }
+    const foraVt = m.foraDoPeriodoArquivos.vt
+      ? ` ${plural(m.foraDoPeriodoArquivos.vt, "linha", "linhas")} de VT fora do período da obra ficaram de fora.`
+      : "";
     const total = semVt.reduce((s, x) => s + x.matriculas.length, 0);
     add(
       !total
@@ -261,7 +308,7 @@ export function verificarCarga(
             id: "vt",
             estado: "ok",
             titulo: "Todos os trabalhadores têm vale-transporte",
-            detalhe: "Cada matrícula da folha tem crédito de VT no mês.",
+            detalhe: `Cada matrícula da folha tem crédito de VT no mês.${foraVt}`,
           }
         : {
             id: "vt",
@@ -274,7 +321,7 @@ export function verificarCarga(
               escolhas.semVtConfirmado
                 ? "Confirmado: optaram por não receber."
                 : "Podem ter optado por não receber VT ou o lançamento está faltando."
-            }`,
+            }${foraVt}`,
           },
     );
   }
@@ -308,8 +355,12 @@ export function verificarCarga(
         : {
             id: "nf",
             estado: "ok",
-            titulo: `${plural(notas.length, "nota fiscal lida", "notas fiscais lidas")}`,
-            detalhe: "Todas com competência dentro do período da obra.",
+            titulo: `${plural(payload.notas.length, "nota fiscal lida", "notas fiscais lidas")}`,
+            detalhe: `Todas com competência dentro do período da obra.${
+              m.notasDuplicadas
+                ? ` ${plural(m.notasDuplicadas, "nota repetida (mesmo CNPJ e número) foi ignorada", "notas repetidas (mesmo CNPJ e número) foram ignoradas")}.`
+                : ""
+            }`,
           },
   );
 
@@ -363,10 +414,10 @@ export function verificarCarga(
     const n = destinosRealocada.reduce((s, d) => s + d.matriculas, 0);
     add({
       id: "realocada",
-      estado: semEscolha.length ? "aviso" : "ok",
+      estado: semEscolha.length ? "erro" : "ok",
       titulo: `${plural(n, "trabalhador marcado", "trabalhadores marcados")} como MDO realocada`,
       detalhe: `Estão na folha desta obra mas trabalharam em ${lista(destinosRealocada.map((d) => `“${d.texto}”`))}. O custo sai desta obra e o saldo de VT vai junto.${
-        semEscolha.length ? " Escolha a obra de destino." : ""
+        semEscolha.length ? " Escolha a obra de destino (da base ou fora dela)." : ""
       }`,
     });
   }
@@ -424,7 +475,11 @@ export function verificarCarga(
             titulo: difs.length
               ? `Apropriação × ERP: ${plural(difs.length, "diferença justificada", "diferenças justificadas")}`
               : "Apropriação × ERP confere em todos os meses",
-            detalhe: "Caixa apropriado pelo ITO contra o realizado no ERP, mês a mês.",
+            detalhe: `Caixa apropriado pelo ITO contra o realizado no ERP, mês a mês.${
+              m.foraDoPeriodoArquivos.erp
+                ? ` ${plural(m.foraDoPeriodoArquivos.erp, "linha", "linhas")} do ERP fora do período ficaram de fora.`
+                : ""
+            }`,
           },
     );
   }

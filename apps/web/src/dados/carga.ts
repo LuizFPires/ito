@@ -78,15 +78,32 @@ async function carregarContexto(): Promise<ContextoCarga> {
     obras,
   ] = await Promise.all([
     ok(supabase.from("funcoes").select("*").order("nome")),
-    ok(supabase.from("funcao_sinonimos").select("*")),
-    ok(supabase.from("rubricas").select("*").order("codigo")),
+    // listas que crescem com as cargas: paginadas (limite de 1.000 linhas do PostgREST)
+    todas((de, ate) => supabase.from("funcao_sinonimos").select("*").order("texto").range(de, ate)),
+    todas((de, ate) => supabase.from("rubricas").select("*").order("codigo").range(de, ate)),
     ok(supabase.from("beneficios").select("*")),
     ok(supabase.from("parametros").select("*").single()),
     ok(supabase.from("feriados_empresa").select("*")),
     ok(supabase.from("datas_base").select("*").order("ano", { ascending: false })),
-    ok(supabase.from("data_base_salarios").select("*")),
-    ok(supabase.from("data_base_beneficios").select("*")),
-    ok(supabase.from("data_base_encargos").select("*")),
+    todas((de, ate) =>
+      supabase
+        .from("data_base_salarios")
+        .select("*")
+        .order("ano")
+        .order("funcao_id")
+        .range(de, ate),
+    ),
+    todas((de, ate) =>
+      supabase
+        .from("data_base_beneficios")
+        .select("*")
+        .order("ano")
+        .order("beneficio_id")
+        .range(de, ate),
+    ),
+    todas((de, ate) =>
+      supabase.from("data_base_encargos").select("*").order("ano").order("id").range(de, ate),
+    ),
     ok(supabase.from("justificativas_erp").select("*").order("ordem")),
     todas((de, ate) =>
       supabase.from("cidades").select("id, nome, uf").order("nome").order("id").range(de, ate),
@@ -190,26 +207,51 @@ export function useRascunhos(usuarioId: string | undefined) {
 }
 
 export async function lerRascunho(id: string): Promise<{ etapa: number; conteudo: RascunhoCarga }> {
-  const r = await ok(supabase.from("carga_rascunhos").select("etapa, dados").eq("id", id).single());
-  return { etapa: r.etapa, conteudo: r.dados as unknown as RascunhoCarga };
+  const r = await ok(
+    supabase.from("carga_rascunhos").select("etapa, dados, leituras").eq("id", id).single(),
+  );
+  const conteudo = r.dados as unknown as RascunhoCarga;
+  return {
+    etapa: r.etapa,
+    conteudo: { ...conteudo, leituras: (r.leituras as Leituras | null) ?? null },
+  };
 }
 
-/** Salva (cria na primeira vez) e devolve o id. */
+/** O rascunho foi apagado (gravado na base, ou por um administrador) enquanto estava aberto. */
+export class RascunhoApagado extends Error {}
+
+/**
+ * Salva (cria na primeira vez) e devolve o id. As leituras dos arquivos (a folha inteira) vão
+ * numa coluna própria e só sobem quando `comLeituras` (um arquivo mudou); o resto é pequeno.
+ * Rascunho que sumiu não é recriado.
+ */
 export async function salvarRascunho(
   id: string | null,
   titulo: string,
   etapa: number,
   conteudo: RascunhoCarga,
+  comLeituras: boolean,
 ): Promise<string> {
-  const dados = conteudo as unknown as NonNullable<Json>;
+  const { leituras, ...resto } = conteudo;
+  const dados = resto as unknown as NonNullable<Json>;
+  const extra = comLeituras || !id ? { leituras: leituras as unknown as Json } : {};
   if (id) {
     const r = await ok(
-      supabase.from("carga_rascunhos").update({ titulo, etapa, dados }).eq("id", id).select("id"),
+      supabase
+        .from("carga_rascunhos")
+        .update({ titulo, etapa, dados, ...extra })
+        .eq("id", id)
+        .select("id"),
     );
-    if (r.length) return id;
+    if (!r.length) throw new RascunhoApagado();
+    return id;
   }
   const r = await ok(
-    supabase.from("carga_rascunhos").insert({ titulo, etapa, dados }).select("id").single(),
+    supabase
+      .from("carga_rascunhos")
+      .insert({ titulo, etapa, dados, ...extra })
+      .select("id")
+      .single(),
   );
   return r.id;
 }

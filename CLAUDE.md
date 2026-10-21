@@ -139,6 +139,11 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Apropriação × ERP** = caixa do ITO (tabela da época) × soma das contas do ERP, por mês. (auto — recomendado)
 - Funções por prestador **S/P** são marcadas na etapa Funções; a obra de destino da MDO realocada é uma obra da base ou "fora da base" (mantém o nome). (auto — recomendado)
 - Coluna "Obras" de Funções (pendente do M1) entrou como "N obras" na segunda linha da função (regra 8), pela view `funcao_obras`. (auto — recomendado)
+- Revisão do M4 (21/10/2026):
+  - **Remuneração por matrícula** (`lancamentos`, `lancamento_rubricas`) só é lida por quem carrega; os demais perfis leem os agregados (LGPD). (auto — recomendado; **confirmar com a diretoria**)
+  - Matrícula com ao menos um número; destino da MDO realocada obrigatório (da base ou "fora da base", confirmando o texto da folha).
+  - `gravar_carga` confere o mês de todas as listas e soma o ERP no banco; rascunho guarda as leituras numa coluna própria (só sobe quando um arquivo muda).
+  - Aceito sem correção: sinônimo existente remapeado na carga troca a função dele (é a escolha explícita de quem carrega); substituir uma obra desfaz o vínculo `outra_obra_id` de realocações de outras obras (o nome fica).
 - **Risco do aceite:** com folha real, a conferência rubricas × custo compara a folha com o custo modelado pelo motor na tabela da época; pode não fechar no centavo. Avaliar quando chegarem as amostras.
 - O M4 começou empilhado no M3 (`feat/m4-carga` a partir de `feat/m3-motor`), pela mesma pendência do CI.
 

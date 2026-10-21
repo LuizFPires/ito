@@ -133,7 +133,9 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
   const verif = page.getByRole("region", { name: "Verificação antes de salvar" });
   await expect(verif.locator('[data-verificacao="resumo"]')).toContainText("confere com o resumo");
   await expect(verif.locator('[data-verificacao="funcoes"]')).toContainText("OK");
-  await expect(verif.locator('[data-verificacao="realocada"]')).toContainText("Alerta");
+  // destino da MDO realocada é obrigatório (o texto livre da folha precisa ser confirmado)
+  await expect(verif.locator('[data-verificacao="realocada"]')).toContainText("Pendente");
+  await expect(page.getByRole("button", { name: "Salvar na base histórica →" })).toBeDisabled();
   await page
     .getByLabel("Obra onde trabalharam (OBRA B E2E)")
     .selectOption({ label: "Obra fora da base: manter “OBRA B E2E”" });

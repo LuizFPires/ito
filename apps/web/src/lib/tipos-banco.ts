@@ -55,6 +55,7 @@ export type Database = {
           dados: NonNullable<Json>;
           etapa: number;
           id: string;
+          leituras: Json | null;
           titulo: string;
           usuario_id: string;
         };
@@ -65,6 +66,7 @@ export type Database = {
           dados?: NonNullable<Json>;
           etapa?: number;
           id?: string;
+          leituras?: Json | null;
           titulo?: string;
           usuario_id?: string;
         };
@@ -74,6 +76,7 @@ export type Database = {
           dados?: NonNullable<Json>;
           etapa?: number;
           id?: string;
+          leituras?: Json | null;
           titulo?: string;
           usuario_id?: string;
         };

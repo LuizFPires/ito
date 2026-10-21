@@ -1,5 +1,5 @@
 begin;
-select plan(29);
+select plan(39);
 
 -- Estrutura e privacidade (regra 2): só matrícula
 select has_table('public', 'obras', 'tabela obras');
@@ -77,8 +77,37 @@ select throws_ok($$select public.gravar_carga(jsonb_set((select p from carga), '
   || '{"notas": [{"prestador_cnpj": "12345678000199", "numero": "412", "valor": 100}]}')$$,
   '23502', null, 'NF sem competência bloqueia');
 select throws_ok($$select public.gravar_carga(jsonb_set((select p from carga), '{obra,id}', '"outra"')
-  || '{"competencias": [{"mes_idx": 0, "erp_realizado": 2000, "ito_apropriado": 1000}]}')$$,
+  || '{"competencias": [{"mes_idx": 0, "ito_apropriado": 1000}], "erp": [{"mes_idx": 0, "conta": "04.03", "valor": 2000}]}')$$,
   '23502', null, 'diferença com o ERP sem justificativa bloqueia');
+select throws_ok($$select public.gravar_carga(jsonb_set((select p from carga), '{obra,id}', '"outra"')
+  || '{"competencias": [{"mes_idx": 0, "ito_apropriado": 1000, "erp_realizado": 1000}], "erp": [{"mes_idx": 0, "conta": "04.03", "valor": 999999}]}')$$,
+  '23502', null, 'ERP somado no banco: total mandado pelo cliente não vale');
+select throws_ok($$select public.gravar_carga(jsonb_set((select p from carga), '{obra,id}', '"outra"')
+  || '{"competencias": [{"mes_idx": 99}]}')$$, '22023', null, 'competência fora do período');
+select throws_ok($$select public.gravar_carga(jsonb_set((select p from carga), '{obra,id}', '"outra"')
+  || '{"notas": [{"prestador_cnpj": "12345678000199", "numero": "1", "mes_idx": 300, "valor": 1}]}')$$,
+  '22023', null, 'NF fora do período');
+select throws_ok($$select public.gravar_carga(jsonb_set((select p from carga), '{obra,id}', '"outra"')
+  || '{"trocas": [{"mes_idx": 50, "data_base": 2024}]}')$$, '22023', null, 'troca de tabela fora do período');
+select throws_ok($$select public.gravar_carga(jsonb_set(jsonb_set((select p from carga), '{obra,id}', '"outra"'), '{obra,funcoes_transferidas}', '["nao_existe"]'))$$,
+  '23503', null, 'função transferida sem cadastro');
+select throws_ok($$select public.gravar_carga(jsonb_set(jsonb_set((select p from carga), '{obra,id}', '"outra"'), '{obra,nome}', '"Outra"')
+  || '{"lancamentos": [{"mes_idx": 0, "matricula": "FULANODETAL", "funcao_id": "ped", "equivalente": 1}]}')$$,
+  '23514', null, 'matrícula só de letras (pode ser nome) é recusada');
+
+-- Rubrica paga depois da saída (pessoa-mês 0) não conta como cabeça
+select is(public.gravar_carga(jsonb_set(jsonb_set((select p from carga), '{obra,id}', '"zero"'), '{obra,nome}', '"Obra Zero"')
+  || '{"lancamentos": [{"mes_idx": 0, "matricula": "1", "funcao_id": "ped", "equivalente": 1},
+                       {"mes_idx": 0, "matricula": "2", "funcao_id": "ped", "equivalente": 0}]}'), 'zero', 'grava');
+select is((select cabecas from public.efetivo_mes where obra_id = 'zero' and funcao_id = 'ped'), 1,
+  'cabeça só com pessoa-mês > 0');
+
+-- Engenharia lê os agregados, não a remuneração por matrícula
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+select is((select count(*)::int from public.lancamento_rubricas where obra_id = 'teste_carga'), 0,
+  'engenharia não lê rubricas por matrícula');
+select ok((select count(*) from public.efetivo_mes where obra_id = 'teste_carga') > 0, 'engenharia lê o efetivo');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}', true);
 
 -- Rascunho: cada um vê o seu
 insert into public.carga_rascunhos (titulo, dados) values ('meu', '{}');

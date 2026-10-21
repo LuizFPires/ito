@@ -63,7 +63,7 @@ describe("verificações da carga", () => {
     const r = verificar({ folha: FOLHA }, ESCOLHAS_VAZIAS);
     expect(item(r, "rubricas").estado).toBe("erro");
     expect(item(r, "rubricas").detalhe).toContain("7777 · prêmio assiduidade");
-    expect(item(r, "realocada").estado).toBe("aviso");
+    expect(item(r, "realocada").estado).toBe("erro");
     expect(r.bloqueia).toBe(true);
   });
 
@@ -149,5 +149,63 @@ describe("verificações da carga", () => {
     // mar: 1.650 + 150 + 75 + 1.100 = 2.975 em rubricas que entram no custo
     expect(r.conferencia[0]!.rubricas).toBe(2975);
     expect(r.conferencia[0]!.custo).toBeCloseTo(r.resultado!.porMes[0]!.remun, 1);
+  });
+});
+
+describe("verificações da revisão do M4", () => {
+  it("erro de leitura do ERP bloqueia; do ponto, só alerta", () => {
+    const erro = {
+      aba: "Realizado",
+      linha: 3,
+      mensagem: "Valor inválido: informe um número (1.234,56).",
+    };
+    const r = verificar({ folha: FOLHA, errosArquivos: { erp: [erro] } });
+    expect(item(r, "leituraArquivos")).toMatchObject({ estado: "erro" });
+    expect(item(r, "leituraArquivos").detalhe).toContain("Realizado, linha 3");
+    const p = verificar({ folha: FOLHA, errosArquivos: { ponto: [{ ...erro, aba: "Ponto" }] } });
+    expect(item(p, "leituraArquivos").estado).toBe("aviso");
+  });
+
+  it("estorno negativo bloqueia dizendo matrícula e mês", () => {
+    const r = verificar({
+      folha: {
+        ...FOLHA,
+        rubricas: [
+          ...FOLHA.rubricas,
+          {
+            comp: { ano: 2025, mes: 4 },
+            matricula: "1001",
+            funcao: "PEDREIRO",
+            codigo: 200,
+            descricao: "",
+            referencia: -6,
+            valor: -90,
+          },
+        ],
+      },
+    });
+    expect(item(r, "negativos")).toMatchObject({ estado: "erro" });
+    expect(item(r, "negativos").detalhe).toContain("abr/25: 1001 (HE)");
+  });
+
+  it("conferência com desconto de faltas: o desconto entra negativo", () => {
+    const r = verificar({
+      folha: {
+        ...FOLHA,
+        rubricas: [
+          ...FOLHA.rubricas,
+          {
+            comp: { ano: 2025, mes: 3 },
+            matricula: "1001",
+            funcao: "PEDREIRO",
+            codigo: 40,
+            descricao: "",
+            referencia: 11,
+            valor: 82.5,
+          },
+        ],
+      },
+    });
+    expect(r.conferencia[0]!.rubricas).toBe(2975 - 82.5);
   });
 });

@@ -89,7 +89,8 @@ function linhasValidas<K extends string>(
       erros.push({
         aba: aba.nome,
         linha,
-        mensagem: "Matrícula inválida: use só letras, números, ponto ou hífen (até 20).",
+        mensagem:
+          "Matrícula inválida: use até 20 letras, números, ponto ou hífen, com ao menos um número (nunca o nome).",
       });
     else ok.push({ linha, comp, matricula, c });
   }

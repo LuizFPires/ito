@@ -86,7 +86,8 @@ export function lerTexto(c: Celula): string {
 /** Matrícula: texto curto, sem espaços ("1001", "00123", "A-12"). Número do Excel vira texto. */
 export function lerMatricula(c: Celula): string | null {
   const t = typeof c === "number" && Number.isInteger(c) ? String(c) : lerTexto(c);
-  return /^[0-9A-Za-z./-]{1,20}$/.test(t) ? t : null;
+  // ao menos um dígito: texto só de letras pode ser um nome (regra 2)
+  return /^[0-9A-Za-z./-]{1,20}$/.test(t) && /[0-9]/.test(t) ? t : null;
 }
 
 // ── colunas ─────────────────────────────────────────────────────────────────

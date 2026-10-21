@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { lerErp, lerFolha, lerNotasFiscais, lerPonto, lerVt } from "./leitores";
-import { lerCompetencia, lerCsv, lerNumero } from "./planilha";
+import { lerCompetencia, lerCsv, lerMatricula, lerNumero } from "./planilha";
 
 const CAB_RUB = [
   "Competência",
@@ -28,6 +28,12 @@ describe("células", () => {
     expect(lerNumero(1234.56)).toBe(1234.56);
     expect(lerNumero("1234.56")).toBe(1234.56);
     expect(lerNumero("abc")).toBeNull();
+  });
+  it("matrícula precisa de um número: texto só de letras pode ser nome", () => {
+    expect(lerMatricula(1001)).toBe("1001");
+    expect(lerMatricula("A-12")).toBe("A-12");
+    expect(lerMatricula("JOSE.SILVA")).toBeNull();
+    expect(lerMatricula("FULANO")).toBeNull();
   });
   it("CSV com ponto e vírgula e aspas", () => {
     expect(lerCsv('a;b\r\n"1;2";"x ""y"""\n')).toEqual([
