@@ -22,7 +22,7 @@ const ROTAS: [string, string, string][] = [
   ["/funcoes", "Funções padrão", "Funções padrão"],
   ["/rubricas", "Rubricas da folha", "Rubricas da folha"],
   ["/obras/exemplo", "Obra não encontrada", "Base histórica"],
-  ["/projecoes/exemplo", "Projeção", "Projeções"],
+  ["/projecoes/exemplo", "Projeção não encontrada", "Projeções"],
 ];
 
 test("sem login, qualquer rota leva ao login", async ({ page }) => {
@@ -64,7 +64,7 @@ test("as 10 rotas abrem vazias, com o item do menu marcado e sem rolagem lateral
   for (const [rota, titulo, item] of ROTAS) {
     await page.goto(rota);
     await expect(page.getByRole("heading", { level: 1, name: titulo, exact: true })).toBeVisible();
-    // Telas que já ganharam conteúdo (M1, M2, M4, M5, M6) não mostram o aviso de "chega no Mx".
+    // Telas que já ganharam conteúdo (M1, M2, M4–M7) não mostram o aviso de "chega no Mx".
     if (
       ![
         "/funcoes",
@@ -74,6 +74,8 @@ test("as 10 rotas abrem vazias, com o item do menu marcado e sem rolagem lateral
         "/carga",
         "/base",
         "/comparar",
+        "/projecoes",
+        "/projecoes/exemplo",
         "/obras/exemplo",
       ].includes(rota)
     ) {

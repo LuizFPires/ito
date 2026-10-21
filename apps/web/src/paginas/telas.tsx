@@ -19,15 +19,3 @@ export function TelaObra() {
     />
   );
 }
-
-export function TelaProjecao() {
-  const { id } = useParams();
-  return (
-    <Pagina
-      grupo="Projeções · Detalhe"
-      titulo="Projeção"
-      resumo={`Projeção ${id ?? ""}: indicadores, histograma, efetivo e custo projetados, curva S e quanto custa trazer gente de fora.`}
-      milestone="M7"
-    />
-  );
-}
