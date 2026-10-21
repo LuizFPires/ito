@@ -71,6 +71,7 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Atalho da busca global: **Ctrl+K** no Windows/Linux e **⌘K** no Mac; a dica na tela mostra a tecla do sistema. (auto — recomendado)
 - Roteamento com React Router; dados do servidor com TanStack Query; CSS com tokens + CSS Modules, sem framework de CSS. (auto — recomendado)
 - Região dos projetos Supabase: `sa-east-1` (São Paulo). (auto — recomendado)
+- Tokens do Canteiro = os do protótipo ITO 2.0, exceto `--ok` (#18784e) e `--err` (#b83427) no modo claro, escurecidos para passar contraste AA sobre o próprio fundo; teste em `apps/web/src/estilo/tokens.test.ts`. (auto — recomendado)
 
 ## Design system "Canteiro" (ITO)
 
