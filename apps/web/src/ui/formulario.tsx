@@ -63,6 +63,8 @@ interface CampoNumeroProps {
   dica?: string;
   /** Para células de tabela: rótulo oculto e campo estreito. */
   compacto?: boolean;
+  /** Largura do campo compacto em px (padrão 120). */
+  largura?: number;
   /**
    * Chamado ao sair do campo (ou Enter) quando o número é válido e mudou, já arredondado
    * para `casas`. Se devolver uma promessa que falha, o campo volta ao valor anterior.
@@ -81,6 +83,7 @@ export function CampoNumero({
   desabilitado,
   dica,
   compacto,
+  largura,
   onSalvar,
 }: CampoNumeroProps) {
   const [txt, setTxt] = useState(numero(valor, casas));
@@ -127,6 +130,7 @@ export function CampoNumero({
       <input
         className={cx(s.input, s.num, erro && s.invalido, compacto && s.compacto)}
         inputMode="decimal"
+        style={largura ? { width: largura } : undefined}
         value={txt}
         disabled={desabilitado}
         aria-invalid={!!erro}
