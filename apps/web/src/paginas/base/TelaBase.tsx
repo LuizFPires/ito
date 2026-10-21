@@ -45,7 +45,7 @@ export function TelaBase() {
   const [ordem, setOrdem] = useState<Ordem<ChaveBase>>({ chave: "periodo", dir: -1 });
   const [pagina, setPagina] = useState(1);
   // seleção compartilhada com a obra e a comparação (decisão M6)
-  const [sel, definir] = useSelecaoObras();
+  const [selecao, definir] = useSelecaoObras();
   // resumos recalculados na tela (obra editada, tabela vigente nova)
   const [novos, setNovos] = useState<Record<string, Resumo>>({});
   const [recalculando, setRecalculando] = useState(0);
@@ -56,6 +56,9 @@ export function TelaBase() {
 
   const ctx = contexto.data;
   const cidades = useMemo(() => new Map((ctx?.cidades ?? []).map((c) => [c.id, c.nome])), [ctx]);
+  // obra excluída por outra pessoa sai da seleção
+  const existentes = new Set((lista.data ?? []).map((o) => o.id));
+  const sel = lista.data ? selecao.filter((id) => existentes.has(id)) : selecao;
   const linhas: LinhaBase[] = useMemo(
     () =>
       (lista.data ?? []).map((o) => ({
@@ -233,8 +236,8 @@ export function TelaBase() {
               title={
                 sel.length < 2
                   ? "Selecione ao menos 2 obras"
-                  : sel.length > 4
-                    ? "Compare até 4 obras"
+                  : sel.length > MAX_COMPARAR
+                    ? `Compare até ${MAX_COMPARAR} obras`
                     : undefined
               }
               onClick={() => navegar("/comparar")}

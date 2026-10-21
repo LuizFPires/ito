@@ -34,7 +34,11 @@ export interface ObraComparada {
     custo: number;
     custoM2: number;
     diaPedreiro: number | null;
+    /** R$ por dia, todas as funções (com taxa) */
+    diaObra: number;
   };
+  /** pessoa-mês por função (mix de funções) */
+  pmPorFuncao: Record<string, number>;
 }
 
 export function compararObra(
@@ -75,7 +79,11 @@ export function compararObra(
       custo: r.total.total,
       custoM2: area ? r.total.total / area : 0,
       diaPedreiro: diasPed ? ped.reduce((s, c) => s + c.total, 0) / diasPed : null,
+      diaObra: m.porDiaComTaxa,
     },
+    pmPorFuncao: Object.fromEntries(
+      Object.entries(obra.equivalente).map(([k, v]) => [k, v.reduce((a, x) => a + x, 0)]),
+    ),
   };
 }
 

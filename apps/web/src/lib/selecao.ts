@@ -1,7 +1,7 @@
 /**
  * Obras selecionadas para comparar ou projetar (decisão M6): compartilhadas entre a base, o
  * detalhe da obra e a comparação, na sessão do navegador (por aba). Sem armazenamento, fica só
- * na memória.
+ * na memória. Limpa ao sair (outro usuário na mesma aba não herda).
  */
 import { useSyncExternalStore } from "react";
 
@@ -32,13 +32,22 @@ export function definirSelecao(ids: readonly string[]) {
 /** Junta obras à seleção (sem repetir), na ordem em que chegam. */
 export const juntarASelecao = (ids: readonly string[]) => definirSelecao([...memoria, ...ids]);
 
+/**
+ * "Comparar com…" na obra (protótipo `cmpobra`): a obra vai para a frente, para sempre aparecer
+ * entre as 4 que a comparação mostra (as demais continuam selecionadas).
+ */
+export const compararCom = (id: string) => definirSelecao([id, ...memoria.filter((x) => x !== id)]);
+
+export const limparSelecao = () => definirSelecao([]);
+
+const inscrever = (f: () => void) => {
+  ouvintes.add(f);
+  return () => {
+    ouvintes.delete(f);
+  };
+};
+const instantaneo = () => memoria;
+
 export function useSelecaoObras(): [string[], (ids: readonly string[]) => void] {
-  const sel = useSyncExternalStore(
-    (f) => {
-      ouvintes.add(f);
-      return () => ouvintes.delete(f);
-    },
-    () => memoria,
-  );
-  return [sel, definirSelecao];
+  return [useSyncExternalStore(inscrever, instantaneo), definirSelecao];
 }

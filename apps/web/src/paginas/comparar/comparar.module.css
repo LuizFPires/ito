@@ -26,3 +26,16 @@
   gap: 14px;
   padding: 20px 22px;
 }
+.mix {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+}
+.mix > :last-child {
+  grid-column: 2;
+}
+.mixNome {
+  font-size: 13px;
+  color: var(--ink);
+}

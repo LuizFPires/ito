@@ -99,4 +99,13 @@ describe("comparar obras", () => {
     expect(s[s.length - 1]![0]).toBe(100);
     expect(s[s.length - 1]![1]).toBeCloseTo(100, 10);
   });
+
+  it("curva S por mês relativo começa em 0 e termina em 100% no último mês da obra", () => {
+    const c = pontos(o, "custo", "mes");
+    expect(c[0]).toEqual([0, 0]);
+    expect(c.map((p) => p[0])).toEqual([0, 1, 2]);
+    expect(c[2]![1]).toBeCloseTo(100, 10);
+    expect(o.ind.diaObra).toBeGreaterThan(0);
+    expect(o.pmPorFuncao.ped).toBeCloseTo(2.5, 10);
+  });
 });

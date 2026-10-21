@@ -298,14 +298,27 @@ export function SeletorComBusca({
   placeholder,
   opcoes,
   onEscolher,
+  confirmar,
 }: {
   rotulo: string;
   placeholder: string;
   opcoes: readonly { valor: string; texto: string }[];
   onEscolher: (valor: string) => void;
+  /**
+   * Escolhe só quando a pessoa pega uma opção da lista ou tecla Enter (lista longa, nomes que são
+   * começo de outros). Sem ele, escolhe ao bater o texto exato.
+   */
+  confirmar?: boolean;
 }) {
   const id = useId();
   const [txt, setTxt] = useState("");
+  const escolher = (v: string) => {
+    const achou = opcoes.find((o) => o.texto === v);
+    if (!achou) return false;
+    onEscolher(achou.valor);
+    setTxt("");
+    return true;
+  };
   return (
     <>
       <input
@@ -317,11 +330,14 @@ export function SeletorComBusca({
         value={txt}
         onChange={(e) => {
           const v = e.target.value;
-          const achou = opcoes.find((o) => o.texto === v);
-          if (achou) {
-            onEscolher(achou.valor);
-            setTxt("");
-          } else setTxt(v);
+          const daLista =
+            (e.nativeEvent as InputEvent).inputType === "insertReplacementText" ||
+            (e.nativeEvent as InputEvent).inputType === undefined;
+          if ((!confirmar || daLista) && escolher(v)) return;
+          setTxt(v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && escolher(txt)) e.preventDefault();
         }}
       />
       <datalist id={id}>

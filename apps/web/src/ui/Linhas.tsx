@@ -16,7 +16,7 @@ function passo(max: number, linhas = 4): number {
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
 }
 
-/** Curvas sobrepostas (comparar obras). Os mesmos números estão na tabela da tela. */
+/** Curvas sobrepostas (comparar obras). A tela mostra os mesmos pontos numa tabela (“Ver dados”). */
 export function Linhas({
   series,
   xMax,
@@ -29,7 +29,8 @@ export function Linhas({
   series: readonly SerieLinha[];
   xMax: number;
   marcasX: readonly (readonly [number, string])[];
-  formatarY: (v: number) => string;
+  /** `casas`: decimais que o passo do eixo pede (0,05 → 2) */
+  formatarY: (v: number, casas: number) => string;
   titulo: string;
   pontosVisiveis?: boolean;
   altura?: number;
@@ -39,8 +40,10 @@ export function Linhas({
   const W = L - M.e - M.d;
   const H = altura - M.t - M.b;
   const max = Math.max(0, ...series.flatMap((x) => x.pontos.map((p) => p[1])));
-  const p = passo(max);
-  const topo = Math.max(p, Math.ceil(max / p) * p);
+  // folga de 5% no topo (a curva S não encosta nos 100%)
+  const p = passo(max * 1.05);
+  const topo = Math.max(p, Math.ceil((max * 1.05) / p) * p);
+  const casas = Math.max(0, -Math.floor(Math.log10(p) + 1e-9));
   const x = (v: number) => M.e + (v / Math.max(1e-9, xMax)) * W;
   const y = (v: number) => M.t + H - (v / topo) * H;
   const grade = [];
@@ -51,7 +54,7 @@ export function Linhas({
         <g key={v}>
           <line x1={M.e} x2={L - M.d} y1={y(v)} y2={y(v)} className={s.grade} />
           <text x={M.e - 6} y={y(v) + 4} textAnchor="end" className={s.eixo}>
-            {formatarY(v)}
+            {formatarY(v, casas)}
           </text>
         </g>
       ))}
@@ -71,10 +74,14 @@ export function Linhas({
           >
             <title>{sr.nome}</title>
           </polyline>
-          {pontosVisiveis &&
-            sr.pontos.map(([a, b], i) => (
-              <circle key={i} cx={x(a)} cy={y(b)} r={3} fill={sr.cor} />
-            ))}
+          {pontosVisiveis && sr.pontos.length > 0 && (
+            <circle
+              cx={x(sr.pontos[sr.pontos.length - 1]![0])}
+              cy={y(sr.pontos[sr.pontos.length - 1]![1])}
+              r={3.5}
+              fill={sr.cor}
+            />
+          )}
         </g>
       ))}
     </svg>

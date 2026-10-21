@@ -54,7 +54,10 @@ test("abre a partir da seleção na base: curvas e indicadores lado a lado", asy
   // pessoa-mês por 1.000 m²: A = 6 ÷ 2.000 × 1.000 = 3,0; B = 20 ÷ 2.000 × 1.000 = 10,0
   await expect(tabela.getByRole("row", { name: /Pessoa-mês \/ 1\.000 m²/ })).toContainText("3,0");
   await expect(tabela.getByRole("row", { name: /Pessoa-mês \/ 1\.000 m²/ })).toContainText("10,0");
-  await expect(page.getByRole("img", { name: "Pessoas por 1.000 m² por mês" })).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Histograma de pessoas por 1.000 m² por mês relativo" }),
+  ).toBeVisible();
+  await expect(page.getByRole("region", { name: "Mix de funções" })).toContainText("Pedreiro 100%");
   await page.getByRole("button", { name: "Curva S de custo" }).click();
   await page.getByRole("button", { name: "% do prazo" }).click();
   await expect(page.getByRole("img", { name: "Curva S de custo" })).toBeVisible();
@@ -73,6 +76,25 @@ test("abre pelo botão “Comparar com…” na obra, juntando à seleção", as
   await expect(page.getByRole("region", { name: "Obras comparadas" })).toContainText(
     "Comparar E2E A",
   );
-  await page.getByLabel("Incluir obra na comparação").fill("Comparar E2E B");
+  const incluir = page.getByLabel("Incluir obra na comparação");
+  await incluir.fill("Comparar E2E B · Cliente E2E · jan/25");
+  await incluir.press("Enter");
   await expect(page.getByRole("table", { name: "Indicadores" })).toContainText("Comparar E2E B");
+});
+
+test("“Comparar com…” com a seleção cheia põe a obra na frente", async ({ page }) => {
+  await entrar(page, "planejamento@ito.local");
+  await page.evaluate(() =>
+    sessionStorage.setItem(
+      "ito.selecao.obras",
+      JSON.stringify(["x1", "x2", "x3", "x4", "cmp_e2e_a"]),
+    ),
+  );
+  await page.goto("/obras/cmp_e2e_b");
+  await page.getByRole("link", { name: "Comparar com…" }).click();
+  // ids de obras que não existem saem; B vem na frente, seguida de A
+  await expect(page.getByRole("region", { name: "Obras comparadas" })).toContainText("(2 de 4)");
+  await expect(page.getByRole("region", { name: "Obras comparadas" })).toContainText(
+    "Comparar E2E B",
+  );
 });

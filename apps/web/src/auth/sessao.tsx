@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { supabase } from "../lib/supabase";
+import { limparSelecao } from "../lib/selecao";
 import type { Usuario } from "../lib/supabase";
 
 interface SessaoCtx {
@@ -58,6 +59,7 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
     usuario: sessao === null ? null : usuario,
     erroUsuario: !!uid && isError,
     sair: async () => {
+      limparSelecao();
       const { error } = await supabase.auth.signOut();
       if (!error) return true;
       // Sem rede: encerra ao menos neste navegador.
