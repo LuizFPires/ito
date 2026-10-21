@@ -190,6 +190,12 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **"Copiar para Excel"** copia para a área de transferência em texto tabulado no formato BR (cola direto no Excel); o arquivo .xlsx fica para o M8. (auto — recomendado)
 - **"5 mais parecidas":** mesma tipologia primeiro, depois área e prazo mais próximos (distância em escala logarítmica). (auto — recomendado)
 - **Guarda só as entradas** da projeção; o motor recalcula na tela. Um resumo (total, pico, pessoa-mês) é gravado junto para a lista. (auto — recomendado)
+- **Segurança da aprovação (revisão do banco):** projeção aprovada não é editada nem apagada (só o resumo é recalculado); sair de Aprovada também exige quem aprova; autor, datas e situação inicial vêm do banco; `definir_situacao` trava a linha (sem corrida).
+- **Cidade obrigatória** no passo 1 do assistente (preços vêm dela); o banco aceita projeção sem cidade (tabela da empresa). Quem vem de fora todo dia sai de **BH** por padrão (como o protótipo), trocável no passo 3. (auto — recomendado)
+- **Editar** abre o assistente no passo 3; mudar início ou prazo descarta o reajuste informado que sair do prazo e ajusta as quantidades informadas ao novo prazo. (auto — recomendado)
+- **Resumo da lista** é o do último cálculo; ao abrir a projeção, quem edita regrava o resumo se os preços mudaram. A lista mostra a CCT do resumo quando ela não é a vigente. (auto — recomendado)
+- **Comparar projeções:** até 4, pela seleção na lista (endereço `/projecoes/comparar?ids=`), com os preços vigentes da cidade de cada uma; diferença de custo contra a primeira. (auto — recomendado)
+- **Copiar para Excel** copia a tabela de custo que está na tela (por função ou por componente, competência ou caixa). (auto — recomendado)
 - O M7 começou empilhado no M6 (`feat/m7-projecoes` a partir de `feat/m6-comparar`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)
