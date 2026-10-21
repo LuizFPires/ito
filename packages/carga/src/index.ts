@@ -5,3 +5,4 @@
 export * from "./planilha";
 export * from "./layout";
 export * from "./leitores";
+export * from "./montagem";
