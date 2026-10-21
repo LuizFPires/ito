@@ -125,6 +125,8 @@
 
 **Aceite:** os números de todas as abas batem com o motor (testes de snapshot); a tabela da base fica sem rolagem lateral em 1.280 px; 1.000 obras de teste carregam em menos de 2 s, com paginação ou virtualização.
 
+> Decisões (21/10/2026): edição por quem carrega; abas por matrícula só para quem carrega; resumo da obra em cache no banco; edição grava ao sair do campo (CLAUDE.md, M5).
+
 ---
 
 ## M6 — Comparar obras

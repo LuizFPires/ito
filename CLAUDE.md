@@ -154,6 +154,13 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Risco do aceite:** com folha real, a conferência rubricas × custo compara a folha com o custo modelado pelo motor na tabela da época; pode não fechar no centavo. Avaliar quando chegarem as amostras.
 - O M4 começou empilhado no M3 (`feat/m4-carga` a partir de `feat/m3-motor`), pela mesma pendência do CI.
 
+### M5 — Base histórica e detalhe da obra (21/10/2026)
+- **Edição de premissas e ausências** da obra: quem carrega (DP/RH, controladoria, admin); os demais perfis só leem (regra no banco). (auto — recomendado)
+- **Abas por matrícula** (painel de matrículas do Efetivo, Pessoas e valores por matrícula da Folha): quem não carrega vê só os agregados, com aviso (coerente com a privacidade do M4). (auto — recomendado)
+- **Resumo da obra em cache no banco** (pico, pessoa-mês, HE/pessoa, custo época e atualizado, histograma), calculado pelo motor ao gravar ou editar a obra e recalculado quando a tabela vigente muda; a lista de 1.000 obras lê só o resumo. (auto — recomendado)
+- **Edição grava ao sair do campo** ("Salvo"), como no M1, com recálculo imediato na tela. (auto — recomendado)
+- O M5 começou empilhado no M4 (`feat/m5-base-historica` a partir de `feat/m4-carga`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
