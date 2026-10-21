@@ -95,6 +95,16 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Ficam para quando houver histórico: coluna "Obras" em Funções (M4) e os KPIs "Base histórica a valores vigentes" e "Custo de 1 oficial·mês" em Parâmetros (M3/M4).
 - O M1 começou empilhado na branch do M0 (`feat/m1-cadastros` a partir de `feat/m0-fundacao`) porque o CI do GitHub está bloqueado por cobrança; o PR do M1 aponta para a `main` depois do merge do M0.
 
+### M2 — Cidades e CCTs (21/10/2026)
+- Edição de cidades e CCTs: **controladoria e admin**; os demais perfis só leem (regra no banco).
+- Passagem para MO que vem todo dia de outra cidade: **qualquer cidade de origem** (SPEC `passagem_de`). A lista de cidades destaca a passagem vinda de BH; o detalhe cadastra outras origens. Sem passagem, VT **estimado** = (tarifa da obra + tarifa da origem) × 2.
+- Nova CCT nasce com os **salários e benefícios da data-base vigente**, sem gratificações, data-base em maio e reajuste 0%. Para partir de outra CCT, use Duplicar.
+- Função ou benefício sem valor na CCT usa o **valor da tabela da empresa** (vigente); a tela mostra "da empresa".
+- Mês da data-base da CCT guardado de **1 a 12** (no protótipo era 0–11). (auto — recomendado)
+- Cidade guarda nome e UF separados (exibição "Nome/UF"). Feriado municipal recorrente = dia + mês; o motor converte para a data de cada ano. (auto — recomendado)
+- CCT só é excluída sem cidades vinculadas (PLAN).
+- **Pendência externa (para resolver no futuro):** o CI do GitHub está bloqueado por cobrança da conta (Billing & plans). Os PRs seguem empilhados (#1 M0 → #2 M1 → M2) e só entram na `main` quando o CI rodar verde.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
