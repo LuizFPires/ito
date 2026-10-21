@@ -31,7 +31,8 @@ Declarado em `supabase/config.toml` (`[remotes.homologacao]` e `[remotes.produca
 
 - **Sign up**: desligado (acesso por convite).
 - **Senha mínima**: 10 caracteres.
-- **Site URL**: `https://ito-three-beryl.vercel.app` nos dois. **Redirect URLs**: em homologação, as URLs de Preview (`https://ito-*-luiz-fp-ires.vercel.app/**`) e o localhost; em produção, só o domínio de produção. Preview não tem URL fixa: ao convidar alguém em homologação, informe o link do preview como redirecionamento.
+- **Site URL**: `https://ito-three-beryl.vercel.app` nos dois. **Redirect URLs**: em produção, só o domínio de produção; em homologação, nenhuma.
+  Não use curinga do tipo `https://ito-*-luiz-fp-ires.vercel.app/**`: qualquer pessoa pode criar na Vercel um projeto cujo domínio case com o padrão e receber tokens de convite ou de recuperação de senha. Como o preview não tem URL fixa, em homologação crie os usuários pelo painel (Authentication → Users → Add user → com senha e "Auto Confirm"), sem link por e-mail. Se um dia precisar de link em homologação, use um domínio próprio para os previews e libere só ele.
 - Primeiro admin: convidar pelo painel (Authentication → Users → Invite) e, depois que a conta existir, rodar no SQL Editor:
   `update public.usuarios set admin = true, perfil = 'controladoria' where email = '<e-mail>';`
   Atenção: o perfil é lido do `app_metadata` **só na criação** da conta. Mudar o `app_metadata` depois não altera `public.usuarios`; para trocar perfil ou admin, altere `public.usuarios` (pelo SQL Editor ou, mais tarde, pela tela de usuários).

@@ -421,7 +421,7 @@ project_id = "rtciuljdjdvocxitaepz"
 
 [remotes.homologacao.auth]
 site_url = "https://ito-three-beryl.vercel.app"
-additional_redirect_urls = ["https://ito-*-luiz-fp-ires.vercel.app/**", "http://localhost:5173/**"]
+additional_redirect_urls = []
 
 [remotes.homologacao.auth.email]
 enable_confirmations = true
