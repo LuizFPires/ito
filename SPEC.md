@@ -43,7 +43,7 @@ Cidade        { id, nome/UF, cct_id, tarifa_local, conducoes_por_trajeto, iss_pc
 ### 1.2 Base histórica (por obra)
 
 ```
-Obra          { id, nome, cliente, grupo, tipologia, cidade_id, area_m2, inicio (data), fim (data),
+Obra          { id, nome, cliente, grupo, tipologia, cidade_id, area_m2, inicio (1º dia do mês), meses,
                 data_base, trocas_tabela: [ { mes_idx, data_base, motivo } ],
                 feriados_municipais: [ {data, nome} ],
                 premissas: { grat_premios_pct, transf_pct, funcoes_transferidas[], risco_pct, lucro_pct,
@@ -59,7 +59,7 @@ Lancamento    (obra, matricula, funcao, mes_idx) { equivalente, horas_extras, fa
 Realocacao    (obra) { tipo: cedida|recebida, funcao, mes_ini, mes_fim, qtd, outra_obra, saldo_vt }
 ```
 
-> **Implementação (M4):** `obras` (premissas em colunas, `meses` a partir de `inicio`), `obra_trocas_tabela`, `obra_feriados`, `obra_regime` (só S/P), `competencias` (+ `ito_apropriado`, `erp_realizado`, `justificativa` da lista `justificativas_erp`), `efetivo_mes` (+ `admissoes`, `desligamentos`; derivado dos lançamentos na gravação, sem a MDO realocada), `lancamentos` (+ `faltas_horas`, `licenca_dias`, `ferias_dias`, `admitido`, `vt_valor`, `realocada_para`) com `lancamento_rubricas` (`referencia`, `valor`), `realocacoes`, `notas_fiscais` (só CNPJ), `erp_realizado` (mês × conta) e `carga_rascunhos`. `rubricas.tipo_he` diz o tipo de cada rubrica de HE. Escrita só por `gravar_carga(jsonb)` e `excluir_obra`; todo mês do payload é conferido contra o período. Lançamentos e rubricas por matrícula só são lidos por quem carrega (DP/RH, controladoria, admin); os demais perfis leem os agregados.
+> **Implementação (M4):** `obras` (período por competência: `inicio` no 1º dia do mês + `meses`; a fração do 1º e do último mês vem dos dias de vínculo da folha; `grupo` deduzido de cliente e tipologia; premissas em colunas), `obra_trocas_tabela`, `obra_feriados`, `obra_regime` (só S/P), `competencias` (+ `ito_apropriado`, `erp_realizado`, `justificativa` da lista `justificativas_erp`), `efetivo_mes` (+ `admissoes`, `desligamentos`; derivado dos lançamentos na gravação, sem a MDO realocada), `lancamentos` (+ `faltas_horas`, `licenca_dias`, `ferias_dias`, `admitido`, `vt_valor`, `realocada_para`) com `lancamento_rubricas` (`referencia`, `valor`), `realocacoes`, `notas_fiscais` (só CNPJ), `erp_realizado` (mês × conta) e `carga_rascunhos`. `rubricas.tipo_he` diz o tipo de cada rubrica de HE. Escrita só por `gravar_carga(jsonb)` e `excluir_obra`; todo mês do payload é conferido contra o período. Lançamentos e rubricas por matrícula só são lidos por quem carrega (DP/RH, controladoria, admin); os demais perfis leem os agregados.
 
 ### 1.3 Projeção
 
@@ -269,7 +269,7 @@ Verificações (`verificarCarga`); **pendente** bloqueia a gravação:
 - erro de leitura do ERP ou das NFs, estorno que deixa HE ou VT negativos no mês, MDO realocada sem obra de destino → pendente; erro de leitura do ponto ou do VT, matrícula com rubricas e sem linha em Pessoas → alerta;
 - função sem função padrão, rubrica nova sem classificação, competência fora do período, NF sem competência → pendente;
 - apropriação × ERP: caixa do ITO (época) × Σ contas do ERP por mês (o banco soma as linhas do ERP; não usa o total enviado pela tela); diferença ≥ R$ 1 sem justificativa → pendente;
-- ponto × folha acima de 1%, VT ausente sem confirmação, MDO realocada sem destino → alerta;
+- ponto × folha acima de 1%, VT ausente sem confirmação → alerta;
 - conferência rubricas × custo (§6.1) com os **valores reais** da folha (descontos negativos) × `remun + resc + ferr` do motor na tabela da época → alerta quando não confere.
 
 ---
