@@ -37,10 +37,21 @@ describe("etapa Obra", () => {
     expect(faltasDaObra(vazio.dados, [])).toEqual([
       "Informe o nome da obra.",
       "Código: comece com letra; use letras minúsculas, números e _.",
-      "Informe a área construída (m²).",
+      "Escolha a tipologia.",
+      "Informe a área construída (a partir de 100 m²).",
       "Informe início e término (o término não pode ser antes do início).",
     ]);
-    const ok = { ...vazio.dados, nome: "Obra X", id: "obra_x", area: 1000, meses: 5 };
+    const ok = {
+      ...vazio.dados,
+      nome: "Obra X",
+      id: "obra_x",
+      tipologia: "Comercial",
+      area: 1000,
+      meses: 5,
+    };
+    // sem datas pode ir aos Arquivos (a folha preenche), mas não adiante
+    expect(faltasDaObra({ ...ok, meses: 0 }, [], false)).toEqual([]);
+    expect(faltasDaObra({ ...ok, meses: 0 }, [])).toHaveLength(1);
     expect(faltasDaObra(ok, [])).toEqual([]);
     expect(faltasDaObra(ok, [{ id: "outra", nome: "obra x" }])[0]).toContain("Já existe");
   });

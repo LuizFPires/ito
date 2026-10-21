@@ -10,7 +10,6 @@ import { codigoDaObra, doCampoMes, fimDe, mesesEntre, paraCampoMes, TIPOLOGIAS }
 
 export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: string[] }) {
   const d = r.dados;
-  const idTipos = useId();
   const idCidades = useId();
   const set = (p: Partial<DadosObra>) => mudar((x) => ({ ...x, dados: { ...x.dados, ...p } }));
   // mudar o período desloca os meses: as escolhas por mês (NF, justificativa do ERP) recomeçam
@@ -23,6 +22,7 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
   const troca = d.trocas[0];
   const cidade = ctx.cidades.find((c) => c.id === d.cidadeId);
   const fim = d.meses > 0 ? fimDe(d.inicio, d.meses) : null;
+  const outras = ctx.datasBase.filter((a) => a !== d.dataBase);
 
   return (
     <Cartao aria-label="Cadastro da obra">
@@ -57,18 +57,13 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
               />
             </Campo>
             <Campo rotulo="Tipologia">
-              <input
-                className={f.input}
-                list={idTipos}
-                value={d.tipologia}
-                onChange={(e) => set({ tipologia: e.target.value })}
-              />
+              <Selecao value={d.tipologia} onChange={(e) => set({ tipologia: e.target.value })}>
+                <option value="">Escolher…</option>
+                {TIPOLOGIAS.map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </Selecao>
             </Campo>
-            <datalist id={idTipos}>
-              {TIPOLOGIAS.map((t) => (
-                <option key={t} value={t} />
-              ))}
-            </datalist>
             <Campo
               rotulo="Cidade"
               dica={cidade ? `${cidade.feriados.length} feriados municipais` : "Digite para buscar"}
@@ -94,6 +89,7 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
               sufixo="m²"
               valor={d.area}
               casas={2}
+              min={100}
               onSalvar={(area) => set({ area })}
             />
             <Campo rotulo="Início da obra">
@@ -134,13 +130,18 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                 ))}
               </Selecao>
             </Campo>
-            <Campo rotulo="Troca de tabela no meio da obra">
+            <Campo
+              rotulo="Troca de tabela no meio da obra"
+              dica={outras.length ? undefined : "Só há uma data-base cadastrada"}
+            >
               <Selecao
                 value={troca?.mesIdx ?? ""}
-                disabled={d.meses < 2}
+                disabled={d.meses < 2 || !outras.length}
                 onChange={(e) => {
                   const i = Number(e.target.value);
-                  const outra = ctx.datasBase.find((a) => a !== d.dataBase);
+                  // sugere a data-base seguinte à da obra (dissídio); senão, a mais próxima
+                  const outra =
+                    outras.filter((a) => a > d.dataBase).sort((a, b) => a - b)[0] ?? outras[0];
                   set({
                     trocas:
                       e.target.value && outra
@@ -168,13 +169,11 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                     set({ trocas: [{ ...troca, dataBase: Number(e.target.value) }] })
                   }
                 >
-                  {ctx.datasBase
-                    .filter((a) => a !== d.dataBase)
-                    .map((a) => (
-                      <option key={a} value={a}>
-                        CCT {a}
-                      </option>
-                    ))}
+                  {outras.map((a) => (
+                    <option key={a} value={a}>
+                      CCT {a}
+                    </option>
+                  ))}
                 </Selecao>
               </Campo>
             )}
@@ -187,7 +186,7 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
           <div className={f.linha} style={{ justifyContent: "space-between" }}>
             <span className="sub">
               {d.meses > 0
-                ? `${numero(d.meses)} ${d.meses === 1 ? "competência" : "competências"}. Se a folha vier antes das datas, elas são preenchidas por ela.`
+                ? `${numero(d.meses)} ${d.meses === 1 ? "competência" : "competências"} · o primeiro e o último mês entram pela fração de dias de vínculo de cada pessoa (aba Pessoas da folha).`
                 : "Sem datas: ao ler a folha, início e término saem das competências dela."}
             </span>
             <Interruptor

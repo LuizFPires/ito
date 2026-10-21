@@ -98,8 +98,8 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
   await expect(page.getByLabel("Código da obra")).toHaveValue("obra_e2e_carga");
   await page.getByLabel("Área construída (m²)").fill("2.000");
   await page.getByLabel("Área construída (m²)").blur();
-  await page.getByLabel("Início da obra").fill("2025-03");
-  await page.getByLabel("Término da obra").fill("2025-04");
+  await page.getByLabel("Tipologia").selectOption("Galpão logístico");
+  // sem datas: a folha preenche o período
   expect(await semRolagemLateral(page)).toBe(true);
   await continuar(page);
 
@@ -113,6 +113,10 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
     page.getByText("2 competências · 6 lançamentos · 2 matrículas · 3 rubricas"),
   ).toBeVisible();
   await expect(page.getByText("TRABALHADOR FICTICIO")).toHaveCount(0);
+  await page.getByRole("button", { name: /^01 Obra/ }).click();
+  await expect(page.getByLabel("Início da obra")).toHaveValue("2025-03");
+  await expect(page.getByLabel("Término da obra")).toHaveValue("2025-04");
+  await page.getByRole("button", { name: /^02 Arquivos/ }).click();
   await continuar(page);
 
   // 3. Funções: pedreiro reconhecido pelo nome; auxiliar mapeado para servente
@@ -190,7 +194,7 @@ test("modelo da folha no layout do ITO para baixar", async ({ page }) => {
   await page.getByLabel("Nome da obra").fill("Modelo E2E");
   await page.getByLabel("Área construída (m²)").fill("100");
   await page.getByLabel("Área construída (m²)").blur();
-  await page.getByLabel("Início da obra").fill("2025-03");
+  await page.getByLabel("Tipologia").selectOption("Comercial");
   await continuar(page);
   const baixou = page.waitForEvent("download");
   await page.getByRole("button", { name: "Baixar modelo" }).first().click();

@@ -82,7 +82,9 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
         const notas = lidas.flatMap((l) => l.notas);
         erros = lidas.flatMap((l) => l.erros);
         parcial = { notas };
-        resumo = `${plural(notas.length, "nota", "notas")} · ${moeda(notas.reduce((t, n) => t + n.valor, 0))} em serviços`;
+        const soma = (k: "valor" | "iss" | "pis" | "cofins") =>
+          moeda(notas.reduce((t, n) => t + n[k], 0));
+        resumo = `${plural(notas.length, "nota", "notas")} · ${soma("valor")} em serviços · ISS ${soma("iss")}, PIS ${soma("pis")} e COFINS ${soma("cofins")} retidos`;
       } else {
         const p = await planilhaDe(arquivos[0]!);
         if (tipo === "folha") {
@@ -114,7 +116,12 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
           erros = l.erros;
           parcial = { erp: l.linhas };
           const meses = new Set(l.linhas.map((x) => `${x.comp.ano}-${x.comp.mes}`)).size;
-          resumo = `${plural(meses, "mês", "meses")} · ${plural(new Set(l.linhas.map((x) => x.conta)).size, "conta", "contas")}`;
+          const contas = [...new Set(l.linhas.map((x) => x.conta))].sort();
+          resumo = `${plural(meses, "mês", "meses")} · ${
+            contas.length > 1
+              ? `contas ${contas[0]} a ${contas[contas.length - 1]}`
+              : plural(contas.length, "conta", "contas")
+          }`;
         }
       }
       mudar((x) => {
@@ -146,7 +153,8 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
     mudar((x) => {
       const arquivos = { ...x.arquivos };
       delete arquivos[tipo];
-      if (tipo === "folha") return { ...x, arquivos: {}, leituras: null };
+      if (tipo === "folha")
+        return { ...x, arquivos, leituras: x.leituras && { ...x.leituras, folha: FOLHA_VAZIA } };
       const chave = tipo === "nf" ? "notas" : tipo;
       const errosArquivos = { ...x.leituras?.errosArquivos };
       delete errosArquivos[tipo];
@@ -173,7 +181,6 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
           slot={sl}
           meta={r.arquivos[sl.tipo]}
           lendo={lendo === sl.tipo}
-          desabilitado={sl.tipo !== "folha" && !r.arquivos.folha}
           onLer={(a) => ler(sl.tipo, a)}
           onRemover={() => remover(sl.tipo)}
         />
@@ -186,21 +193,32 @@ function SlotArquivo({
   slot,
   meta,
   lendo,
-  desabilitado,
   onLer,
   onRemover,
 }: {
   slot: Slot;
   meta: { nome: string; resumo: string; erros: string[] } | undefined;
   lendo: boolean;
-  desabilitado: boolean;
   onLer: (a: FileList | null) => void;
   onRemover: () => void;
 }) {
   const id = useId();
   const avisar = useToast();
   return (
-    <div className={s.slot}>
+    <div className={`${s.slot} ${meta ? s.slotLido : ""}`}>
+      <span className={s.icone} aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        >
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+          <path d="M14 3v5h5" />
+        </svg>
+      </span>
       <div className={s.slotTexto}>
         <strong style={{ fontWeight: 500 }}>
           {slot.titulo} {slot.tipo === "folha" && <Badge tom="escuro">obrigatório</Badge>}
@@ -255,7 +273,7 @@ function SlotArquivo({
         type="file"
         accept={slot.aceita}
         multiple={slot.tipo === "nf"}
-        disabled={desabilitado || lendo}
+        disabled={lendo}
         aria-label={slot.titulo}
         onChange={(e) => {
           onLer(e.target.files);
@@ -265,8 +283,7 @@ function SlotArquivo({
       <label
         htmlFor={id}
         className={`${u.botao} ${u.pequeno} ${meta ? "" : u.escuro} ${s.botaoArquivo}`}
-        aria-disabled={desabilitado || lendo}
-        title={desabilitado ? "Envie a folha primeiro" : undefined}
+        aria-disabled={lendo}
       >
         {lendo ? "Lendo…" : meta ? "Trocar arquivo" : "Escolher arquivo"}
       </label>

@@ -64,16 +64,36 @@
 
 .slot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-  padding: 14px 22px;
-  border-top: 1px solid var(--line);
+  gap: 10px 14px;
+  margin: 10px 22px;
+  padding: 12px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--raio-campo);
+}
+.slot:last-child {
+  margin-bottom: 18px;
+}
+.slotLido {
+  border-style: solid;
+  background: var(--surface-muted);
+}
+.icone {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--muted);
 }
 .slotTexto {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
+  flex: 1 1 260px;
   min-width: 0;
 }
 .slotTexto .mono {

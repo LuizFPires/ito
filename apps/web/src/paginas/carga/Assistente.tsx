@@ -112,11 +112,17 @@ export function Assistente({
   // montagem e verificações só onde são usadas (a folha pode ter 100 mil linhas)
   const prep = useMemo(() => (etapa >= 3 ? preparar(r, ctx) : null), [r, ctx, etapa]);
   const faltas = faltasDaObra(r.dados, ctx.obras);
+  // a etapa Arquivos aceita a obra sem datas: a folha preenche o período
+  const faltasSemPeriodo = faltasDaObra(r.dados, ctx.obras, false);
   const temFolha = !!r.arquivos.folha && !!r.leituras;
   const liberada = (n: number) =>
-    n === 1 || (faltas.length === 0 && (n === 2 || (temFolha && r.dados.meses > 0)));
+    n === 1 || (n === 2 ? faltasSemPeriodo.length === 0 : faltas.length === 0 && temFolha);
   const podeSeguir =
-    etapa === 1 ? faltas.length === 0 : etapa === 2 ? temFolha && r.dados.meses > 0 : true;
+    etapa === 1
+      ? faltasSemPeriodo.length === 0
+      : etapa === 2
+        ? temFolha && faltas.length === 0
+        : true;
   const existe = ctx.obras.some((o) => o.id === r.dados.id);
   const substituir = existe && substituirId === r.dados.id;
   const bloqueia =
@@ -169,7 +175,7 @@ export function Assistente({
         })}
       </ol>
 
-      {etapa === 1 && <EtapaObra {...props} faltas={faltas} />}
+      {etapa === 1 && <EtapaObra {...props} faltas={faltasSemPeriodo} />}
       {etapa === 2 && <EtapaArquivos {...props} />}
       {etapa === 3 && (
         <EtapaFuncoes {...props} pendentes={prep?.montagem.pendencias.funcoes ?? []} />

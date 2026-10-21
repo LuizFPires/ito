@@ -74,14 +74,23 @@ export const fimDe = (inicio: InicioObra, meses: number): InicioObra =>
 export const mesesEntre = (ini: InicioObra, fim: InicioObra) =>
   (fim.ano - ini.ano) * 12 + fim.mes - ini.mes + 1;
 
-/** O que falta na etapa Obra (vazio = pode seguir). */
-export function faltasDaObra(d: DadosObra, obras: ContextoCarga["obras"]): string[] {
+/**
+ * O que falta na etapa Obra (vazio = pode seguir). Sem `comPeriodo`, as datas podem ficar para a
+ * folha preencher (etapa Arquivos).
+ */
+export function faltasDaObra(
+  d: DadosObra,
+  obras: ContextoCarga["obras"],
+  comPeriodo = true,
+): string[] {
   const f: string[] = [];
   if (!d.nome.trim()) f.push("Informe o nome da obra.");
   if (!/^[a-z][a-z0-9_]{0,47}$/.test(d.id))
     f.push("Código: comece com letra; use letras minúsculas, números e _.");
-  if (!(d.area > 0)) f.push("Informe a área construída (m²).");
-  if (d.meses < 1) f.push("Informe início e término (o término não pode ser antes do início).");
+  if (!d.tipologia) f.push("Escolha a tipologia.");
+  if (!(d.area >= 100)) f.push("Informe a área construída (a partir de 100 m²).");
+  if (comPeriodo && d.meses < 1)
+    f.push("Informe início e término (o término não pode ser antes do início).");
   if (d.meses > 120) f.push("A obra pode ter até 120 meses.");
   const outra = obras.find(
     (o) => o.id !== d.id && o.nome.trim().toLowerCase() === d.nome.trim().toLowerCase(),
