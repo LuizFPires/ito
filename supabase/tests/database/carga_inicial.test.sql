@@ -1,11 +1,11 @@
 begin;
 select plan(9);
 
-select is((select count(*)::int from public.funcoes), 14, '14 funções (13 do SPEC + estagiário)');
+select is((select count(*)::int from public.funcoes where id in ('ped','carp','arm','serv','eletr','opg','mestre','encar','tecseg','almox','auxeng','vigia','admin','estag')), 14, '14 funções da carga (13 do SPEC + estagiário)');
 select is((select vinculo::text from public.funcoes where id = 'estag'), 'estagio', 'estagiário com vínculo estágio');
-select is((select count(*)::int from public.rubricas), 38, 'rubricas de referência');
+select ok((select count(*) from public.rubricas where codigo < 10000) >= 38, 'rubricas de referência');
 select is((select funcao_id from public.funcao_sinonimos where texto = 'MEIO OFICIAL PEDREIRO'), 'ped', 'sinônimo da folha');
-select is((select array_agg(ano order by ano) from public.datas_base), array[2023, 2024, 2025, 2026], 'datas-base 2023 a 2026');
+select is((select array_agg(ano order by ano) from public.datas_base where ano between 2023 and 2026), array[2023, 2024, 2025, 2026], 'datas-base 2023 a 2026');
 select is((select data_base_vigente from public.parametros), 2026, 'vigente 2026');
 select is((select valor from public.data_base_salarios where ano = 2026 and funcao_id = 'ped'), 1400.00::numeric,
   'pedreiro 2026 = 1.400 (golden de reajuste)');

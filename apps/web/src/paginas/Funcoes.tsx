@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useLocation } from "react-router";
 import { moeda, numero } from "@ito/formato";
 import { useSessao } from "../auth/sessao";
 import {
@@ -47,7 +48,15 @@ export function TelaFuncoes() {
   const [inativas, setInativas] = useState(false);
   const [ordem, setOrdem] = useState<Ordem<Chave>>({ chave: "grupo", dir: 1 });
   const [pagina, setPagina] = useState(1);
-  const [sel, setSel] = useState<string | "nova" | null>(null);
+  // Vindo da busca global: abre a função escolhida (também quando já está nesta tela).
+  const local = useLocation();
+  const pedida = (local.state as { sel?: string } | null)?.sel ?? null;
+  const [sel, setSel] = useState<string | "nova" | null>(pedida);
+  const [navegacao, setNavegacao] = useState(local.key);
+  if (navegacao !== local.key) {
+    setNavegacao(local.key);
+    if (pedida) setSel(pedida);
+  }
 
   const salario = (id: string) => db?.salarios[id];
   const lista = useMemo(() => {

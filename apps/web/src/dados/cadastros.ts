@@ -214,9 +214,11 @@ export function useRemoverFeriado() {
 
 // ── funções ──────────────────────────────────────────────────────────────────
 
-export function useFuncoes() {
+/** `ativo` = false adia a consulta (ex.: busca global fechada). */
+export function useFuncoes(ativo = true) {
   return useQuery({
     queryKey: chaves.funcoes,
+    enabled: ativo,
     queryFn: async (): Promise<Funcao[]> => {
       const linhas = await ok(supabase.from("funcoes").select("*, funcao_sinonimos(texto)"));
       return linhas.map(({ funcao_sinonimos, ...f }) => ({
@@ -271,9 +273,10 @@ export function useRemoverSinonimo() {
 
 // ── rubricas ─────────────────────────────────────────────────────────────────
 
-export function useRubricas() {
+export function useRubricas(ativo = true) {
   return useQuery({
     queryKey: chaves.rubricas,
+    enabled: ativo,
     queryFn: () => ok(supabase.from("rubricas").select("*").order("codigo")),
   });
 }

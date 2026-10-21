@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useLocation } from "react-router";
 import { numero } from "@ito/formato";
 import { useSessao } from "../auth/sessao";
 import {
@@ -39,7 +40,15 @@ export function TelaRubricas() {
   const { data: rubricas, isLoading, isError } = useRubricas();
   const atualizar = useAtualizarRubrica();
 
-  const [q, setQ] = useState("");
+  // Vindo da busca global: filtra pela rubrica escolhida (também quando já está nesta tela).
+  const local = useLocation();
+  const pedida = (local.state as { q?: string } | null)?.q;
+  const [q, setQ] = useState(pedida ?? "");
+  const [navegacao, setNavegacao] = useState(local.key);
+  if (navegacao !== local.key) {
+    setNavegacao(local.key);
+    if (pedida) setQ(pedida);
+  }
   const [tipo, setTipo] = useState<TipoRubrica | "todos">("todos");
   const [comp, setComp] = useState<ComponenteRubrica | "">("");
   const [inativas, setInativas] = useState(false);
