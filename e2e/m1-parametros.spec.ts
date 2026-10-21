@@ -4,7 +4,7 @@ import { apiAdmin, entrar, semRolagemLateral } from "./ajuda";
 test("golden de encargos pela interface: 43,96% / 22,64% / 6,65%", async ({ page }) => {
   await entrar(page, "engenharia@ito.local");
   await page.goto("/parametros");
-  await expect(page.getByText("43,96%")).toBeVisible();
+  await expect(page.getByText("43,96%").first()).toBeVisible();
   await expect(page.getByText("22,64%").first()).toBeVisible();
   await expect(page.getByText("6,65%").first()).toBeVisible();
   await expect(page.getByText("inclui incidência de 7,16%")).toBeVisible();
@@ -22,12 +22,15 @@ test("golden de calendário pela interface: abr/2017 = 23 úteis e 7 repousos", 
   const tabela = page.getByRole("table", { name: "Calendário de 2017" });
   const linha = (mes: string) =>
     tabela.getByRole("row").filter({ has: page.getByRole("cell", { name: mes, exact: true }) });
-  await expect(linha("fev").getByRole("cell").nth(1)).toContainText("24");
-  await expect(linha("fev").getByRole("cell").nth(2)).toHaveText("4");
-  await expect(linha("abr").getByRole("cell").nth(1)).toContainText("23");
-  await expect(linha("abr").getByRole("cell").nth(2)).toHaveText("7");
-  await expect(linha("mai").getByRole("cell").nth(1)).toContainText("26");
-  await expect(linha("mai").getByRole("cell").nth(2)).toHaveText("5");
+  // Célula = número + segunda linha (seg–sex/sáb e feriados em dia útil).
+  const uteis = (mes: string) => linha(mes).getByRole("cell").nth(2);
+  const repousos = (mes: string) => linha(mes).getByRole("cell").nth(3);
+  await expect(uteis("fev")).toHaveText("24sendo 20 seg–sex + 4 sáb");
+  await expect(repousos("fev")).toHaveText("4inclui 0 feriado(s) em dia útil");
+  await expect(uteis("abr")).toHaveText("23sendo 18 seg–sex + 5 sáb");
+  await expect(repousos("abr")).toHaveText("7inclui 2 feriado(s) em dia útil");
+  await expect(uteis("mai")).toHaveText("26sendo 22 seg–sex + 4 sáb");
+  await expect(repousos("mai")).toHaveText("5inclui 1 feriado(s) em dia útil");
 });
 
 test("engenharia só lê: sem campos de edição nem 'Criar data-base'", async ({ page }) => {
@@ -58,7 +61,6 @@ test("controladoria cria data-base com reajuste de 6%: pedreiro 1.400 → 1.484"
     await page.getByRole("button", { name: "Datas-base" }).click();
     const form = page.getByRole("region", { name: "Criar nova data-base" });
     await form.getByLabel("Ano").fill(ano);
-    await form.getByLabel("Copiar de").selectOption("2026");
 
     // reajuste inválido não cria nada
     await form.getByLabel("Reajuste (%)").fill("150");
@@ -78,7 +80,7 @@ test("controladoria cria data-base com reajuste de 6%: pedreiro 1.400 → 1.484"
     await expect(page.getByText("a revisar pela controladoria")).toBeVisible();
     await page.getByRole("button", { name: "Salários" }).click();
     await expect(page.getByLabel("Salário de Pedreiro")).toHaveValue("1.484,00");
-    await expect(page.getByText("43,96%")).toBeVisible(); // encargos copiados sem reajuste
+    await expect(page.getByText("43,96%").first()).toBeVisible(); // encargos copiados sem reajuste
   } finally {
     await api.apagar("datas_base?ano=eq." + ano);
   }
@@ -118,4 +120,28 @@ test("feriado da empresa: data inválida pede o formato e válida entra no calen
   await page.getByLabel("Descrição do feriado").fill("Teste");
   await page.getByRole("button", { name: "Adicionar feriado" }).click();
   await expect(page.getByText("Informe a data (dd/mm/aaaa) e a descrição.")).toBeVisible();
+});
+
+test("Quem recebe o quê: adicionais por pessoa·mês iguais ao protótipo", async ({ page }) => {
+  await entrar(page, "engenharia@ito.local");
+  await page.goto("/parametros");
+  await page.getByRole("button", { name: "Adicionais e verbas" }).click();
+  const tabela = page.getByRole("region", { name: /Quem recebe o quê/ });
+  const linha = (nome: string) => tabela.getByRole("row").filter({ hasText: nome });
+  await expect(linha("Eletricista")).toContainText("R$ 564,00");
+  await expect(linha("Operador de guincho")).toContainText("R$ 324,20");
+  await expect(linha("Vigia")).toContainText("R$ 104,00");
+  await expect(linha("Estagiário")).toContainText("estágio · bolsa sem encargos");
+  await expect(linha("Carpinteiro")).toContainText("R$ 90,00");
+});
+
+test("Calendário mostra os feriados do ano com dia da semana e tipo", async ({ page }) => {
+  await entrar(page, "engenharia@ito.local");
+  await page.goto("/parametros");
+  await page.getByRole("button", { name: "Calendário", exact: true }).click();
+  const lista = page.getByRole("table", { name: "Feriados de 2026" });
+  const tiradentes = lista.getByRole("row").filter({ hasText: "Tiradentes" });
+  await expect(tiradentes).toContainText("21/04/2026");
+  await expect(tiradentes).toContainText("ter");
+  await expect(tiradentes).toContainText("Nacional");
 });

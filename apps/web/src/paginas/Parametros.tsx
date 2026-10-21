@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import {
   data as fmtData,
   moeda,
@@ -31,6 +32,7 @@ import {
 import type { DataBase, DetalheDataBase, Encargo } from "../dados/cadastros";
 import { alternarOrdem, contemTermos, ordenar } from "../lib/lista";
 import type { Ordem } from "../lib/lista";
+import { adicionaisPorPessoa } from "../lib/adicionais";
 import { podeEditarConfig } from "../lib/permissoes";
 import { MENU } from "../shell/rotas";
 import { Badge, Botao, Cartao, Chip, Segmento } from "../ui/componentes";
@@ -83,10 +85,13 @@ export function TelaParametros() {
   const ano = anoSel ?? vigente;
   const db = datas?.find((x) => x.ano === ano);
   const { data: det } = useDataBase(ano);
+  const { data: detVig } = useDataBase(vigente);
   const [aba, setAba] = useState<Aba>("sal");
 
   const t = det ? taxasEncargos(paraMotor(det.encargos)) : undefined;
   const pct = (v: number | undefined) => (v === undefined ? "—" : percentual(v * 100));
+  // Decisão M1: só a vigente e as "a revisar" são editáveis (o banco também trava).
+  const editavel = pode && !!db && (db.ano === vigente || db.a_revisar);
 
   return (
     <Pagina grupo={d.grupo} titulo={d.nome} resumo={d.resumo} milestone={d.milestone}>
@@ -99,21 +104,35 @@ export function TelaParametros() {
         ))}
         {db?.a_revisar && <Badge tom="ambar">a revisar pela controladoria</Badge>}
         {!pode && <span className="sub">Só a controladoria altera a tabela da empresa.</span>}
+        {pode && db && !editavel && (
+          <span className="sub">
+            Data-base revisada e fora de vigência: só leitura, para não mudar o custo época das
+            obras.
+          </span>
+        )}
       </div>
 
       <div className={f.kpis}>
         <Kpi
-          rotulo="Encargos sociais · CLT"
+          rotulo="Data-base vigente"
+          valor={vigente ? `CCT ${vigente}` : "—"}
+          sub={`oficial ${moeda(detVig?.salarios.ped)}`}
+        />
+        <Kpi
+          rotulo={`Encargos sociais · CLT · ${ano ?? ""}`}
           valor={pct(t?.soc.clt)}
           sub={`inclui incidência de ${pct(t?.incidencia.clt)}`}
         />
-        <Kpi rotulo="Provisões · CLT" valor={pct(t?.prov.clt)} sub="férias, 1/3, 13º e GRRF" />
         <Kpi
           rotulo="Total folha · CLT"
-          valor={pct(t ? t.soc.clt + t.prov.clt : undefined)}
-          sub="sobre a remuneração"
+          valor={pct(t ? t.soc.clt + t.prov.clt + t.nf.clt : undefined)}
+          sub={`sociais ${pct(t?.soc.clt)} + provisões ${pct(t?.prov.clt)}`}
         />
-        <Kpi rotulo="Prestador S/P" valor={pct(t?.nf.sp)} sub="tributos sobre NF" />
+        <Kpi
+          rotulo="Total prestador S/P"
+          valor={pct(t ? t.soc.sp + t.prov.sp + t.nf.sp : undefined)}
+          sub="tributos sobre NF, sem encargos de folha"
+        />
       </div>
 
       <Segmento rotulo="Seção dos parâmetros" opcoes={ABAS} valor={aba} onChange={setAba} />
@@ -125,17 +144,27 @@ export function TelaParametros() {
               ano={ano}
               anterior={datas?.find((x) => x.ano < ano)?.ano}
               det={det}
-              pode={pode}
+              pode={editavel}
             />
           )}
-          {aba === "enc" && <AbaEncargos ano={ano} det={det} pode={pode} />}
-          {aba === "ben" && <AbaBeneficios ano={ano} det={det} pode={pode} />}
-          {aba === "he" && <AbaHe db={db} pode={pode} />}
-          {aba === "adic" && <AbaAdicionais db={db} pode={pode} />}
+          {aba === "enc" && <AbaEncargos ano={ano} det={det} pode={editavel} />}
+          {aba === "ben" && <AbaBeneficios ano={ano} det={det} pode={editavel} />}
+          {aba === "he" && <AbaHe db={db} pode={editavel} />}
+          {aba === "adic" && <AbaAdicionais db={db} det={det} pode={editavel} />}
         </>
       )}
-      {aba === "cal" && <AbaCalendario pode={pode} />}
+      {aba === "cal" && <AbaCalendario pode={pode} anoInicial={vigente} />}
       {aba === "datas" && <AbaDatasBase datas={datas ?? []} vigente={vigente} pode={pode} />}
+
+      <Cartao className={f.painel} style={{ position: "static" }}>
+        <span className="rotulo">O que é histórico e o que é atualizado</span>
+        <p className="sub" style={{ margin: 0, maxWidth: "80ch" }}>
+          Da base histórica, o ITO aproveita só as quantidades: pessoa-mês, horas extras, faltas,
+          rotatividade, licenças e férias. Os preços vêm daqui: a <strong>época</strong> usa a
+          data-base em que cada obra foi feita (com as trocas no meio da obra); o{" "}
+          <strong>atualizado</strong> recalcula as mesmas quantidades com a data-base vigente.
+        </p>
+      </Cartao>
     </Pagina>
   );
 }
@@ -323,7 +352,14 @@ function AbaEncargos({ ano, det, pode }: { ano: number; det: DetalheDataBase; po
                 .filter((e) => e.grupo === g)
                 .map((e) => (
                   <tr key={e.id}>
-                    <td>{e.nome}</td>
+                    <td>
+                      {e.nome}
+                      <div className="sub">
+                        efetivo CLT{" "}
+                        {percentual((Number(e.base_calc_pct) * Number(e.aliq_clt)) / 100)} · S/P{" "}
+                        {percentual((Number(e.base_calc_pct) * Number(e.aliq_sp)) / 100)}
+                      </div>
+                    </td>
                     <td className={f.r}>{campo(e, "base_calc_pct", "Base")}</td>
                     <td className={f.r}>{campo(e, "aliq_clt", "Alíquota CLT")}</td>
                     <td className={f.r}>{campo(e, "aliq_sp", "Alíquota S/P")}</td>
@@ -343,6 +379,11 @@ function AbaEncargos({ ano, det, pode }: { ano: number; det: DetalheDataBase; po
               </tr>
             </Grupo>
           ))}
+          <tr className={f.total}>
+            <td colSpan={2}>Total sobre a remuneração (sociais + provisões + NF)</td>
+            <td className={f.r}>{percentual((t.soc.clt + t.prov.clt + t.nf.clt) * 100)}</td>
+            <td className={f.r}>{percentual((t.soc.sp + t.prov.sp + t.nf.sp) * 100)}</td>
+          </tr>
         </tbody>
       </table>
     </Secao>
@@ -414,6 +455,22 @@ function AbaBeneficios({ ano, det, pode }: { ano: number; det: DetalheDataBase; 
                 </td>
               </tr>
             ))}
+          <tr className={f.total}>
+            <td colSpan={3}>Total por pessoa · todas as obras</td>
+            <td className={f.r}>
+              {moeda(
+                (bens ?? [])
+                  .filter((b) => !b.so_fora_sede)
+                  .reduce((s, b) => s + (det.beneficios[b.id] ?? 0), 0),
+              )}
+            </td>
+          </tr>
+          <tr className={f.total}>
+            <td colSpan={3}>Total por pessoa · MO alojada / obra fora da sede</td>
+            <td className={f.r}>
+              {moeda((bens ?? []).reduce((s, b) => s + (det.beneficios[b.id] ?? 0), 0))}
+            </td>
+          </tr>
         </tbody>
       </table>
     </Secao>
@@ -473,7 +530,14 @@ function AbaHe({ db, pode }: { db: DataBase; pode: boolean }) {
         </div>
         <span className="rotulo">Como contar os dias</span>
         <div className={f.form}>
-          <Campo rotulo="Modo">
+          <Campo
+            rotulo="Modo"
+            dica={
+              fixo
+                ? `Usa ${numero(Number(db.dias_fixos))} dias e DSR de ${percentual(Number(db.dsr_fixo_pct))} fixos em todo mês.`
+                : "Dias trabalhados e DSR de cada mês pelo calendário (aba Calendário)."
+            }
+          >
             <Selecao
               value={db.modo_dias}
               disabled={!pode}
@@ -533,60 +597,130 @@ function AbaHe({ db, pode }: { db: DataBase; pode: boolean }) {
   );
 }
 
-function AbaAdicionais({ db, pode }: { db: DataBase; pode: boolean }) {
-  const atualizar = useAtualizarDataBase(db.ano);
-  const s = (patch: Parameters<typeof atualizar.mutate>[0]) => atualizar.gravar(patch);
+function QuemRecebe({ db, det }: { db: DataBase; det: DetalheDataBase }) {
+  const { data: funcoes } = useFuncoes();
+  const lista = (funcoes ?? []).filter(
+    (x) =>
+      x.ativo &&
+      (x.vinculo === "estagio" ||
+        Number(x.peric_pct) > 0 ||
+        Number(x.insal_pct_sm) > 0 ||
+        Number(x.horas_noturnas_mes) > 0 ||
+        Number(x.ferramentas_mes) > 0),
+  );
   return (
-    <Secao titulo={`Adicionais e verbas · ${db.ano}`}>
-      <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
-        <div className={f.form}>
-          <CampoNumero
-            rotulo="Salário mínimo"
-            sufixo="R$"
-            valor={Number(db.salario_minimo)}
-            desabilitado={!pode}
-            dica="base da insalubridade"
-            onSalvar={(v) => s({ salario_minimo: v })}
-          />
-          <CampoNumero
-            rotulo="Adicional noturno"
-            sufixo="%"
-            max={100}
-            valor={Number(db.adicional_noturno_pct)}
-            desabilitado={!pode}
-            onSalvar={(v) => s({ adicional_noturno_pct: v })}
-          />
-          <CampoNumero
-            rotulo="Salário-família: teto"
-            sufixo="R$"
-            valor={Number(db.sf_teto)}
-            desabilitado={!pode}
-            onSalvar={(v) => s({ sf_teto: v })}
-          />
-          <CampoNumero
-            rotulo="Salário-família: cota"
-            sufixo="R$"
-            valor={Number(db.sf_cota)}
-            desabilitado={!pode}
-            onSalvar={(v) => s({ sf_cota: v })}
-          />
-        </div>
-        <p className="sub" style={{ margin: 0 }}>
-          Periculosidade, insalubridade, horas noturnas e ferramentas são definidas por função, em
-          Funções padrão. O salário-família é informativo: compensado na GPS, custo zero.
-        </p>
+    <Secao titulo={`Quem recebe o quê · ${db.ano}`} sub="Valores por pessoa·mês, sem faltas.">
+      <table className={f.tabela}>
+        <thead>
+          <tr>
+            <th>Função</th>
+            <th>Adicionais legais</th>
+            <th className={f.r}>Ferramentas</th>
+            <th className={f.r}>Adicionais / pessoa·mês</th>
+            <th>Vínculo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lista.map((x) => {
+            const est = x.vinculo === "estagio";
+            const partes = [
+              Number(x.peric_pct) > 0 && `periculosidade ${percentual(Number(x.peric_pct), 0)}`,
+              Number(x.insal_pct_sm) > 0 &&
+                `insalubridade ${percentual(Number(x.insal_pct_sm), 0)} do SM`,
+              Number(x.horas_noturnas_mes) > 0 &&
+                `${numero(Number(x.horas_noturnas_mes))} h noturnas`,
+            ].filter(Boolean);
+            return (
+              <tr key={x.id}>
+                <td className={f.forte}>{x.nome}</td>
+                <td>{est ? "—" : partes.join(" · ") || "—"}</td>
+                <td className={f.r}>{est ? "—" : moeda(Number(x.ferramentas_mes))}</td>
+                <td className={f.r}>
+                  {moeda(adicionaisPorPessoa(x, det.salarios[x.id] ?? 0, db))}
+                </td>
+                <td>{est ? <Badge tom="ambar">estágio · bolsa sem encargos</Badge> : "CLT"}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className={f.barra} style={{ borderTop: "1px solid var(--line)", borderBottom: 0 }}>
+        <Link to="/funcoes" className={f.linkAcao}>
+          Adicionais por função →
+        </Link>
+        <span className="sub">
+          Gratificações, prêmios e transferência ficam nas premissas de cada obra ou projeção.
+        </span>
       </div>
     </Secao>
   );
 }
 
-function AbaCalendario({ pode }: { pode: boolean }) {
+function AbaAdicionais({ db, det, pode }: { db: DataBase; det: DetalheDataBase; pode: boolean }) {
+  const atualizar = useAtualizarDataBase(db.ano);
+  const s = (patch: Parameters<typeof atualizar.mutate>[0]) => atualizar.gravar(patch);
+  return (
+    <>
+      <QuemRecebe db={db} det={det} />
+      <Secao titulo={`Adicionais e verbas · ${db.ano}`}>
+        <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
+          <div className={f.form}>
+            <CampoNumero
+              rotulo="Salário mínimo"
+              sufixo="R$"
+              valor={Number(db.salario_minimo)}
+              desabilitado={!pode}
+              dica="base da insalubridade"
+              onSalvar={(v) => s({ salario_minimo: v })}
+            />
+            <CampoNumero
+              rotulo="Adicional noturno"
+              sufixo="%"
+              max={100}
+              valor={Number(db.adicional_noturno_pct)}
+              desabilitado={!pode}
+              onSalvar={(v) => s({ adicional_noturno_pct: v })}
+            />
+            <CampoNumero
+              rotulo="Salário-família: teto"
+              sufixo="R$"
+              valor={Number(db.sf_teto)}
+              desabilitado={!pode}
+              onSalvar={(v) => s({ sf_teto: v })}
+            />
+            <CampoNumero
+              rotulo="Salário-família: cota"
+              sufixo="R$"
+              valor={Number(db.sf_cota)}
+              desabilitado={!pode}
+              onSalvar={(v) => s({ sf_cota: v })}
+            />
+          </div>
+          <p className="sub" style={{ margin: 0 }}>
+            Periculosidade, insalubridade, horas noturnas e ferramentas são definidas por função, em
+            Funções padrão. O salário-família é informativo: compensado na GPS, custo zero.
+          </p>
+        </div>
+      </Secao>
+    </>
+  );
+}
+
+const DIA_SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const NOME_TIPO_FERIADO = {
+  nacional: "Nacional",
+  facultativo: "Ponto facultativo",
+  empresa: "Empresa",
+  municipal: "Municipal",
+} as const;
+
+function AbaCalendario({ pode, anoInicial }: { pode: boolean; anoInicial?: number }) {
   const { data: params } = useParametros();
   const { data: feriados } = useFeriadosEmpresa();
   const atualizar = useAtualizarParametros();
   const adicionar = useAdicionarFeriado();
   const remover = useRemoverFeriado();
-  const [ano, setAno] = useState(new Date().getFullYear());
+  const [ano, setAno] = useState(anoInicial ?? new Date().getFullYear());
   const [qFer, setQFer] = useState("");
   const [dataTxt, setDataTxt] = useState("");
   const [nome, setNome] = useState("");
@@ -599,6 +733,10 @@ function AbaCalendario({ pode }: { pode: boolean }) {
     feriadosEmpresa: (feriados ?? []).map((x) => ({ data: x.data, nome: x.nome })),
   };
   const meses = Array.from({ length: 12 }, (_, i) => calendarioMes(ano, i + 1, opcoes));
+  const soma = (k: "dias" | "seg" | "sab" | "rep" | "uteis" | "feriadosUteis") =>
+    meses.reduce((s, m) => s + m[k], 0);
+  const feriadosAno = meses.flatMap((m) => m.feriados);
+  const diaSemana = (iso: string) => DIA_SEMANA[new Date(`${iso}T00:00:00Z`).getUTCDay()];
 
   function incluir() {
     const iso = parseData(dataTxt);
@@ -610,6 +748,7 @@ function AbaCalendario({ pode }: { pode: boolean }) {
         onSuccess: () => {
           setDataTxt("");
           setNome("");
+          setAno(Number(iso.slice(0, 4))); // mostra o ano do feriado incluído
         },
       },
     );
@@ -741,6 +880,7 @@ function AbaCalendario({ pode }: { pode: boolean }) {
           <thead>
             <tr>
               <th>Mês</th>
+              <th className={f.r}>Dias</th>
               <th className={f.r}>Úteis</th>
               <th className={f.r}>Repousos</th>
               <th className={f.r}>DSR %</th>
@@ -751,16 +891,72 @@ function AbaCalendario({ pode }: { pode: boolean }) {
             {meses.map((m) => (
               <tr key={m.mes}>
                 <td className={f.forte}>{MESES[m.mes - 1]}</td>
+                <td className={f.r}>{numero(m.dias)}</td>
                 <td className={f.r}>
                   {numero(m.uteis)}
                   <div className="sub">
-                    {numero(m.seg)} seg–sex + {numero(m.sab)} sáb
+                    sendo {numero(m.seg)} seg–sex + {numero(m.sab)} sáb
                   </div>
                 </td>
-                <td className={f.r}>{numero(m.rep)}</td>
+                <td className={f.r}>
+                  {numero(m.rep)}
+                  <div className="sub">inclui {numero(m.feriadosUteis)} feriado(s) em dia útil</div>
+                </td>
                 <td className={f.r}>{percentual(m.dsrPct)}</td>
                 <td className="sub">
                   {m.feriados.map((x) => `${x.data.slice(8)} ${x.nome}`).join(" · ") || "—"}
+                </td>
+              </tr>
+            ))}
+            <tr className={f.total}>
+              <td>Ano</td>
+              <td className={f.r}>{numero(soma("dias"))}</td>
+              <td className={f.r}>
+                {numero(soma("uteis"))}
+                <div className="sub">
+                  sendo {numero(soma("seg"))} seg–sex + {numero(soma("sab"))} sáb
+                </div>
+              </td>
+              <td className={f.r}>
+                {numero(soma("rep"))}
+                <div className="sub">
+                  inclui {numero(soma("feriadosUteis"))} feriado(s) em dia útil
+                </div>
+              </td>
+              <td className={f.r}>{percentual((soma("rep") / soma("uteis")) * 100)}</td>
+              <td className="sub">DSR médio do ano</td>
+            </tr>
+          </tbody>
+        </table>
+      </Secao>
+
+      <Secao
+        titulo={`Feriados de ${ano}`}
+        sub={`${numero(feriadosAno.length)} datas · ${numero(soma("feriadosUteis"))} em dias úteis`}
+      >
+        <table className={f.tabela} aria-label={`Feriados de ${ano}`}>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Dia</th>
+              <th>Feriado</th>
+              <th>Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {feriadosAno.map((x) => (
+              <tr key={x.data}>
+                <td>{fmtData(x.data)}</td>
+                <td>{diaSemana(x.data)}</td>
+                <td>{x.nome}</td>
+                <td>
+                  <Badge
+                    tom={
+                      x.tipo === "nacional" ? "escuro" : x.tipo === "empresa" ? "ambar" : "neutro"
+                    }
+                  >
+                    {NOME_TIPO_FERIADO[x.tipo]}
+                  </Badge>
                 </td>
               </tr>
             ))}
@@ -784,7 +980,6 @@ function AbaDatasBase({
   const criar = useCriarDataBase();
   const proximo = (datas[0]?.ano ?? new Date().getFullYear()) + 1;
   const [ano, setAno] = useState(String(proximo));
-  const [origem, setOrigem] = useState(vigente ?? datas[0]?.ano ?? proximo - 1);
   // Texto do reajuste validado só no envio: valor inválido nunca vira "0%" em silêncio.
   const [reajusteTxt, setReajusteTxt] = useState("0");
   const [erro, setErro] = useState<string | null>(null);
@@ -799,7 +994,16 @@ function AbaDatasBase({
     if (reajuste === null || reajuste < -50 || reajuste > 100)
       return setErro("Informe um reajuste entre -50% e 100% (ex.: 6 ou 5,5).");
     setErro(null);
-    criar.mutate({ ano: a, origem, reajuste });
+    criar.mutate({ ano: a, reajuste }, { onSuccess: () => setAno(String(a + 1)) });
+  }
+
+  function tornarVigente(x: DataBase) {
+    const ok =
+      !x.a_revisar ||
+      window.confirm(
+        `A data-base ${x.ano} ainda está "a revisar". Torná-la vigente muda os preços de todas as projeções e do custo atualizado. Continuar?`,
+      );
+    if (ok) atualizarParams.mutate({ data_base_vigente: x.ano });
   }
 
   return (
@@ -840,7 +1044,7 @@ function AbaDatasBase({
                     <AcoesDataBase
                       db={x}
                       vigente={x.ano === vigente}
-                      onVigente={() => atualizarParams.mutate({ data_base_vigente: x.ano })}
+                      onVigente={() => tornarVigente(x)}
                     />
                   </td>
                 )}
@@ -853,7 +1057,7 @@ function AbaDatasBase({
       {pode && (
         <Secao
           titulo="Criar nova data-base"
-          sub="Copia salários, benefícios, encargos e regras; aplica o reajuste em salários e benefícios."
+          sub={`Copia a vigente (${vigente ?? "—"}): salários, benefícios, encargos e regras; aplica o reajuste em salários e benefícios.`}
         >
           <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
             <div className={f.form}>
@@ -864,16 +1068,6 @@ function AbaDatasBase({
                   value={ano}
                   onChange={(e) => setAno(e.target.value)}
                 />
-              </Campo>
-              <Campo rotulo="Copiar de">
-                <Selecao value={origem} onChange={(e) => setOrigem(Number(e.target.value))}>
-                  {datas.map((x) => (
-                    <option key={x.ano} value={x.ano}>
-                      {x.ano}
-                      {x.ano === vigente ? " (vigente)" : ""}
-                    </option>
-                  ))}
-                </Selecao>
               </Campo>
               <Campo rotulo="Reajuste (%)">
                 <input

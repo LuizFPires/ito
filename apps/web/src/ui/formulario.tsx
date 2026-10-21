@@ -264,9 +264,20 @@ export function Paginacao<T>({
   );
 }
 
-export function Kpi({ rotulo, valor, sub }: { rotulo: string; valor: ReactNode; sub?: ReactNode }) {
+export function Kpi({
+  rotulo,
+  valor,
+  sub,
+  destaque,
+}: {
+  rotulo: string;
+  valor: ReactNode;
+  sub?: ReactNode;
+  /** Fundo âmbar claro ("tint" do protótipo). */
+  destaque?: boolean;
+}) {
   return (
-    <Cartao className={s.kpi}>
+    <Cartao className={cx(s.kpi, destaque && s.kpiDestaque)}>
       <span className="rotulo">{rotulo}</span>
       <span className={s.kpiValor}>{valor}</span>
       {sub && <span className="sub">{sub}</span>}

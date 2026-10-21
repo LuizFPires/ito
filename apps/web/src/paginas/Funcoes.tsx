@@ -530,10 +530,13 @@ function NovaFuncao({
           onChange={(e) => setSinonimo(e.target.value)}
         />
       </Campo>
-      <Botao variante="primario" onClick={enviar} disabled={criar.isPending}>
+      <Botao variante="primario" onClick={enviar} disabled={criar.isPending || !nome.trim()}>
         Criar função
       </Botao>
-      <span className="sub">A função nasce sem salário: defina-o em Parâmetros → Salários.</span>
+      <span className="sub">
+        Começa com o salário de oficial (pedreiro) nas data-bases editáveis, conta 04.03.99 e exames
+        padrão; ajuste depois.
+      </span>
     </Cartao>
   );
 }

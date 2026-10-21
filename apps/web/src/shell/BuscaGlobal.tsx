@@ -50,7 +50,7 @@ export function BuscaGlobal() {
       caminho: d.caminho,
     })),
     ...(funcoes ?? [])
-      .filter((x) => x.ativo && contemTermos(`${x.nome} ${x.sinonimos.join(" ")}`, q))
+      .filter((x) => x.ativo && contemTermos(`${x.nome} ${x.conta_pc} ${x.sinonimos.join(" ")}`, q))
       .map((x) => ({
         chave: `f:${x.id}`,
         titulo: x.nome,

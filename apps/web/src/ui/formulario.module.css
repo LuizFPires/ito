@@ -290,3 +290,15 @@
   margin-left: auto;
   border-radius: var(--raio-pill);
 }
+.linkAcao {
+  color: var(--amber-text);
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+.kpiDestaque {
+  background: var(--amber-tint);
+  border-color: transparent;
+}
+.kpiDestaque :global(.rotulo) {
+  color: var(--amber-text);
+}

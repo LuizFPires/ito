@@ -68,6 +68,11 @@ test("DP/RH cria uma função nova", async ({ page }) => {
   await painel.getByRole("button", { name: "Criar função" }).click();
   await expect(page.getByRole("status")).toContainText("Função criada");
   await expect(page.getByRole("region", { name: `Função ${nome}` })).toBeVisible();
+  // padrões do protótipo: salário de oficial e conta 04.03.99
+  await expect(page.getByRole("region", { name: `Função ${nome}` })).toContainText("R$ 1.400,00");
+  await expect(
+    page.getByRole("region", { name: `Função ${nome}` }).getByLabel("Conta do plano"),
+  ).toHaveValue("04.03.99");
   await page
     .getByRole("region", { name: `Função ${nome}` })
     .getByRole("button", { name: "Inativar função" })

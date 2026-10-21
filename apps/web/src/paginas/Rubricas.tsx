@@ -31,7 +31,7 @@ const TOM: Record<TipoRubrica, "ok" | "erro" | "neutro"> = {
   desconto: "erro",
   informativo: "neutro",
 };
-type Chave = "codigo" | "nome" | "componente";
+type Chave = "codigo" | "nome" | "tipo" | "componente";
 
 export function TelaRubricas() {
   const d = MENU.find((x) => x.caminho === "/rubricas")!;
@@ -71,7 +71,13 @@ export function TelaRubricas() {
         ),
         ordem,
         (r, k) =>
-          k === "codigo" ? r.codigo : k === "nome" ? r.nome : NOME_COMPONENTE[r.componente],
+          k === "codigo"
+            ? r.codigo
+            : k === "nome"
+              ? r.nome
+              : k === "tipo"
+                ? r.tipo
+                : NOME_COMPONENTE[r.componente],
       ),
     [rubricas, inativas, tipo, comp, q, ordem],
   );
@@ -98,7 +104,12 @@ export function TelaRubricas() {
           valor={numero(conta("desconto"))}
           sub="faltas entram; os do empregado não"
         />
-        <Kpi rotulo="Informativas" valor={numero(conta("informativo"))} sub="só para conferência" />
+        <Kpi
+          rotulo="Informativas"
+          valor={numero(conta("informativo"))}
+          sub="só para conferência"
+          destaque
+        />
       </div>
 
       {criando && <NovaRubrica rubricas={rubricas ?? []} onFechar={() => setCriando(false)} />}
@@ -166,7 +177,9 @@ export function TelaRubricas() {
                   <ThOrdem chave="nome" ordem={ordem} onOrdenar={ordenarPor}>
                     Rubrica
                   </ThOrdem>
-                  <th>Tipo</th>
+                  <ThOrdem chave="tipo" ordem={ordem} onOrdenar={ordenarPor}>
+                    Tipo
+                  </ThOrdem>
                   <ThOrdem chave="componente" ordem={ordem} onOrdenar={ordenarPor}>
                     Entra no custo como
                   </ThOrdem>
@@ -181,7 +194,8 @@ export function TelaRubricas() {
                       {r.codigo}
                     </td>
                     <td>
-                      <span className={f.forte}>{r.nome}</span> {!r.ativo && <Badge>inativa</Badge>}
+                      <span className={f.forte}>{r.nome}</span>{" "}
+                      <Badge tom={TOM[r.tipo]}>{r.tipo}</Badge> {!r.ativo && <Badge>inativa</Badge>}
                       <div className="sub">{DESCRICAO_COMPONENTE[r.componente]}</div>
                     </td>
                     <td>
@@ -197,7 +211,7 @@ export function TelaRubricas() {
                           <option value="informativo">informativo</option>
                         </Selecao>
                       ) : (
-                        <Badge tom={TOM[r.tipo]}>{r.tipo}</Badge>
+                        r.tipo
                       )}
                     </td>
                     <td>
