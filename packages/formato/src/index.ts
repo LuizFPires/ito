@@ -120,7 +120,8 @@ const NUMERO_BR = /^-?\d{1,3}(\.\d{3})*(,\d+)?$|^-?\d+(,\d+)?$/;
 
 /** Lê número digitado no formato brasileiro ("R$ 1.234,56", "43,96%"). Inválido → null. */
 export function parseNumero(txt: string): number | null {
-  const limpo = txt.replace(/R\$/g, "").replace(/%/g, "").replace(/[\s ]/g, "").replace(/^−/, "-");
+  // \s cobre o espaço não separável (U+00A0) que o Excel e o Intl usam.
+  const limpo = txt.replace(/R\$/g, "").replace(/%/g, "").replace(/\s/g, "").replace(/^−/, "-");
   if (!NUMERO_BR.test(limpo)) return null;
   return Number(limpo.replace(/\./g, "").replace(",", "."));
 }

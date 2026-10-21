@@ -96,6 +96,8 @@ describe("parseNumero", () => {
   it("lê o formato brasileiro digitado", () => {
     expect(parseNumero("1.234,56")).toBe(1234.56);
     expect(parseNumero("R$ 1.234,56")).toBe(1234.56);
+    expect(parseNumero("R$ 1.234,56")).toBe(1234.56);
+    expect(parseNumero("−38,5")).toBe(-38.5);
     expect(parseNumero("43,96%")).toBe(43.96);
     expect(parseNumero("-38,5")).toBe(-38.5);
     expect(parseNumero(" 12 ")).toBe(12);
