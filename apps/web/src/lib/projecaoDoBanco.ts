@@ -21,6 +21,7 @@ import type {
 import {
   aplicarReajustes,
   cenariosDeOrigem,
+  indicadores,
   projetar,
   reajustesDaProjecao,
   tabelaDaCidade,
@@ -94,7 +95,7 @@ export function entradasVazias(hoje = new Date()): Entradas {
 
 const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
 
-export function entradasDaLinha(p: LinhaProjecao): Entradas {
+export function entradasDaLinha(p: Omit<LinhaProjecao, "resumo">): Entradas {
   return {
     nome: p.nome,
     cliente: p.cliente,
@@ -234,6 +235,7 @@ export const resumoDaProjecao = (c: Calculo, vigente: number) =>
         total: Math.round(c.r.total * 100) / 100,
         pico: c.r.pico,
         pessoa_mes: Math.round(c.r.pessoaMes * 100) / 100,
+        indireta_pct: Math.round(indicadores(c.r.resultado).indiretaPct * 100) / 100,
         vigente,
       }
     : {};
