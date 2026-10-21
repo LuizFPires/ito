@@ -1,5 +1,5 @@
 begin;
-select plan(22);
+select plan(25);
 
 -- Dados mínimos (como postgres)
 insert into public.funcoes (id, nome, grupo) values ('teste_f', 'Função teste', 'direta')
@@ -65,6 +65,15 @@ select is((select aliq_clt from public.data_base_encargos where ano = 2091 and i
   'encargos copiados sem reajuste');
 select is((select a_revisar from public.datas_base where ano = 2091), true, 'nova data-base nasce a revisar');
 select throws_ok($$select public.criar_data_base(2091, 2090, 6)$$, '23505', null, 'ano repetido é recusado');
+
+-- DP/RH não consegue apagar salários indiretamente (apagando ou renomeando a função)
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}', true);
+select throws_ok($$delete from public.funcoes where id = 'teste_f'$$, '23503', null,
+  'função com salário não é apagada (inativar)');
+select throws_ok($$update public.funcoes set id = 'outro' where id = 'teste_f'$$, '23514', null,
+  'código da função é imutável');
+select is((select count(*)::int from public.data_base_salarios where funcao_id = 'teste_f'), 2,
+  'salários intactos');
 
 -- Validação de dados
 reset role;
