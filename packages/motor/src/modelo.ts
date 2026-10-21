@@ -101,6 +101,8 @@ export interface InicioObra {
 export interface Obra {
   id: string;
   inicio: InicioObra;
+  /** número de meses; sem ele, a maior das séries (equivalente, HE, absenteísmo) */
+  meses?: number;
   /** área construída (m²); usada pela projeção */
   area: number;
   /** pessoa-mês equivalente por função e mês */
@@ -136,7 +138,13 @@ export type ParametrosObra = Tabela | ((mesIdx: number) => Tabela);
 export const tabelaDoMes = (p: ParametrosObra, i: number): Tabela =>
   typeof p === "function" ? p(i) : p;
 
-export const nMeses = (o: Obra) => o.heMedia.length;
+/** Duração da obra em meses: `meses` ou a maior série — nunca trunca meses com efetivo. */
+export function nMeses(o: Obra): number {
+  if (o.meses !== undefined) return o.meses;
+  let n = Math.max(o.heMedia.length, o.absenteismoPct.length);
+  for (const v of Object.values(o.equivalente)) n = Math.max(n, v.length);
+  return n;
+}
 
 /** Ano e mês (1–12) do `mesIdx` contado do início da obra. */
 export function anoMes(inicio: InicioObra, mesIdx: number): { ano: number; mes: number } {

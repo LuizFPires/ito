@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { tabelaDoMes } from "./modelo";
 import type { ParametrosObra } from "./modelo";
-import { aplicarReajuste, reajusteDaProjecao, salarioDe, tabelaDaCidade } from "./parametros";
+import { aplicarReajustes, reajustesDaProjecao, salarioDe, tabelaDaCidade } from "./parametros";
 import { cenariosDeOrigem, projetar } from "./projecao";
 import {
   carregarPrototipo,
@@ -27,13 +27,13 @@ function parametrosProjecao(p: any): ParametrosObra {
   const cct = cid ? P.D.ccts.find((t: any) => t.id === cid.cct) : null;
   const base = cid && cct ? tabelaDaCidade(vig, cctDe(cct), cidadeDe(cid)) : vig;
   const inicio = { ano: p.ini.y, mes: p.ini.m + 1 };
-  const reaj = reajusteDaProjecao(
+  const reaj = reajustesDaProjecao(
     inicio,
     p.prazo,
     p.reaj ? { mesIdx: Number(p.reaj.i), pct: Number(p.reaj.pct) } : null,
     cct ? cctDe(cct) : null,
   );
-  return aplicarReajuste(base, p.prazo, reaj);
+  return aplicarReajustes(base, p.prazo, reaj);
 }
 
 const CASOS: [string, number][] = P.D.projecoes.map((p: any, j: number) => [p.nome, j]);

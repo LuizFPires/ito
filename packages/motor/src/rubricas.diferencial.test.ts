@@ -20,7 +20,9 @@ const CASOS: [string, number][] = P.D.obras.map((o: { nome: string }, j: number)
 
 describe.each(CASOS)("folha · %s", (_nome: string, j: number) => {
   const po = P.D.obras[j];
-  const r = calcularObra(obraDe(P, po), parametrosDe(P.pObra(po)), ctx);
+  const r = calcularObra(obraDe(P, po), parametrosDe(P.pObra(po)), ctx, {
+    movimentos: "sinteticos",
+  });
   const ref = P.calc(po, P.pObra(po));
 
   it("conferência rubricas × custo fecha em R$ 0,00 em todos os meses", () => {
@@ -45,7 +47,9 @@ describe.each(CASOS)("folha · %s", (_nome: string, j: number) => {
 describe("conferência acusa diferença quando o custo não fecha", () => {
   it("rubrica de salário faltando vira 'Diferença'", () => {
     const po = P.D.obras[0];
-    const r = calcularObra(obraDe(P, po), parametrosDe(P.pObra(po)), ctx);
+    const r = calcularObra(obraDe(P, po), parametrosDe(P.pObra(po)), ctx, {
+      movimentos: "sinteticos",
+    });
     const semSalario = DIC.filter((x) => x.codigo !== 1);
     const conf = conferirFolha(r.porMes, semSalario);
     expect(conf.some((m) => !m.confere)).toBe(true);

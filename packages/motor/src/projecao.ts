@@ -16,6 +16,7 @@ import type {
   Regime,
   TipoHe,
 } from "./modelo";
+import { cabecasMes } from "./movimentos";
 import { calcularObra } from "./obra";
 import type { ResultadoObra } from "./obra";
 
@@ -39,7 +40,7 @@ export function totaisPorMes(o: Obra, funcoes: readonly string[]): number[] {
 
 /**
  * Distribui a curva de uma referência (n meses) em N meses do novo prazo, pela sobreposição de
- * frações do prazo. Soma = n (cada fração recebe o peso relativo da curva).
+ * frações do prazo. A soma das frações é 1 (curva zerada: tudo 0).
  */
 export function shares(curva: readonly number[], N: number): number[] {
   const n = curva.length;
@@ -83,7 +84,7 @@ export interface EntradaProjecao {
   origem?: Readonly<Record<string, Origem>>;
   /** cidade da obra (preços já em `parametros`; aqui só VT por origem e feriados) */
   cidade?: CidadeProjecao | null;
-  /** de onde vem quem viaja todo dia (padrão: BH) */
+  /** de onde vem quem viaja todo dia (quem chama escolhe; o protótipo usa BH). Sem ela, VT local. */
   cidadeOrigem?: CidadeVt | null;
   /** VT de referência sem cidade (tabela vigente) */
   vtDiariaReferencia: number;
@@ -123,7 +124,7 @@ export function projetar(
 ): ResultadoProjecao | null {
   const refs = e.referencias;
   const manual = manualValido(e);
-  if (!refs.length && !manual) return null;
+  if ((!refs.length && !manual) || e.prazo <= 0) return null;
   const agg = e.estatistica === "mediana" ? mediana : media;
   const N = e.prazo;
   const ids = ctx.funcoes.map((f) => f.id);
@@ -140,14 +141,28 @@ export function projetar(
     const aj = 1 + (e.ajustesPct?.[k] ?? 0) / 100;
     if (!f.escalaArea) {
       // fixo por mês: média (ou mediana) das cabeças mensais das referências
-      const m = agg(refs.map((r) => soma(r.cabecas?.[k] ?? []) / nMeses(r)));
+      // sem cabeças na referência, vale o teto do equivalente (como em cabecasMes)
+      const m = agg(
+        refs.map((r) => {
+          const n = nMeses(r);
+          let c = 0;
+          for (let i = 0; i < n; i++) c += cabecasMes(r, k, i);
+          return n ? c / n : 0;
+        }),
+      );
       q[k] = Array(N).fill(Math.round(m * aj));
       pmPorMilM2[k] = null;
       continue;
     }
-    const pm = agg(refs.map((r) => (soma(r.equivalente[k] ?? []) / r.area) * 1000)) * aj;
-    const sh = refs.map((r) => shares(r.equivalente[k] ?? Array(nMeses(r)).fill(0), N));
-    const shm = Array.from({ length: N }, (_, j) => media(sh.map((s) => s[j]!)));
+    // PM/1.000 m²: todas as referências (quem não teve a função entra com 0)
+    const comArea = refs.filter((r) => r.area > 0);
+    const pm = agg(comArea.map((r) => (soma(r.equivalente[k] ?? []) / r.area) * 1000)) * aj;
+    // curva no tempo: só das referências que tiveram a função (decisão M3, SPEC §5)
+    const curvas = comArea
+      .map((r) => r.equivalente[k] ?? [])
+      .filter((c) => soma(c) > 0)
+      .map((c) => shares(c, N));
+    const shm = Array.from({ length: N }, (_, j) => media(curvas.map((c) => c[j]!)));
     q[k] = shm.map((s) => Math.round(((pm * e.area) / 1000) * s));
     pmPorMilM2[k] = pm;
   }
@@ -200,15 +215,17 @@ export function projetar(
   for (const k of ids) {
     const og = e.origem?.[k] ?? "local";
     origem[k] = og;
-    vtPorFuncao[k] = !cid
-      ? e.vtDiariaReferencia
-      : og === "aloj"
+    // alojada não tem VT, com ou sem cidade (SPEC §4.4)
+    vtPorFuncao[k] =
+      og === "aloj"
         ? 0
-        : og === "diaria"
-          ? e.cidadeOrigem
-            ? vtDiarioDe(cid, e.cidadeOrigem).valor
-            : vtDiario(cid)
-          : vtDiario(cid);
+        : !cid
+          ? e.vtDiariaReferencia
+          : og === "diaria"
+            ? e.cidadeOrigem
+              ? vtDiarioDe(cid, e.cidadeOrigem).valor
+              : vtDiario(cid)
+            : vtDiario(cid);
   }
 
   const obraBase: Obra = {
@@ -226,7 +243,8 @@ export function projetar(
     regime: e.regime ?? {},
     premissas: { ...PREMISSAS_PADRAO, ...(e.premissas ?? {}) },
     feriadosMunicipais: [...(e.feriadosMunicipais ?? []), ...feriadosCidade],
-    ...(cid && { origem, vtDiariaPorFuncao: vtPorFuncao }),
+    origem,
+    vtDiariaPorFuncao: vtPorFuncao,
   };
   const totais = totaisPorMes(obraBase, ids);
   const obra: Obra = {
@@ -234,13 +252,13 @@ export function projetar(
     licencaPessoaDias: totais.map((t) => Math.round(t * licAp)),
     feriasPessoaDias: totais.map((t) => Math.round(t * ferAp)),
   };
-  const resultado = calcularObra(obra, parametros, ctx);
+  const resultado = calcularObra(obra, parametros, ctx, { movimentos: "sinteticos" });
   return {
     obra,
     resultado,
     totais,
     pessoaMes: soma(totais),
-    pico: Math.max(...totais),
+    pico: totais.length ? Math.max(...totais) : 0,
     aplicadas: {
       heMedia: heAp,
       absenteismoPct: absAp,

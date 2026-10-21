@@ -51,6 +51,8 @@ const PARES: [keyof CustoMes, string][] = [
   ["caixa", "caixa"],
   ["dias", "dTrab"],
   ["horasExtras", "hh"],
+  ["valorHoraExtra", "vh"],
+  ["horaExtraCheia", "vhCheio"],
 ];
 
 const CASOS: [string, number][] = P.D.obras.map((o: { nome: string }, j: number) => [o.nome, j]);

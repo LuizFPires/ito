@@ -5,7 +5,7 @@
 import { custoFuncaoMes, premissasDe } from "./custo";
 import type { CustoMes } from "./custo";
 import type { Contexto, GrupoFuncao, Obra, ParametrosObra } from "./modelo";
-import { nMeses } from "./modelo";
+import { TIPOS_HE, nMeses } from "./modelo";
 import { movimentos } from "./movimentos";
 import type { Movimentos } from "./movimentos";
 
@@ -71,6 +71,8 @@ export interface ResultadoObra {
   porFuncao: Record<string, CustoMesObra[]>;
   porMes: Soma[];
   porGrupo: Record<GrupoFuncao, number>;
+  /** pessoa-mês por grupo de função (para a % indireta) */
+  pessoaMesPorGrupo: Record<GrupoFuncao, number>;
   total: Soma;
 }
 
@@ -97,19 +99,73 @@ export function somar(lista: readonly (CustoMesObra | Soma)[]): Soma {
 }
 
 export interface OpcoesObra {
-  /** movimentos já conhecidos (histórico real, vindos da folha); sem eles, §4.6 */
-  movimentos?: Movimentos;
+  /**
+   * Admissões e desligamentos: os da folha (histórico real) ou "sinteticos" (§4.6, só para
+   * projeções e dados sintéticos). Obrigatório para o histórico não cair no sintético sem querer.
+   */
+  movimentos: Movimentos | "sinteticos";
+}
+
+/** Erro de entrada do motor, com a ação a tomar. */
+export class ErroEntradaMotor extends Error {}
+
+const ruim = (v: number) => !Number.isFinite(v) || v < 0;
+
+/**
+ * Problemas de entrada que o cálculo não pode engolir em silêncio (NaN, negativos, percentuais
+ * fora de 0–100, mix de HE que não soma 100). Lista vazia: entrada válida.
+ */
+export function validarObra(o: Obra): string[] {
+  const erros: string[] = [];
+  if (!Number.isInteger(o.inicio.mes) || o.inicio.mes < 1 || o.inicio.mes > 12)
+    erros.push(`Mês de início ${o.inicio.mes} inválido: informe de 1 a 12.`);
+  if (o.meses !== undefined && (!Number.isInteger(o.meses) || o.meses < 0))
+    erros.push(`Número de meses ${o.meses} inválido: informe um inteiro ≥ 0.`);
+  if (ruim(o.area)) erros.push("Área inválida: informe a área construída em m² (≥ 0).");
+  for (const [k, v] of Object.entries(o.equivalente))
+    if (v.some(ruim))
+      erros.push(`Pessoa-mês de ${k} com valor negativo ou vazio: corrija a série.`);
+  for (const [k, v] of Object.entries(o.cabecas ?? {}))
+    if (v.some(ruim)) erros.push(`Cabeças de ${k} com valor negativo ou vazio: corrija a série.`);
+  const series: [string, readonly number[]][] = [
+    ["HE média", o.heMedia],
+    ["Licenças", o.licencaPessoaDias],
+    ["Férias", o.feriasPessoaDias],
+  ];
+  for (const [nome, v] of series)
+    if (v.some(ruim)) erros.push(`${nome} com valor negativo ou vazio: corrija a série.`);
+  if (o.absenteismoPct.some((v) => ruim(v) || v > 100))
+    erros.push("Absenteísmo fora de 0–100%: corrija a série.");
+  if (ruim(o.rotatividadePct) || o.rotatividadePct > 100)
+    erros.push("Rotatividade fora de 0–100%: corrija a premissa.");
+  if (o.heMixPct) {
+    const mix = TIPOS_HE.map((t) => o.heMixPct?.[t] ?? 0);
+    const soma = mix.reduce((a, b) => a + b, 0);
+    if (mix.some(ruim) || Math.abs(soma - 100) > 0.01)
+      erros.push(`Mix de HE soma ${soma}%: ajuste os tipos para somar 100%.`);
+  }
+  return erros;
 }
 
 export function calcularObra(
   o: Obra,
   p: ParametrosObra,
   ctx: Contexto,
-  op: OpcoesObra = {},
+  op: OpcoesObra,
 ): ResultadoObra {
+  const erros = validarObra(o);
+  if (erros.length) throw new ErroEntradaMotor(`Obra ${o.id}: ${erros.join(" ")}`);
   const n = nMeses(o);
   const todas = ctx.funcoes.map((f) => f.id);
-  const mov = op.movimentos ?? movimentos(o, todas);
+  // Toda função com efetivo precisa estar no cadastro (inclusive as inativas): nada some do custo.
+  const desconhecidas = Object.entries(o.equivalente)
+    .filter(([k, v]) => v.some((x) => x > 0) && !todas.includes(k))
+    .map(([k]) => k);
+  if (desconhecidas.length)
+    throw new ErroEntradaMotor(
+      `Funções sem cadastro na obra ${o.id}: ${desconhecidas.join(", ")}. Inclua-as (mesmo inativas) nas funções do cálculo.`,
+    );
+  const mov = op.movimentos === "sinteticos" ? movimentos(o, todas) : op.movimentos;
   const comEfetivo = ctx.funcoes.filter((f) => (o.equivalente[f.id] ?? []).some((v) => v > 0));
   const pr = premissasDe(o);
 
@@ -140,7 +196,12 @@ export function calcularObra(
     somar(comEfetivo.map((f) => porFuncao[f.id]![i]!)),
   );
   const porGrupo: Record<GrupoFuncao, number> = { direta: 0, indireta: 0, adm: 0 };
-  for (const f of comEfetivo) for (const c of porFuncao[f.id]!) porGrupo[f.grupo] += c.total;
+  const pessoaMesPorGrupo: Record<GrupoFuncao, number> = { direta: 0, indireta: 0, adm: 0 };
+  for (const f of comEfetivo)
+    for (const c of porFuncao[f.id]!) {
+      porGrupo[f.grupo] += c.total;
+      pessoaMesPorGrupo[f.grupo] += c.x;
+    }
 
   return {
     n,
@@ -149,6 +210,34 @@ export function calcularObra(
     porFuncao,
     porMes,
     porGrupo,
+    pessoaMesPorGrupo,
     total: somar(porMes),
+  };
+}
+
+/** Indicadores derivados (SPEC §4.7). Divisão por zero dá 0. */
+export interface Indicadores {
+  /** R$ por dia trabalhado, com taxa (total) e sem taxa (remuneração) */
+  porDiaComTaxa: number;
+  porDiaSemTaxa: number;
+  /** (enc + prov + nf) ÷ remun, 0–100 */
+  encargosPct: number;
+  /** (VT + benef) ÷ remun, 0–100 */
+  beneficiosPct: number;
+  /** PM (indireta + adm) ÷ PM total, 0–100 */
+  indiretaPct: number;
+}
+
+const razao = (a: number, b: number) => (b ? a / b : 0);
+
+export function indicadores(r: ResultadoObra): Indicadores {
+  const t = r.total;
+  const pm = r.pessoaMesPorGrupo;
+  return {
+    porDiaComTaxa: razao(t.total, t.dias),
+    porDiaSemTaxa: razao(t.remun, t.dias),
+    encargosPct: razao(t.enc + t.prov + t.nf, t.remun) * 100,
+    beneficiosPct: razao(t.vt + t.benef, t.remun) * 100,
+    indiretaPct: razao(pm.indireta + pm.adm, pm.direta + pm.indireta + pm.adm) * 100,
   };
 }

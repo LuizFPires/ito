@@ -7,7 +7,8 @@ import { taxasEncargos } from "./encargos";
 import { HE_MIX_PADRAO, PREMISSAS_PADRAO, TIPOS_HE, tabelaDoMes } from "./modelo";
 import type { Contexto, Funcao, Obra, ParametrosObra, Premissas, Regime, TipoHe } from "./modelo";
 import { cabecasMes } from "./movimentos";
-import { salarioDe } from "./parametros";
+import { salarioComOrigem } from "./parametros";
+import type { OrigemSalario } from "./parametros";
 
 /** Cotas de salário-família por trabalhador elegível (média), como no protótipo. */
 export const COTAS_SALARIO_FAMILIA = 0.6;
@@ -39,6 +40,8 @@ export interface CustoMes {
   /** pessoa-mês presente (descontado o absenteísmo) */
   pres: number;
   salario: number;
+  /** de onde veio o salário: tabela, oficial (sem salário da função) ou ausente */
+  salarioOrigem: OrigemSalario;
   /** absenteísmo (fração) */
   a: number;
   licD: number;
@@ -57,6 +60,10 @@ export interface CustoMes {
   horasPorPessoa: number;
   heTipo: Record<TipoHe, number>;
   he: number;
+  /** valor médio de 1 hora extra (com adicional) */
+  valorHoraExtra: number;
+  /** custo de 1 hora extra cheia: vh × (1 + DSR%) × (1 + soc% + prov% + nf%) — SPEC §4.7 */
+  horaExtraCheia: number;
   dsr: number;
   remun: number;
   enc: number;
@@ -133,7 +140,7 @@ export function custoFuncaoMes(
   const vtDiaria = o.vtDiariaPorFuncao?.[f.id] ?? p.vtDiaria;
   const { dsrPct, diasTrabalhados } = diasDoMes(o, i, p, ctx);
   const dsrF = dsrPct / 100;
-  const s = salarioDe(p, f.id);
+  const { valor: s, origem: salarioOrigem } = salarioComOrigem(p, f.id);
   const a = Math.min(
     ABSENTEISMO_MAX,
     Math.max(0, (o.absenteismoPct[i] ?? 0) / 100 + (op.absenteismoExtra ?? 0)),
@@ -187,6 +194,9 @@ export function custoFuncaoMes(
     he += heTipo[t];
   }
   const dsr = he * dsrF;
+  const valorHoraExtra = pres * h ? he / (pres * h) : vb * (1 + p.heAdicionalPct.util / 100);
+  const horaExtraCheia =
+    valorHoraExtra * (1 + dsrF) * (1 + taxa("soc") + taxa("prov") + taxa("nf"));
 
   // §4.4 encargos, VT, benefícios e demais
   const remun = salv + extras + he + dsr;
@@ -237,6 +247,7 @@ export function custoFuncaoMes(
     xa,
     pres,
     salario: s,
+    salarioOrigem,
     a,
     licD,
     ferD,
@@ -253,6 +264,8 @@ export function custoFuncaoMes(
     horasPorPessoa: h,
     heTipo,
     he,
+    valorHoraExtra,
+    horaExtraCheia,
     dsr,
     remun,
     enc,

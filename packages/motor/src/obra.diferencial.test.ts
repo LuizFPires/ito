@@ -16,7 +16,7 @@ describe.each(CASOS)("obra = protótipo · %s", (_nome: string, j: number) => {
   const po = P.D.obras[j];
   const obra = obraDe(P, po);
   const ref = P.calc(po, P.pObra(po));
-  const r = calcularObra(obra, parametrosDe(P.pObra(po)), ctx);
+  const r = calcularObra(obra, parametrosDe(P.pObra(po)), ctx, { movimentos: "sinteticos" });
 
   it("admissões e desligamentos (§4.6, sorteio determinístico)", () => {
     const m = movimentos(
@@ -60,6 +60,7 @@ describe.each(CASOS)("obra = protótipo · %s", (_nome: string, j: number) => {
       { ...obra, premissas: { ...obra.premissas, adiantamento: false } },
       parametrosDe(P.pObra(po)),
       ctx,
+      { movimentos: "sinteticos" },
     );
     expect(Math.abs(r.total.caixa - semAdiant.total.caixa)).toBeLessThan(CENTAVO);
     expect(semAdiant.total.saldoFolha).toBe(0);

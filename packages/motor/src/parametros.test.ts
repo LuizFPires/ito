@@ -3,9 +3,9 @@ import { ENCARGOS_REFERENCIA } from "./encargos";
 import { tabelaDoMes } from "./modelo";
 import type { Tabela } from "./modelo";
 import {
-  aplicarReajuste,
+  aplicarReajustes,
   parametrosEpoca,
-  reajusteDaProjecao,
+  reajustesDaProjecao,
   salarioDe,
   tabelaDaCidade,
 } from "./parametros";
@@ -49,31 +49,41 @@ describe("reajuste automático — golden SPEC §8", () => {
   const prazo = 9;
 
   it("data-base de maio cai no mês 2 (mai/27)", () => {
-    expect(reajusteDaProjecao(inicio, prazo, null, ccBh)).toEqual({
-      mesIdx: 2,
-      pct: 6,
-      automatico: true,
-    });
+    expect(reajustesDaProjecao(inicio, prazo, null, ccBh)).toEqual([
+      { mesIdx: 2, pct: 6, automatico: true },
+    ]);
   });
 
   it("pedreiro 1.400 até abr/27 e 1.484 a partir de mai/27", () => {
     const p0 = tabelaDaCidade(base(1300), ccBh, vespasiano);
-    const p = aplicarReajuste(p0, prazo, reajusteDaProjecao(inicio, prazo, null, ccBh));
+    const p = aplicarReajustes(p0, prazo, reajustesDaProjecao(inicio, prazo, null, ccBh));
     const ped = (i: number) => salarioDe(tabelaDoMes(p, i), "ped");
     expect([ped(0), ped(1)]).toEqual([1400, 1400]);
     expect([ped(2), ped(8)]).toEqual([1484, 1484]);
   });
 
   it("reajuste informado vence o automático", () => {
-    expect(reajusteDaProjecao(inicio, prazo, { mesIdx: 4, pct: 5 }, ccBh)).toEqual({
-      mesIdx: 4,
-      pct: 5,
-      automatico: false,
-    });
+    expect(reajustesDaProjecao(inicio, prazo, { mesIdx: 4, pct: 5 }, ccBh)).toEqual([
+      { mesIdx: 4, pct: 5, automatico: false },
+    ]);
+  });
+
+  it("informado com 0% significa sem reajuste (não cai no automático)", () => {
+    expect(reajustesDaProjecao(inicio, prazo, { mesIdx: 3, pct: 0 }, ccBh)).toEqual([]);
   });
 
   it("data-base no mês 0 não conta (só i ≥ 1); fora do prazo não há reajuste", () => {
-    expect(reajusteDaProjecao({ ano: 2027, mes: 5 }, 3, null, ccBh)).toBeNull();
+    expect(reajustesDaProjecao({ ano: 2027, mes: 5 }, 3, null, ccBh)).toEqual([]);
+  });
+
+  it("obra longa: um reajuste por data-base, composto (decisão M3)", () => {
+    const r = reajustesDaProjecao(inicio, 24, null, ccBh);
+    expect(r.map((x) => x.mesIdx)).toEqual([2, 14]);
+    const p = aplicarReajustes(tabelaDaCidade(base(1300), ccBh, vespasiano), 24, r);
+    const ped = (i: number) => salarioDe(tabelaDoMes(p, i), "ped");
+    expect([ped(1), ped(2), ped(13), ped(14), ped(23)]).toEqual([
+      1400, 1484, 1484, 1573.04, 1573.04,
+    ]);
   });
 });
 

@@ -8,7 +8,7 @@ import { ENCARGOS_REFERENCIA, taxasEncargos } from "./encargos";
 import { vtDiario, vtDiarioDe } from "./local";
 import type { Contexto } from "./modelo";
 import { calcularObra } from "./obra";
-import { aplicarReajuste, reajusteDaProjecao, salarioDe, tabelaDaCidade } from "./parametros";
+import { aplicarReajustes, reajustesDaProjecao, salarioDe, tabelaDaCidade } from "./parametros";
 import { projetar } from "./projecao";
 import {
   carregarPrototipo,
@@ -47,7 +47,9 @@ describe("golden SPEC §8", () => {
   it("conferência da folha: diferença R$ 0,00 em todas as obras de exemplo", () => {
     const dic = P.D.rubricas.map((r: any) => ({ codigo: r.cod, tipo: r.tipo, componente: r.comp }));
     for (const po of P.D.obras) {
-      const r = calcularObra(obraDe(P, po), parametrosDe(P.pObra(po)), ctx);
+      const r = calcularObra(obraDe(P, po), parametrosDe(P.pObra(po)), ctx, {
+        movimentos: "sinteticos",
+      });
       for (const m of conferirFolha(r.porMes, dic))
         expect(Math.abs(m.diferenca)).toBeLessThan(0.005);
     }
@@ -57,10 +59,10 @@ describe("golden SPEC §8", () => {
     const cct = cctDe(P.D.ccts.find((t: any) => t.id === "bh"));
     const cid = cidadeDe(P.D.cidades.find((c: any) => c.id === "vespasiano"));
     const inicio = { ano: 2027, mes: 3 };
-    const p = aplicarReajuste(
+    const p = aplicarReajustes(
       tabelaDaCidade(tabelaDe(P.pVig()), cct, cid),
       9,
-      reajusteDaProjecao(inicio, 9, null, cct),
+      reajustesDaProjecao(inicio, 9, null, cct),
     );
     const ped = (i: number) => salarioDe(typeof p === "function" ? p(i) : p, "ped");
     expect([ped(1), ped(2)]).toEqual([1400, 1484]);

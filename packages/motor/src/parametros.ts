@@ -68,23 +68,28 @@ export interface Reajuste {
 }
 
 /**
- * Reajuste da projeção: informado (pct ≠ 0) ou automático = primeiro mês i ≥ 1 cujo mês do
- * calendário é o da data-base da CCT, com o reajuste estimado dela.
+ * Reajustes da projeção (SPEC §3, decisão M3):
+ * - informado (não nulo) vale como está — inclusive 0%, que significa "sem reajuste";
+ * - automático (nulo) = cada mês i ≥ 1 do prazo cujo mês do calendário é o da data-base da CCT,
+ *   com o reajuste estimado dela. Obras longas recebem um reajuste por ano, composto.
  */
-export function reajusteDaProjecao(
+export function reajustesDaProjecao(
   inicio: InicioObra,
   prazo: number,
   informado: { mesIdx: number; pct: number } | null | undefined,
   cct: Pick<CctPrecos, "mesDataBase" | "reajusteEstimadoPct"> | null | undefined,
-): Reajuste | null {
-  if (informado && Number(informado.pct))
-    return { mesIdx: informado.mesIdx, pct: informado.pct, automatico: false };
-  if (!cct) return null;
+): Reajuste[] {
+  if (informado != null)
+    return Number(informado.pct)
+      ? [{ mesIdx: informado.mesIdx, pct: informado.pct, automatico: false }]
+      : [];
+  if (!cct || !cct.reajusteEstimadoPct) return [];
+  const lista: Reajuste[] = [];
   for (let i = 1; i < prazo; i++) {
     if (anoMes(inicio, i).mes === cct.mesDataBase)
-      return { mesIdx: i, pct: cct.reajusteEstimadoPct, automatico: true };
+      lista.push({ mesIdx: i, pct: cct.reajusteEstimadoPct, automatico: true });
   }
-  return null;
+  return lista;
 }
 
 const centavos = (v: number) => Math.round(v * 100) / 100;
@@ -101,18 +106,45 @@ function reajustar(t: Tabela, pct: number): Tabela {
   };
 }
 
-/** A partir do mês do reajuste, salários, benefícios e gratificações × (1 + pct). */
-export function aplicarReajuste(
+/**
+ * A partir de cada reajuste, salários, benefícios e gratificações × (1 + pct), em centavos;
+ * reajustes seguidos se compõem (1.400 → 1.484 → 1.573,04).
+ */
+export function aplicarReajustes(
   base: Tabela,
   prazo: number,
-  reajuste: Reajuste | null,
+  reajustes: readonly Reajuste[],
 ): ParametrosObra {
-  if (!reajuste || !reajuste.pct || reajuste.mesIdx >= prazo) return base;
-  const depois = reajustar(base, reajuste.pct);
-  return (i) => (i >= reajuste.mesIdx ? depois : base);
+  const validos = reajustes
+    .filter((r) => r.pct && r.mesIdx > 0 && r.mesIdx < prazo)
+    .sort((x, y) => x.mesIdx - y.mesIdx);
+  if (!validos.length) return base;
+  const etapas: { desde: number; tabela: Tabela }[] = [{ desde: 0, tabela: base }];
+  for (const r of validos)
+    etapas.push({ desde: r.mesIdx, tabela: reajustar(etapas[etapas.length - 1]!.tabela, r.pct) });
+  return (i) => {
+    let t = base;
+    for (const e of etapas) if (i >= e.desde) t = e.tabela;
+    return t;
+  };
 }
 
-/** Salário da função na tabela; sem salário, o do oficial (pedreiro), como no protótipo. */
+export type OrigemSalario = "tabela" | "oficial" | "ausente";
+
+/**
+ * Salário da função na tabela; sem salário, o do oficial (pedreiro), como no protótipo.
+ * A origem fica no custo para a tela avisar quando não veio da tabela.
+ */
+export function salarioComOrigem(
+  t: Tabela,
+  funcaoId: string,
+): { valor: number; origem: OrigemSalario } {
+  const v = t.salarios[funcaoId];
+  if (v !== undefined) return { valor: v, origem: "tabela" };
+  const ped = t.salarios.ped;
+  return ped !== undefined ? { valor: ped, origem: "oficial" } : { valor: 0, origem: "ausente" };
+}
+
 export function salarioDe(t: Tabela, funcaoId: string): number {
-  return t.salarios[funcaoId] ?? t.salarios.ped ?? 0;
+  return salarioComOrigem(t, funcaoId).valor;
 }

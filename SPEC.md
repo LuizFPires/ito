@@ -103,7 +103,7 @@ Projecao      { id, nome, cliente, tipologia, cidade_id, inicio (mês/ano), praz
   - `salarios`, `beneficios` e `gratificacoes` da CCT da cidade;
   - `vt_diaria = tarifa_local × conducoes × 2`;
   - ISS (alíquota S/P) = `iss_pct` da cidade.
-- **Reajuste:** se `projecao.reajuste` for nulo, usa-se o **primeiro mês `i ≥ 1` cujo mês do calendário = `cct.mes_data_base`** e `pct = cct.reajuste_estimado_pct`. A partir de `i`, salários, benefícios e gratificações são multiplicados por `(1 + pct)`.
+- **Reajuste:** se `projecao.reajuste` for nulo, vale **todo mês `i ≥ 1` cujo mês do calendário = `cct.mes_data_base`** (um por data-base dentro do prazo), com `pct = cct.reajuste_estimado_pct`. A partir de cada `i`, salários, benefícios e gratificações são multiplicados por `(1 + pct)`, **compostos** e arredondados ao centavo em cada passo (24 meses de mar/27: 1.400 → 1.484 em mai/27 → 1.573,04 em mai/28). Reajuste **informado** vence o automático; informado com **0%** significa sem reajuste. *(Decisão M3: o protótipo aplicava só o primeiro.)*
 - **Projeção sem cidade:** tabela vigente.
 
 ---
@@ -164,7 +164,7 @@ prov  = remun × prov%(reg)       se provisionar; prov% = férias 1/12 + 1/3 + 1
 nf    = remun × nf%(reg)         só S/P (ISS, PIS, COFINS, CPRB)
                                  estágio: enc = prov = nf = 0
 
-vtDia = origem(f) = aloj   → 0
+vtDia = origem(f) = aloj   → 0                       (com ou sem cidade)
         origem(f) = diaria → passagem_de[origem] × 2  (se não cadastrada: (tarifa obra + tarifa origem) × 2)
         senão              → vt_diaria (p)
 VTbruto = pres × vtDia × dias_trabalhados(i)          (CLT e estágio; 0 para S/P)
@@ -203,6 +203,7 @@ dem_i = max(0, cab_{i−1} − cab_i) + churn  (+ 50% de cab no último mês: de
 No histórico real, admissões e desligamentos vêm da folha. A fórmula acima vale só para projeções e para dados sintéticos.
 
 ### 4.7 Indicadores derivados
+Divisão por zero dá 0. No motor: `indicadores(resultado)`.
 - **R$ por dia, com taxa** = total ÷ dias. **Sem taxa** = remun ÷ dias.
 - **Encargos %** = (enc + prov + nf) ÷ remun.
 - **Benefícios %** = (VT + benef) ÷ remun.
@@ -218,14 +219,15 @@ No histórico real, admissões e desligamentos vêm da folha. A fórmula acima v
 Para cada função `f` com referências `R` e estatística `agg` (média ou mediana):
 - **Escala com área:**
   - `PMk = agg(PM_f(r) ÷ área(r) × 1.000) × (1 + ajuste_f)`;
-  - a distribuição no tempo é a média das curvas das referências, normalizadas por sobreposição de frações do prazo (`shares`);
+  - a distribuição no tempo é a média das curvas **das referências que tiveram a função** (PM > 0), normalizadas por sobreposição de frações do prazo (`shares`, soma 1). Referência sem a função entra com 0 no PMk, mas não achata a curva. *(Decisão M3: o protótipo fazia a média de todas as referências.)*
   - `q_f(j) = round(PMk × área/1.000 × share(j))`.
-- **Fixo por mês:** `q_f(j) = round(agg(média mensal de cabeças) × (1 + ajuste_f))`.
+- **Fixo por mês:** `q_f(j) = round(agg(média mensal de cabeças) × (1 + ajuste_f))`. Sem cabeças na referência, vale o teto do equivalente de cada mês.
 - **Quantidades manuais:** substituem tudo.
 - **Premissas:** cada uma usa o valor informado ou, na falta dele, `agg` das referências:
   - HE, absenteísmo e rotatividade;
   - mix de HE (média das referências);
-  - licenças e férias: `agg(Σ dias ÷ PM)` × PM do mês.
+  - licenças e férias: `round(agg(Σ dias ÷ PM) × PM do mês)` — pessoa-dias inteiros por mês, como no protótipo. *(Registrado na revisão do M3.)*
+- **Validações:** prazo ≤ 0 não projeta; referência com área ≤ 0 fica fora do PMk e da curva.
 
 ## 5.1 Cenários de origem
 No resultado, a mesma projeção é recalculada com a origem trocada para todas as funções: **local**, **diária** e **alojada**. A diferença em R$ e % é mostrada contra o plano.

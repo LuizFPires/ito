@@ -116,6 +116,14 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Validação diferencial:** além dos golden do SPEC §8, um teste roda o motor do próprio protótipo (`docs/prototipo/ITO_2.0.html`) sobre as obras de exemplo dele e exige o mesmo resultado do `packages/motor`, componente a componente e mês a mês, até o centavo. As obras de exemplo viram fixtures sintéticas (só matrícula).
 - **Salário com faltas limitado a zero:** `salv = máx(0, bruto − faltasH − faltasD)`, como no protótipo (esclarecimento no SPEC §4.1).
 - **Movimentação sintética** (admissões e desligamentos por rotatividade, só em projeções e dados sintéticos): mesmo sorteio determinístico do protótipo (hash FNV de obra + função + mês), SPEC §4.6.
+- Revisão do M3 (21/10/2026), onde o motor passa a divergir do protótipo de propósito (casos que as obras de exemplo não exercitam):
+  - **Curva no tempo só das referências que têm a função** (PMk continua com o zero de quem não tem). SPEC §5.
+  - **Todos os reajustes por data-base dentro do prazo, compostos**; informado com 0% = sem reajuste. SPEC §3.
+  - **Licenças e férias projetadas arredondadas** a pessoa-dias inteiros por mês, como no protótipo. SPEC §5.
+  - Alojada sem VT mesmo sem cidade; quantidade fixa sem cabeças usa o teto do equivalente.
+  - Entrada inválida é erro (`ErroEntradaMotor`, com a ação a tomar): função com efetivo fora do cadastro, NaN, negativos, percentual fora de 0–100, mix de HE ≠ 100%. `calcularObra` exige `movimentos` (da folha ou "sinteticos") e `Obra.meses` define a duração.
+  - Indicadores do §4.7 em `indicadores(resultado)`; o custo traz a origem do salário (tabela, oficial ou ausente), o valor da hora e a HE cheia.
+  - Tipos do Node só no harness e nos testes (`tsconfig.test.json`); o código do motor compila sem eles.
 - O M3 começou empilhado no M2 (`feat/m3-motor` a partir de `feat/m2-cidades-cct`), pela mesma pendência do CI.
 - **Pendência externa (para resolver no futuro):** o CI do GitHub está bloqueado por cobrança da conta (Billing & plans). Os PRs seguem empilhados (#1 M0 → #2 M1 → M2) e só entram na `main` quando o CI rodar verde.
 
