@@ -1,5 +1,5 @@
 begin;
-select plan(12);
+select plan(17);
 
 select has_table('public', 'projecoes', 'tabela projecoes');
 select is((select relrowsecurity from pg_class where oid = 'public.projecoes'::regclass), true, 'RLS ligada');
@@ -37,6 +37,22 @@ select lives_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111
   'diretoria aprova');
 select is((select situacao::text from public.projecoes where id = '11111111-1111-4111-8111-111111111111'),
   'aprovada', 'aprovada');
+
+-- aprovada fica travada para quem edita
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+select throws_ok($$update public.projecoes set area_m2 = 1 where id = '11111111-1111-4111-8111-111111111111'$$,
+  '42501', null, 'aprovada não é alterada');
+select lives_ok($$update public.projecoes set resumo = '{"total": 1}' where id = '11111111-1111-4111-8111-111111111111'$$,
+  'resumo da aprovada pode ser recalculado');
+select throws_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'em_analise')$$,
+  '42501', null, 'planejamento não desfaz a aprovação');
+select throws_ok($$delete from public.projecoes where id = '11111111-1111-4111-8111-111111111111'$$,
+  '42501', null, 'aprovada não é apagada');
+-- autoria vem do banco
+insert into public.projecoes (id, nome, inicio, prazo_meses, area_m2, criado_por)
+  values ('22222222-2222-4222-8222-222222222222', 'Autoria', '2027-01-01', 3, 100, '00000000-0000-4000-8000-000000000001');
+select is((select criado_por::text from public.projecoes where id = '22222222-2222-4222-8222-222222222222'),
+  '00000000-0000-4000-8000-000000000002', 'autor é quem criou, não o informado');
 
 select * from finish();
 rollback;
