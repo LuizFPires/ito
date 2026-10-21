@@ -1248,6 +1248,118 @@ export type Database = {
           },
         ];
       };
+      projecoes: {
+        Row: {
+          absenteismo_pct: number | null;
+          ajustes: NonNullable<Json>;
+          area_m2: number;
+          atualizado_em: string;
+          cidade_id: string | null;
+          cidade_origem_id: string | null;
+          cliente: string;
+          criado_em: string;
+          criado_por: string | null;
+          estatistica: string;
+          ferias_por_pm: number | null;
+          he_media: number | null;
+          he_mix: Json | null;
+          id: string;
+          inicio: string;
+          licenca_por_pm: number | null;
+          nome: string;
+          origem: NonNullable<Json>;
+          prazo_meses: number;
+          premissas: NonNullable<Json>;
+          quantidades_manuais: Json | null;
+          reajuste_mes: number | null;
+          reajuste_pct: number | null;
+          referencias: string[];
+          regime: NonNullable<Json>;
+          resumo: NonNullable<Json>;
+          rotatividade_pct: number | null;
+          situacao: Database["public"]["Enums"]["situacao_projecao"];
+          tipologia: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          absenteismo_pct?: number | null;
+          ajustes?: NonNullable<Json>;
+          area_m2: number;
+          atualizado_em?: string;
+          cidade_id?: string | null;
+          cidade_origem_id?: string | null;
+          cliente?: string;
+          criado_em?: string;
+          criado_por?: string | null;
+          estatistica?: string;
+          ferias_por_pm?: number | null;
+          he_media?: number | null;
+          he_mix?: Json | null;
+          id?: string;
+          inicio: string;
+          licenca_por_pm?: number | null;
+          nome: string;
+          origem?: NonNullable<Json>;
+          prazo_meses: number;
+          premissas?: NonNullable<Json>;
+          quantidades_manuais?: Json | null;
+          reajuste_mes?: number | null;
+          reajuste_pct?: number | null;
+          referencias?: string[];
+          regime?: NonNullable<Json>;
+          resumo?: NonNullable<Json>;
+          rotatividade_pct?: number | null;
+          situacao?: Database["public"]["Enums"]["situacao_projecao"];
+          tipologia?: string;
+        };
+        Update: {
+          absenteismo_pct?: number | null;
+          ajustes?: NonNullable<Json>;
+          area_m2?: number;
+          atualizado_em?: string;
+          cidade_id?: string | null;
+          cidade_origem_id?: string | null;
+          cliente?: string;
+          criado_em?: string;
+          criado_por?: string | null;
+          estatistica?: string;
+          ferias_por_pm?: number | null;
+          he_media?: number | null;
+          he_mix?: Json | null;
+          id?: string;
+          inicio?: string;
+          licenca_por_pm?: number | null;
+          nome?: string;
+          origem?: NonNullable<Json>;
+          prazo_meses?: number;
+          premissas?: NonNullable<Json>;
+          quantidades_manuais?: Json | null;
+          reajuste_mes?: number | null;
+          reajuste_pct?: number | null;
+          referencias?: string[];
+          regime?: NonNullable<Json>;
+          resumo?: NonNullable<Json>;
+          rotatividade_pct?: number | null;
+          situacao?: Database["public"]["Enums"]["situacao_projecao"];
+          tipologia?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "projecoes_cidade_id_fkey";
+            columns: ["cidade_id"];
+            isOneToOne: false;
+            referencedRelation: "cidades";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "projecoes_cidade_origem_id_fkey";
+            columns: ["cidade_origem_id"];
+            isOneToOne: false;
+            referencedRelation: "cidades";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       realocacoes: {
         Row: {
           funcao_id: string;
@@ -1411,6 +1523,10 @@ export type Database = {
         Returns: string;
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
+      definir_situacao: {
+        Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };
+        Returns: undefined;
+      };
       duplicar_cct: { Args: { p_id: string; p_nome: string; p_origem: string }; Returns: string };
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
@@ -1421,9 +1537,11 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];
       };
+      pode_aprovar: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_carregar: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_cadastros: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };
+      pode_projetar: { Args: Record<PropertyKey, never>; Returns: boolean };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
@@ -1444,6 +1562,7 @@ export type Database = {
       modo_dias: "calendario" | "fixo";
       perfil: "planejamento" | "engenharia" | "dp_rh" | "controladoria" | "diretoria";
       regime: "clt" | "sp";
+      situacao_projecao: "rascunho" | "em_analise" | "aprovada";
       tipo_realocacao: "cedida" | "recebida";
       tipo_rubrica: "provento" | "desconto" | "informativo";
       vinculo: "clt" | "estagio";
@@ -1579,6 +1698,7 @@ export const Constants = {
       modo_dias: ["calendario", "fixo"],
       perfil: ["planejamento", "engenharia", "dp_rh", "controladoria", "diretoria"],
       regime: ["clt", "sp"],
+      situacao_projecao: ["rascunho", "em_analise", "aprovada"],
       tipo_realocacao: ["cedida", "recebida"],
       tipo_rubrica: ["provento", "desconto", "informativo"],
       vinculo: ["clt", "estagio"],
