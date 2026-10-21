@@ -288,3 +288,47 @@ export function Kpi({
     </Cartao>
   );
 }
+
+/**
+ * Escolha com busca para listas longas (centenas de cidades): o navegador filtra as opções
+ * enquanto se digita. Ao bater exatamente numa opção, chama `onEscolher` e limpa o campo.
+ */
+export function SeletorComBusca({
+  rotulo,
+  placeholder,
+  opcoes,
+  onEscolher,
+}: {
+  rotulo: string;
+  placeholder: string;
+  opcoes: readonly { valor: string; texto: string }[];
+  onEscolher: (valor: string) => void;
+}) {
+  const id = useId();
+  const [txt, setTxt] = useState("");
+  return (
+    <>
+      <input
+        className={s.input}
+        style={{ width: "auto", minWidth: 240, minHeight: 32, borderRadius: 999, fontSize: 12 }}
+        list={id}
+        aria-label={rotulo}
+        placeholder={placeholder}
+        value={txt}
+        onChange={(e) => {
+          const v = e.target.value;
+          const achou = opcoes.find((o) => o.texto === v);
+          if (achou) {
+            onEscolher(achou.valor);
+            setTxt("");
+          } else setTxt(v);
+        }}
+      />
+      <datalist id={id}>
+        {opcoes.map((o) => (
+          <option key={o.valor} value={o.texto} />
+        ))}
+      </datalist>
+    </>
+  );
+}

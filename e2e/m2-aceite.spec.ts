@@ -44,6 +44,16 @@ test.beforeAll(async () => {
       iss_pct: 3,
     })),
   );
+  // 3 feriados por cidade = 1.500 linhas: passa do limite de 1.000 por consulta do PostgREST.
+  await api.inserir(
+    "cidade_feriados",
+    Array.from({ length: N_CID * 3 }, (_, k) => ({
+      cidade_id: `massa_cid_${doisDig(Math.floor(k / 3))}`,
+      mes: (Math.floor(k / 3) % 12) + 1,
+      dia: (k % 3) + 1,
+      nome: `Feriado ${(k % 3) + 1}`,
+    })),
+  );
 });
 
 test.afterAll(async () => {
@@ -70,6 +80,12 @@ test("cidade entre 500: buscar e editar na própria linha (2 interações)", asy
     "VT local R$ 12,20/dia",
   );
   expect(await semRolagemLateral(page)).toBe(true);
+
+  // a última cidade (feriados 1.498–1.500) não perde nenhum feriado
+  await page.getByRole("searchbox", { name: "Buscar cidade" }).fill("massa 499");
+  await expect(
+    page.getByRole("button", { name: "Feriados e passagens de Massa 499/MG" }),
+  ).toHaveText("3 · detalhes");
 });
 
 test("convenção entre 100: buscar, abrir e editar (3 ações, 2 para achar)", async ({ page }) => {

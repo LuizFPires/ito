@@ -1,6 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import { MESES, moeda, percentual } from "@ito/formato";
-import { nomeCidade, nomeCurtoCct, useCidades } from "../../dados/cidades";
+import { consultaCct, nomeCidade, nomeCurtoCct, useCidades } from "../../dados/cidades";
 import type { CctResumo, DetalheCct } from "../../dados/cidades";
 import {
   NOME_GRUPO,
@@ -11,28 +11,13 @@ import {
 } from "../../dados/cadastros";
 import type { GrupoFuncao } from "../../dados/cadastros";
 import { valorOuEmpresa } from "../../lib/ccts";
-import { supabase } from "../../lib/supabase";
 import { Botao, Cartao } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
-
-async function carregar(id: string): Promise<DetalheCct> {
-  const [sal, grat, ben] = await Promise.all([
-    supabase.from("cct_salarios").select("funcao_id, valor").eq("cct_id", id),
-    supabase.from("cct_gratificacoes").select("funcao_id, valor").eq("cct_id", id),
-    supabase.from("cct_beneficios").select("beneficio_id, valor").eq("cct_id", id),
-  ]);
-  for (const r of [sal, grat, ben]) if (r.error) throw r.error;
-  return {
-    salarios: Object.fromEntries((sal.data ?? []).map((r) => [r.funcao_id, Number(r.valor)])),
-    gratificacoes: Object.fromEntries((grat.data ?? []).map((r) => [r.funcao_id, Number(r.valor)])),
-    beneficios: Object.fromEntries((ben.data ?? []).map((r) => [r.beneficio_id, Number(r.valor)])),
-  };
-}
 
 /** Comparação de até 4 CCTs lado a lado (só leitura). Menor salário marcado. */
 export function CompararCcts({ ccts, onVoltar }: { ccts: CctResumo[]; onVoltar: () => void }) {
   const detalhes = useQueries({
-    queries: ccts.map((t) => ({ queryKey: ["cct", t.id], queryFn: () => carregar(t.id) })),
+    queries: ccts.map((t) => consultaCct(t.id)),
   });
   const { data: funcoes } = useFuncoes();
   const { data: bens } = useBeneficios();

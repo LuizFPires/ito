@@ -27,7 +27,14 @@ import type { GrupoFuncao } from "../../dados/cadastros";
 import { valorOuEmpresa } from "../../lib/ccts";
 import { codigoDe, contemTermos, ordenar, paginar } from "../../lib/lista";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
-import { Campo, CampoBusca, CampoNumero, Paginacao, Selecao } from "../../ui/formulario";
+import {
+  Campo,
+  CampoBusca,
+  CampoNumero,
+  Paginacao,
+  Selecao,
+  SeletorComBusca,
+} from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import s from "./cidades.module.css";
 import { CompararCcts } from "./CompararCcts";
@@ -70,9 +77,11 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
   }, [ccts, cidadesDe, q, ordem]);
   const pg = paginar(lista, pagina, POR_PAGINA);
   const atual = (ccts ?? []).find((t) => t.id === (sel ?? pg.itens[0]?.id));
+  // Só as que ainda existem (uma CCT marcada pode ter sido excluída).
   const paraComparar = marcadas
     .map((id) => (ccts ?? []).find((t) => t.id === id))
     .filter((t): t is CctResumo => !!t);
+  const nMarcadas = paraComparar.length;
 
   function novaCct() {
     const base = "Nova convenção";
@@ -84,7 +93,8 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
       { id, nome },
       {
         onSuccess: () => {
-          setQ("");
+          setQ(nome); // a nova aparece na lista, na primeira página
+          setPagina(1);
           setSel(id);
           setComparando(false);
         },
@@ -141,7 +151,7 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
                     type="checkbox"
                     className={s.marca}
                     checked={marcada}
-                    disabled={!marcada && marcadas.length >= MAX_COMPARAR}
+                    disabled={!marcada && nMarcadas >= MAX_COMPARAR}
                     aria-label={`Comparar ${t.nome}`}
                     onChange={(e) => marcar(t.id, e.target.checked)}
                   />
@@ -171,10 +181,10 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
           </ul>
           <Paginacao pagina={pg} onPagina={setPagina} nome="convenções" />
         </Cartao>
-        {marcadas.length ? (
+        {nMarcadas ? (
           <Cartao className={f.painel} style={{ position: "static", gap: 10, padding: 16 }}>
             <span className="rotulo">
-              Comparar ({numero(marcadas.length)} de {MAX_COMPARAR})
+              Comparar ({numero(nMarcadas)} de {MAX_COMPARAR})
             </span>
             <div>
               {paraComparar.map((t) => (
@@ -187,7 +197,7 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
               <Botao
                 pequeno
                 variante="escuro"
-                disabled={marcadas.length < 2}
+                disabled={nMarcadas < 2}
                 onClick={() => setComparando(true)}
               >
                 Comparar lado a lado
@@ -220,16 +230,22 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
             cct={atual}
             pode={pode}
             cidadesDaCct={cidadesDe[atual.id] ?? []}
-            onDuplicada={(id) => {
-              setQ("");
+            onDuplicada={(id, nome) => {
+              setQ(nome);
+              setPagina(1);
               setSel(id);
             }}
-            onExcluida={() => setSel(null)}
+            onExcluida={() => {
+              setMarcadas((m) => m.filter((x) => x !== atual.id));
+              setSel(null);
+            }}
           />
         ) : (
           <Cartao className={f.painel} style={{ position: "static" }}>
             <p className="sub" style={{ margin: 0 }}>
-              Cadastre a primeira convenção.
+              {(ccts ?? []).length
+                ? "Nenhuma convenção encontrada. Limpe a busca."
+                : "Cadastre a primeira convenção."}
             </p>
           </Cartao>
         )}
@@ -248,7 +264,7 @@ function EditorCct({
   cct: CctResumo;
   pode: boolean;
   cidadesDaCct: string[];
-  onDuplicada: (id: string) => void;
+  onDuplicada: (id: string, nome: string) => void;
   onExcluida: () => void;
 }) {
   const { data: det } = useCct(cct.id);
@@ -285,13 +301,16 @@ function EditorCct({
     if (pct === null || pct < -50 || pct > 100)
       return setErroLote("Informe um percentual entre -50% e 100% (ex.: 5 ou 5,5).");
     setErroLote(null);
-    ajustar.mutate({ id: cct.id, pct });
+    const ok = window.confirm(
+      `Aplicar ${percentual(pct, 1)} a todos os salários e gratificações de "${cct.nome}"? Funções que hoje usam o salário da empresa passam a ter valor próprio já ajustado.`,
+    );
+    if (ok) ajustar.mutate({ id: cct.id, pct });
   }
 
   function duplicarCct() {
     const n = `${cct.nome} (cópia)`;
     const id = `${codigoDe(cct.id)}_c${Date.now().toString(36)}`.slice(0, 48);
-    duplicar.mutate({ origem: cct.id, id, nome: n }, { onSuccess: () => onDuplicada(id) });
+    duplicar.mutate({ origem: cct.id, id, nome: n }, { onSuccess: () => onDuplicada(id, n) });
   }
 
   return (
@@ -354,23 +373,15 @@ function EditorCct({
             <span className="sub">Nenhuma cidade vinculada.</span>
           )}
           {pode && livres.length > 0 && (
-            <Selecao
-              aria-label="Vincular cidade"
-              value=""
-              style={{ width: "auto", minHeight: 30, borderRadius: 999, fontSize: 12 }}
-              onChange={(e) => {
-                if (e.target.value)
-                  vincular.gravar({ id: e.target.value, patch: { cct_id: cct.id } });
-              }}
-            >
-              <option value="">+ vincular cidade…</option>
-              {livres.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {nomeCidade(c)} (hoje:{" "}
-                  {nomeCurtoCct((ccts ?? []).find((t) => t.id === c.cct_id)?.nome ?? "—")})
-                </option>
-              ))}
-            </Selecao>
+            <SeletorComBusca
+              rotulo="Vincular cidade"
+              placeholder="+ vincular cidade (digite o nome)…"
+              opcoes={livres.map((c) => ({
+                valor: c.id,
+                texto: `${nomeCidade(c)} (hoje: ${nomeCurtoCct((ccts ?? []).find((t) => t.id === c.cct_id)?.nome ?? "—")})`,
+              }))}
+              onEscolher={(id) => vincular.gravar({ id, patch: { cct_id: cct.id } })}
+            />
           )}
         </div>
       </Cartao>
@@ -472,7 +483,9 @@ function EditorCct({
               <th>Função</th>
               <th className={f.r}>Salário</th>
               <th className={f.r}>Gratificação</th>
-              <th className={f.r}>{outra ? `Empresa · ${nomeCurtoCct(outra.nome)}` : "Empresa"}</th>
+              <th className={f.r} style={{ whiteSpace: "normal" }}>
+                {outra ? `Empresa · ${nomeCurtoCct(outra.nome)}` : "Empresa"}
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -16,7 +16,14 @@ import {
 import type { Cidade } from "../../dados/cidades";
 import { codigoDe, contemTermos, paginar } from "../../lib/lista";
 import { Botao, Cartao } from "../../ui/componentes";
-import { Campo, CampoBusca, CampoNumero, Paginacao, Selecao } from "../../ui/formulario";
+import {
+  Campo,
+  CampoBusca,
+  CampoNumero,
+  Paginacao,
+  Selecao,
+  SeletorComBusca,
+} from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 
 const POR_PAGINA = 15;
@@ -409,21 +416,15 @@ function DetalheCidade({
       </table>
       {pode && (
         <div className={f.linha}>
-          <Selecao
-            aria-label="Nova origem"
-            value={novaOrigem}
-            style={{ width: "auto", minWidth: 220 }}
-            onChange={(e) => setNovaOrigem(e.target.value)}
-          >
-            <option value="">+ cidade de origem…</option>
-            {outras
+          <SeletorComBusca
+            rotulo="Nova origem"
+            placeholder="+ cidade de origem (digite o nome)…"
+            opcoes={outras
               .filter((o) => c.passagens[o.id] === undefined)
-              .map((o) => (
-                <option key={o.id} value={o.id}>
-                  {nomeCidade(o)}
-                </option>
-              ))}
-          </Selecao>
+              .map((o) => ({ valor: o.id, texto: nomeCidade(o) }))}
+            onEscolher={setNovaOrigem}
+          />
+          {novaOrigem && <span className="sub">Origem: {nomeDe(novaOrigem)}</span>}
           {novaOrigem && (
             <CampoNumero
               rotulo="Passagem da nova origem"

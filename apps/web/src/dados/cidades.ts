@@ -65,38 +65,90 @@ function useGravar<A>(
 
 // ── leitura ──────────────────────────────────────────────────────────────────
 
+/**
+ * Lê todas as linhas, de 1.000 em 1.000 (limite do PostgREST, `max_rows`), para listas que
+ * crescem com o cadastro (centenas de cidades, milhares de feriados).
+ */
+async function todas<R>(
+  pagina: (de: number, ate: number) => PromiseLike<{ data: R[] | null; error: unknown }>,
+): Promise<R[]> {
+  const TAM = 1000;
+  const linhas: R[] = [];
+  for (let de = 0; ; de += TAM) {
+    const lote = await ok(pagina(de, de + TAM - 1));
+    linhas.push(...lote);
+    if (lote.length < TAM) return linhas;
+  }
+}
+
+function agrupar<R, K extends string>(linhas: readonly R[], chave: (r: R) => K): Map<K, R[]> {
+  const m = new Map<K, R[]>();
+  for (const r of linhas) {
+    const k = chave(r);
+    const g = m.get(k);
+    if (g) g.push(r);
+    else m.set(k, [r]);
+  }
+  return m;
+}
+
 export function useCcts() {
   return useQuery({
     queryKey: chaves.ccts,
     queryFn: async () => {
-      const [ccts, sal] = await Promise.all([
-        ok(supabase.from("ccts").select("*").order("nome")),
-        ok(supabase.from("cct_salarios").select("cct_id, valor").eq("funcao_id", "ped")),
+      const vig = (await ok(supabase.from("parametros").select("data_base_vigente").single()))
+        .data_base_vigente;
+      const [ccts, sal, emp] = await Promise.all([
+        todas((de, ate) =>
+          supabase.from("ccts").select("*").order("nome").order("id").range(de, ate),
+        ),
+        todas((de, ate) =>
+          supabase
+            .from("cct_salarios")
+            .select("cct_id, valor")
+            .eq("funcao_id", "ped")
+            .order("cct_id")
+            .range(de, ate),
+        ),
+        ok(
+          supabase
+            .from("data_base_salarios")
+            .select("valor")
+            .eq("ano", vig ?? 0)
+            .eq("funcao_id", "ped")
+            .maybeSingle(),
+        ),
       ]);
-      const ped = Object.fromEntries(sal.map((s) => [s.cct_id, Number(s.valor)]));
-      return ccts.map((c) => ({ ...c, salarioOficial: ped[c.id] as number | undefined }));
+      const ped = new Map(sal.map((s) => [s.cct_id, Number(s.valor)]));
+      const daEmpresa = emp ? Number(emp.valor) : undefined;
+      // Sem salário de oficial na CCT vale o da empresa (decisão M2).
+      return ccts.map((c) => ({ ...c, salarioOficial: ped.get(c.id) ?? daEmpresa }));
     },
   });
 }
 export type CctResumo = NonNullable<ReturnType<typeof useCcts>["data"]>[number];
 
+/** Salários, gratificações e benefícios de uma CCT (usado pelo editor e pela comparação). */
+export async function carregarCct(id: string): Promise<DetalheCct> {
+  const [sal, grat, ben] = await Promise.all([
+    ok(supabase.from("cct_salarios").select("funcao_id, valor").eq("cct_id", id)),
+    ok(supabase.from("cct_gratificacoes").select("funcao_id, valor").eq("cct_id", id)),
+    ok(supabase.from("cct_beneficios").select("beneficio_id, valor").eq("cct_id", id)),
+  ]);
+  return {
+    salarios: Object.fromEntries(sal.map((r) => [r.funcao_id, Number(r.valor)])),
+    gratificacoes: Object.fromEntries(grat.map((r) => [r.funcao_id, Number(r.valor)])),
+    beneficios: Object.fromEntries(ben.map((r) => [r.beneficio_id, Number(r.valor)])),
+  };
+}
+
+export const consultaCct = (id: string) => ({
+  queryKey: chaves.cct(id),
+  queryFn: () => carregarCct(id),
+});
+
 export function useCct(id: string | undefined) {
-  return useQuery({
-    queryKey: chaves.cct(id ?? ""),
-    enabled: !!id,
-    queryFn: async (): Promise<DetalheCct> => {
-      const [sal, grat, ben] = await Promise.all([
-        ok(supabase.from("cct_salarios").select("funcao_id, valor").eq("cct_id", id!)),
-        ok(supabase.from("cct_gratificacoes").select("funcao_id, valor").eq("cct_id", id!)),
-        ok(supabase.from("cct_beneficios").select("beneficio_id, valor").eq("cct_id", id!)),
-      ]);
-      return {
-        salarios: Object.fromEntries(sal.map((r) => [r.funcao_id, Number(r.valor)])),
-        gratificacoes: Object.fromEntries(grat.map((r) => [r.funcao_id, Number(r.valor)])),
-        beneficios: Object.fromEntries(ben.map((r) => [r.beneficio_id, Number(r.valor)])),
-      };
-    },
-  });
+  return useQuery({ ...consultaCct(id ?? ""), enabled: !!id });
 }
 
 export function useCidades() {
@@ -104,17 +156,34 @@ export function useCidades() {
     queryKey: chaves.cidades,
     queryFn: async (): Promise<Cidade[]> => {
       const [cidades, fer, pas] = await Promise.all([
-        ok(supabase.from("cidades").select("*").order("nome")),
-        ok(supabase.from("cidade_feriados").select("*").order("mes").order("dia")),
-        ok(supabase.from("cidade_passagens").select("*")),
+        todas((de, ate) =>
+          supabase.from("cidades").select("*").order("nome").order("id").range(de, ate),
+        ),
+        todas((de, ate) =>
+          supabase
+            .from("cidade_feriados")
+            .select("*")
+            .order("cidade_id")
+            .order("mes")
+            .order("dia")
+            .range(de, ate),
+        ),
+        todas((de, ate) =>
+          supabase
+            .from("cidade_passagens")
+            .select("*")
+            .order("cidade_id")
+            .order("origem_id")
+            .range(de, ate),
+        ),
       ]);
+      const ferPor = agrupar(fer, (f) => f.cidade_id);
+      const pasPor = agrupar(pas, (p) => p.cidade_id);
       return cidades.map((c) => ({
         ...c,
-        feriados: fer
-          .filter((f) => f.cidade_id === c.id)
-          .map((f) => ({ mes: f.mes, dia: f.dia, nome: f.nome })),
+        feriados: (ferPor.get(c.id) ?? []).map((f) => ({ mes: f.mes, dia: f.dia, nome: f.nome })),
         passagens: Object.fromEntries(
-          pas.filter((p) => p.cidade_id === c.id).map((p) => [p.origem_id, Number(p.valor)]),
+          (pasPor.get(c.id) ?? []).map((p) => [p.origem_id, Number(p.valor)]),
         ),
       }));
     },
@@ -202,6 +271,8 @@ export function useAtualizarCidade() {
     ({ id, patch }: { id: string; patch: T["cidades"]["Update"] }) =>
       okLinhas(supabase.from("cidades").update(patch).eq("id", id).select()),
     recCidades,
+    "Salvo",
+    { "23505": "Essa cidade já está cadastrada nessa UF." },
   );
 }
 

@@ -29,7 +29,7 @@ TabelaEmpresa { data_base (ano), salarios {funcao: R$}, beneficios {beneficio: R
 Parametros    { data_base_vigente, calendario: { carnaval: bool, corpus_christi: bool,
                 feriados_empresa: [ {data, nome} ] } }
 
-CCT           { id, nome, mes_data_base (0–11), reajuste_estimado_pct,
+CCT           { id, nome, mes_data_base (0–11 no protótipo; 1–12 no banco, ver nota M2), reajuste_estimado_pct,
                 salarios {funcao: R$}, gratificacoes {funcao: R$/mês}, beneficios {beneficio: R$} }
 Cidade        { id, nome/UF, cct_id, tarifa_local, conducoes_por_trajeto, iss_pct,
                 feriados: [ {dd-mm, nome} ],                -- recorrentes todo ano

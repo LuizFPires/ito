@@ -64,35 +64,59 @@ test("comparar lado a lado: até 4, só leitura, menor salário marcado", async 
 
 test("controladoria: nova convenção, salário, lote, duplicar e excluir", async ({ page }) => {
   const api = await apiAdmin();
-  await entrar(page, "admin@ito.local");
-  await page.goto("/cidades");
-  await page.getByRole("button", { name: "+ Nova" }).click();
-  await expect(page.getByRole("status")).toContainText("Convenção criada");
   const nome = `CCT e2e ${Date.now()}`;
-  const campoNome = page.getByLabel("Nome da convenção");
-  await expect(campoNome).toHaveValue(/^Nova convenção/);
-  await campoNome.fill(nome);
-  await campoNome.blur();
-  await expect(page.getByRole("status")).toContainText("Salvo");
+  page.on("dialog", (d) => d.accept()); // confirmação do lote e da exclusão
+  try {
+    await entrar(page, "admin@ito.local");
+    await page.goto("/cidades");
+    await page.getByRole("button", { name: "+ Nova" }).click();
+    await expect(page.getByRole("status")).toContainText("Convenção criada");
+    const campoNome = page.getByLabel("Nome da convenção");
+    await expect(campoNome).toHaveValue(/^Nova convenção/);
+    await campoNome.fill(nome);
+    await campoNome.blur();
+    await expect(page.getByRole("status")).toContainText("Salvo");
 
-  const editor = page.getByRole("region", { name: "Salários e gratificações por função" });
-  await expect(editor.getByLabel("Salário de Pedreiro")).toHaveValue("1.400,00"); // tabela da empresa
-  await editor.getByLabel("Salário de Pedreiro").fill("1.500");
-  await editor.getByLabel("Salário de Pedreiro").press("Enter");
-  await expect(page.getByRole("status")).toContainText("Salvo");
+    const editor = page.getByRole("region", { name: "Salários e gratificações por função" });
+    await expect(editor.getByLabel("Salário de Pedreiro")).toHaveValue("1.400,00"); // tabela da empresa
+    await editor.getByLabel("Salário de Pedreiro").fill("1.500");
+    await editor.getByLabel("Salário de Pedreiro").press("Enter");
+    await expect(page.getByRole("status")).toContainText("Salvo");
 
-  await page.getByLabel("Percentual do ajuste em lote").fill("10");
-  await page.getByRole("button", { name: "Aplicar a salários e gratificações desta CCT" }).click();
-  await expect(editor.getByLabel("Salário de Pedreiro")).toHaveValue("1.650,00");
+    await page.getByLabel("Percentual do ajuste em lote").fill("10");
+    await page
+      .getByRole("button", { name: "Aplicar a salários e gratificações desta CCT" })
+      .click();
+    await expect(editor.getByLabel("Salário de Pedreiro")).toHaveValue("1.650,00");
 
-  await page.getByRole("button", { name: "Duplicar" }).click();
-  await expect(page.getByLabel("Nome da convenção")).toHaveValue(`${nome} (cópia)`);
-  await expect(editor.getByLabel("Salário de Pedreiro")).toHaveValue("1.650,00");
+    await page.getByRole("button", { name: "Duplicar" }).click();
+    await expect(page.getByLabel("Nome da convenção")).toHaveValue(`${nome} (cópia)`);
+    await expect(editor.getByLabel("Salário de Pedreiro")).toHaveValue("1.650,00");
 
-  page.once("dialog", (d) => d.accept());
-  await page.getByRole("button", { name: "Excluir" }).click();
-  await expect(page.getByRole("status")).toContainText("Convenção excluída");
-  await api.apagar(`ccts?nome=eq.${encodeURIComponent(nome)}`);
+    await page.getByRole("button", { name: "Excluir" }).click();
+    await expect(page.getByRole("status")).toContainText("Convenção excluída");
+  } finally {
+    for (const n of [nome, `${nome} (cópia)`])
+      await api.apagar(`ccts?nome=eq.${encodeURIComponent(n)}`);
+    await api.apagar(`ccts?nome=like.${encodeURIComponent("Nova convenção*")}`);
+  }
+});
+
+test("comparar com CCT de nome longo não cria rolagem lateral (regra 8)", async ({ page }) => {
+  await entrar(page, "engenharia@ito.local");
+  await page.goto("/cidades");
+  await page.getByRole("searchbox", { name: "Buscar convenção ou cidade" }).fill("rio doce");
+  await page
+    .getByRole("list", { name: "Convenções" })
+    .getByRole("button", { name: /Vale do Rio Doce/ })
+    .click();
+  await page
+    .getByLabel("Comparar com")
+    .selectOption({ label: "Campo das Vertentes (São João del-Rei)" });
+  await expect(
+    page.getByRole("columnheader", { name: /Empresa · Campo das Vertentes/ }),
+  ).toBeVisible();
+  expect(await semRolagemLateral(page)).toBe(true);
 });
 
 test("controladoria: nova cidade, passagem e feriado municipal", async ({ page }) => {
