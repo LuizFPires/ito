@@ -46,17 +46,19 @@
 
 ## M2 — Cidades e CCTs
 **Objetivo:** preços por lugar da obra, preparados para dezenas de CCTs e centenas de cidades.
-- [ ] Modelo `CCT` e `Cidade` (SPEC §1.1)
-- [ ] Aba **Convenções**, em lista + detalhe:
+- [x] Modelo `CCT` e `Cidade` (SPEC §1.1)
+- [x] Aba **Convenções**, em lista + detalhe:
   - lista com busca (inclusive por cidade coberta), ordenação e paginação de 10;
   - detalhe com nome, cidades vinculadas (vincular), data-base e reajuste, benefícios;
   - **salário e gratificação fixa por função**, com diferença % para a empresa e "comparar com" outra CCT;
   - ajuste em lote (salários e gratificações); duplicar; excluir só sem cidades.
-- [ ] **Comparar lado a lado:** até 4 CCTs, só leitura, menor salário destacado, funções com gratificação
-- [ ] Aba **Cidades:** busca, filtro por CCT e paginação de 15. Campos: CCT, tarifa, conduções, passagem vindo de BH (com VT diário calculado e "estimado" quando faltar), ISS e feriados recorrentes.
-- [ ] Indicadores do topo: nº de CCTs, diferença de salário do pedreiro, data-bases nos próximos 3 meses
+- [x] **Comparar lado a lado:** até 4 CCTs, só leitura, menor salário destacado, funções com gratificação
+- [x] Aba **Cidades:** busca, filtro por CCT e paginação de 15. Campos: CCT, tarifa, conduções, passagem vindo de BH (com VT diário calculado e "estimado" quando faltar), ISS e feriados recorrentes.
+- [x] Indicadores do topo: nº de CCTs, diferença de salário do pedreiro, data-bases nos próximos 3 meses
 
 **Aceite:** com 100 CCTs e 500 cidades de teste, achar e editar qualquer uma leva menos de 3 interações, sem rolagem lateral em 1.280 px.
+
+> ✅ 21/10/2026: e2e `m2-aceite` cria 100 CCTs e 500 cidades; cidade = buscar + editar na linha (2 interações); CCT = buscar + abrir (2) e editar; sem rolagem lateral (medido por tabela). Golden de VT por origem (R$ 11,00 × R$ 24,80) no motor, no banco e na interface.
 
 ---
 

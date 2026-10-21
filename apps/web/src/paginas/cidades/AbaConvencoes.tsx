@@ -472,8 +472,7 @@ function EditorCct({
               <th>Função</th>
               <th className={f.r}>Salário</th>
               <th className={f.r}>Gratificação</th>
-              <th className={f.r}>Empresa</th>
-              {outra && <th className={f.r}>{nomeCurtoCct(outra.nome)}</th>}
+              <th className={f.r}>{outra ? `Empresa · ${nomeCurtoCct(outra.nome)}` : "Empresa"}</th>
             </tr>
           </thead>
           <tbody>
@@ -482,7 +481,7 @@ function EditorCct({
               if (!fs.length) return null;
               return [
                 <tr key={g} className={f.grupo}>
-                  <td colSpan={outra ? 5 : 4}>Mão de obra {nomeG.toLowerCase()}</td>
+                  <td colSpan={4}>Mão de obra {nomeG.toLowerCase()}</td>
                 </tr>,
                 ...fs.map((x) => {
                   const v = valorOuEmpresa(det.salarios, empresa.salarios, x.id);
@@ -503,6 +502,7 @@ function EditorCct({
                         {pode ? (
                           <CampoNumero
                             compacto
+                            largura={104}
                             rotulo={`Salário de ${x.nome}`}
                             valor={v.valor ?? 0}
                             onSalvar={(valor) =>
@@ -517,6 +517,7 @@ function EditorCct({
                         {pode ? (
                           <CampoNumero
                             compacto
+                            largura={96}
                             rotulo={`Gratificação de ${x.nome}`}
                             valor={det.gratificacoes[x.id] ?? 0}
                             onSalvar={(valor) =>
@@ -528,19 +529,15 @@ function EditorCct({
                         )}
                       </td>
                       <td className={f.r}>
-                        {moeda(e)}
-                        <div className="sub">
-                          <Diferenca pct={dif} />
+                        <div>
+                          {moeda(e)} <Diferenca pct={dif} />
                         </div>
-                      </td>
-                      {outra && (
-                        <td className={f.r}>
-                          {moeda(vc)}
+                        {outra && (
                           <div className="sub">
-                            <Diferenca pct={difc} />
+                            {nomeCurtoCct(outra.nome)}: {moeda(vc)} <Diferenca pct={difc} />
                           </div>
-                        </td>
-                      )}
+                        )}
+                      </td>
                     </tr>
                   );
                 }),
