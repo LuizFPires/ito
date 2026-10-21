@@ -113,3 +113,10 @@
   flex-direction: column;
   gap: 24px;
 }
+.migalha {
+  color: inherit;
+  text-decoration: none;
+}
+.migalha:hover {
+  text-decoration: underline;
+}

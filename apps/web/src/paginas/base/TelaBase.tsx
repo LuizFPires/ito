@@ -114,6 +114,11 @@ export function TelaBase() {
       if (gravou && vivo.current) await invalidar();
     })();
   }, [ctx, chaveAlvo, impressao, gravaResumo, invalidar]);
+  // primeiro clique: nome em ordem alfabética; números do maior para o menor (como o protótipo)
+  const ordenarPor = (c: ChaveBase) =>
+    setOrdem(
+      ordem.chave === c ? alternarOrdem(ordem, c) : { chave: c, dir: c === "nome" ? 1 : -1 },
+    );
   const mudarFiltro = (fn: () => void) => {
     fn();
     setPagina(1);
@@ -161,6 +166,13 @@ export function TelaBase() {
               Carregar obra
             </Link>
           )}
+          <Link
+            className={`${u.botao} ${u.pequeno} ${u.primario}`}
+            to="/projecoes"
+            style={{ textDecoration: "none" }}
+          >
+            Nova projeção →
+          </Link>
         </span>
       </div>
 
@@ -284,67 +296,29 @@ export function TelaBase() {
                   <th className={s.sel}>
                     <span className="sr-only">Selecionar</span>
                   </th>
-                  <ThOrdem
-                    chave="nome"
-                    ordem={ordem}
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="nome" ordem={ordem} onOrdenar={ordenarPor}>
                     Obra
                   </ThOrdem>
-                  <ThOrdem
-                    chave="area"
-                    ordem={ordem}
-                    direita
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="area" ordem={ordem} direita onOrdenar={ordenarPor}>
                     Área (m²)
                   </ThOrdem>
-                  <ThOrdem
-                    chave="periodo"
-                    ordem={ordem}
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="periodo" ordem={ordem} onOrdenar={ordenarPor}>
                     Período
                   </ThOrdem>
                   <th className={s.hist}>Histograma</th>
-                  <ThOrdem
-                    chave="pico"
-                    ordem={ordem}
-                    direita
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="pico" ordem={ordem} direita onOrdenar={ordenarPor}>
                     Pico
                   </ThOrdem>
-                  <ThOrdem
-                    chave="pm"
-                    ordem={ordem}
-                    direita
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="pm" ordem={ordem} direita onOrdenar={ordenarPor}>
                     Pessoa-mês
                   </ThOrdem>
-                  <ThOrdem
-                    chave="he"
-                    ordem={ordem}
-                    direita
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="he" ordem={ordem} direita onOrdenar={ordenarPor}>
                     HE h/pes.
                   </ThOrdem>
-                  <ThOrdem
-                    chave="epoca"
-                    ordem={ordem}
-                    direita
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="epoca" ordem={ordem} direita onOrdenar={ordenarPor}>
                     Custo época
                   </ThOrdem>
-                  <ThOrdem
-                    chave="atual"
-                    ordem={ordem}
-                    direita
-                    onOrdenar={(c) => setOrdem(alternarOrdem(ordem, c))}
-                  >
+                  <ThOrdem chave="atual" ordem={ordem} direita onOrdenar={ordenarPor}>
                     Custo {vigente ?? ""}
                   </ThOrdem>
                 </tr>

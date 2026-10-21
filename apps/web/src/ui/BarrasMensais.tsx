@@ -88,6 +88,11 @@ export function BarrasMensais({
                 </rect>
               );
             })}
+            {!agrupadas && n <= 18 && totais[i]! > 0 && (
+              <text x={x0 + larg / 2} y={y(totais[i]!) - 4} textAnchor="middle" className={s.eixo}>
+                {formatar(totais[i]!)}
+              </text>
+            )}
             {i % cada === 0 && (
               <text x={x0 + larg / 2} y={altura - 8} textAnchor="middle" className={s.eixo}>
                 {r}
@@ -103,7 +108,7 @@ export function BarrasMensais({
 export function Legenda({ series }: { series: readonly Pick<Serie, "id" | "nome" | "cor">[] }) {
   return (
     <div className={s.legenda}>
-      {series.map((x) => (
+      {[...series].reverse().map((x) => (
         <span key={x.id}>
           <i style={{ background: x.cor }} />
           {x.nome}

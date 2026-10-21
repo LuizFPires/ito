@@ -4,7 +4,7 @@ import { Cartao } from "../ui/componentes";
 import s from "../shell/Shell.module.css";
 
 interface Props {
-  grupo: string;
+  grupo: ReactNode;
   titulo: string;
   resumo: string;
   milestone: string;

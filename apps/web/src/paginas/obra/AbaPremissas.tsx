@@ -9,6 +9,7 @@ import { Badge, Botao, Cartao, Chip, Segmento } from "../../ui/componentes";
 import { Campo, CampoNumero, Interruptor, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import { useToast } from "../../ui/toast";
+import { absenteismoMedio } from "./calculos";
 import type { DadosAba } from "./comum";
 import { NOME_HE, soma } from "./comum";
 import s from "./obra.module.css";
@@ -28,9 +29,15 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
   const avisar = useToast();
   const chave = chavesObras.obra(id);
   const [novoFer, setNovoFer] = useState({ data: "", nome: "" });
-  const [mix, setMix] = useState(() =>
-    Object.fromEntries(TIPOS_HE.map((t) => [t, Number(o[`he_mix_${t}`])])),
-  );
+  const doBanco = Object.fromEntries(TIPOS_HE.map((t) => [t, Number(o[`he_mix_${t}`])]));
+  const chaveMix = TIPOS_HE.map((t) => doBanco[t]).join("|");
+  const [mix, setMix] = useState(doBanco);
+  const [mixBase, setMixBase] = useState(chaveMix);
+  // obra relida (outra aba, outro usuário): mostra o que está gravado
+  if (mixBase !== chaveMix) {
+    setMixBase(chaveMix);
+    setMix(doBanco);
+  }
 
   /**
    * Aplica no cache (recálculo imediato) e grava. Se falhar, desfaz só esta mudança (outra
@@ -206,6 +213,8 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                     <td className={`${f.r} ${s.semQuebra}`}>
                       {est ? (
                         <Badge tom="ambar">Estágio · bolsa</Badge>
+                      ) : !pode ? (
+                        <span>{sp ? "Prestador S/P" : "Folha CLT"}</span>
                       ) : (
                         <Segmento
                           rotulo={`Regime de ${fun(k).nome}`}
@@ -215,7 +224,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                           ]}
                           valor={sp ? "sp" : "clt"}
                           onChange={(v) => {
-                            if (!pode) return;
+                            if (v === (sp ? "sp" : "clt")) return;
                             void salvar(
                               (x) => ({
                                 ...x,
@@ -270,6 +279,8 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
             <p className="sub" style={{ margin: 0 }}>
               Participação de cada tipo nas horas extras da obra, lida da folha. Cada tipo é pago
               com o adicional da tabela. Grava quando a soma fecha em 100%.
+              {Math.abs(mixTotal - 100) >= 0.01 &&
+                " Ainda não gravado: ajuste os tipos para somar 100%."}
             </p>
             <div className={f.form}>
               {TIPOS_HE.map((t) => (
@@ -312,7 +323,38 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                   {d.trocas.map((t) => (
                     <tr key={t.mes_idx}>
                       <td>A partir de {meses[t.mes_idx]}</td>
-                      <td>CCT {t.data_base}</td>
+                      <td>
+                        {pode ? (
+                          <Selecao
+                            aria-label={`Nova tabela a partir de ${meses[t.mes_idx]}`}
+                            value={t.data_base}
+                            onChange={(e) => {
+                              const base = Number(e.target.value);
+                              void salvar(
+                                (x) => ({
+                                  ...x,
+                                  trocas: x.trocas.map((y) =>
+                                    y.mes_idx === t.mes_idx ? { ...y, data_base: base } : y,
+                                  ),
+                                }),
+                                lista("trocas"),
+                                () => edicao.trocaTabela(id, t.mes_idx, base),
+                              ).catch(() => {});
+                            }}
+                          >
+                            {ctx.datasBase
+                              .filter((a) => a !== o.data_base)
+                              .map((a) => (
+                                <option key={a} value={a}>
+                                  CCT {a}
+                                </option>
+                              ))}
+                          </Selecao>
+                        ) : (
+                          `CCT ${t.data_base}`
+                        )}
+                        {t.motivo && <div className="sub">{t.motivo}</div>}
+                      </td>
                       <td className={f.r}>
                         {pode && (
                           <Botao
@@ -497,7 +539,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
                   <td className={f.r}>
                     <strong>
                       {campo === "absenteismo_pct"
-                        ? percentual(soma(serie) / Math.max(1, serie.length))
+                        ? percentual(absenteismoMedio(obra))
                         : numero(soma(serie))}
                     </strong>
                   </td>

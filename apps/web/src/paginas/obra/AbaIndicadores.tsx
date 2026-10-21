@@ -4,11 +4,15 @@ import { parametrosDe } from "../../lib/obraDoBanco";
 import { Cartao } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
+import { absenteismoMedio } from "./calculos";
 import type { DadosAba } from "./comum";
 import { NOME_GRUPO_F, soma } from "./comum";
 import type { SetVista } from "./controles";
 import { ControleGrupo } from "./controles";
 import s from "./obra.module.css";
+
+/** Exame sem valor aparece como "–" (como o protótipo). */
+const ex0 = (v: number) => (v ? moeda(v, 0) : "–");
 
 /** Indicadores da obra (PRD §3.2.8, SPEC §4.7) e médias por função. */
 export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista: SetVista }) {
@@ -95,13 +99,13 @@ export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista:
         />
         <Kpi
           rotulo="Absenteísmo médio"
-          valor={percentual(soma(obra.absenteismoPct) / Math.max(1, n))}
+          valor={percentual(absenteismoMedio(obra))}
           sub="faltas e afastamentos"
         />
         <Kpi
           rotulo="Rotatividade"
           valor={`${percentual(obra.rotatividadePct, 0)} a.m.`}
-          sub="trocas sobre o efetivo"
+          sub="referência para projeções"
         />
         <Kpi
           rotulo="Licenças sem remuneração"
@@ -178,7 +182,7 @@ export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista:
                   <td className={f.r}>
                     {moeda(x.exA + x.exP + x.exD, 0)}
                     <div className={`sub ${s.nowrap}`}>
-                      adm. {moeda(x.exA, 0)} · per. {moeda(x.exP, 0)} · dem. {moeda(x.exD, 0)}
+                      adm. {ex0(x.exA)} · per. {ex0(x.exP)} · dem. {ex0(x.exD)}
                     </div>
                   </td>
                 </tr>

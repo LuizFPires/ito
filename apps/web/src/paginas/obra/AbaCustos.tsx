@@ -26,7 +26,12 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
   // componentes do filtro de grupo, mês a mês
   const M = rotulos.map((_, i) => somar(ids.map((k) => r.porFuncao[k]![i]!)));
   const series = porComp
-    ? comps.map((c) => ({ id: c.k, nome: c.n, cor: c.c, valores: M.map((m) => m[c.k] / 1000) }))
+    ? comps.map((c) => ({
+        id: c.k,
+        nome: c.n.replace(/ \(.*\)$/, ""),
+        cor: c.c,
+        valores: M.map((m) => m[c.k] / 1000),
+      }))
     : ids.map((k) => ({
         id: k,
         nome: fun(k).nome,
@@ -46,7 +51,7 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
         : `${percentual(p0.dsrFixoPct, 0)} sobre o valor das HE`,
     enc: `${percentual(tx.soc.clt * 100)} da folha (inclui incidência s/ férias e 13º)`,
     prov: `${percentual(tx.prov.clt * 100)} sobre a remuneração`,
-    vt: "VT diário × dias úteis − 6% do salário",
+    vt: `${moeda(p0.vtDiaria)} × ${p0.modoDias === "calendario" ? "dias úteis do mês" : `${numero(p0.diasFixos)} dias`} − 6% do salário`,
     benef: "catálogo de benefícios por pessoa",
     exames: "admissional, periódico (1/12 ao mês) e demissional",
     resc: `${numero(p0.fatorRescisao * 100)}% do salário por desligamento`,
@@ -85,7 +90,7 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
           <BarrasMensais
             rotulos={rotulos}
             series={series}
-            formatar={(v) => numero(v)}
+            formatar={(v) => `${numero(v)} k`}
             titulo={porComp ? "Custo por componente por mês" : "Custo por função por mês"}
           />
         </div>
@@ -243,7 +248,10 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
                   ))}
                   <td className={f.r}>
                     {moeda(tot, 0)}
-                    <div className="sub">{numero(soma(M.map((m) => m.x)), 1)} PM</div>
+                    <div className={`sub ${s.nowrap}`}>
+                      {numero(soma(M.map((m) => m.x)), 1)} PM ×{" "}
+                      {moeda(soma(M.map((m) => m.x)) ? tot / soma(M.map((m) => m.x)) : 0, 0)}
+                    </div>
                   </td>
                 </tr>
               </tbody>

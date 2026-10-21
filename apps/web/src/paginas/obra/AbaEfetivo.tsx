@@ -1,15 +1,26 @@
 import { useState } from "react";
-import { numero, percentual } from "@ito/formato";
+import { moeda, numero, percentual } from "@ito/formato";
 import { useLancamentos } from "../../dados/obras";
-import { Cartao, Segmento } from "../../ui/componentes";
+import { FORA_DO_CUSTO } from "@ito/motor";
+import { useRubricas } from "../../dados/cadastros";
+import { Badge, Botao, Cartao, Segmento } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
-import type { DadosAba } from "./comum";
+import { absenteismoMedio } from "./calculos";
+import type { Aba, DadosAba } from "./comum";
 import { NOME_GRUPO_F, ORDEM_GRUPOS, soma } from "./comum";
 import type { SetVista } from "./controles";
 import { ControleEixo, ControleGrupo } from "./controles";
 import s from "./obra.module.css";
 
-export function AbaEfetivo({ dados, setVista }: { dados: DadosAba; setVista: SetVista }) {
+export function AbaEfetivo({
+  dados,
+  setVista,
+  irPara,
+}: {
+  dados: DadosAba;
+  setVista: SetVista;
+  irPara: (a: Aba) => void;
+}) {
   const [modo, setModo] = useState<"eq" | "cab">("eq");
   const [cel, setCel] = useState<{ k: string; i: number } | null>(null);
   const { obra, movimentos, ids, fun, rotulos, vista, d, pode } = dados;
@@ -98,7 +109,12 @@ export function AbaEfetivo({ dados, setVista }: { dados: DadosAba; setVista: Set
                       <td className={f.forte}>
                         <span className={s.amostra} style={{ background: fun(k).cor }} />
                         {fun(k).nome}
-                        {obra.regime?.[k] === "sp" && <span className="sub"> · S/P</span>}
+                        {obra.regime?.[k] === "sp" && (
+                          <>
+                            {" "}
+                            <Badge tom="ambar">S/P</Badge>
+                          </>
+                        )}
                       </td>
                       {rotulos.map((m, i) => {
                         const v = val(k, i);
@@ -111,6 +127,7 @@ export function AbaEfetivo({ dados, setVista }: { dados: DadosAba; setVista: Set
                         const a = v / mx;
                         const estilo = {
                           background: `color-mix(in srgb, var(--amber) ${Math.round(a * 55)}%, transparent)`,
+                          color: a > 0.7 ? "var(--on-amber)" : undefined,
                         };
                         return (
                           <td key={i} className={f.r} style={{ padding: "4px 6px" }}>
@@ -186,7 +203,7 @@ export function AbaEfetivo({ dados, setVista }: { dados: DadosAba; setVista: Set
               {linhaExtra(
                 "Absenteísmo (faltas + afastamentos)",
                 obra.absenteismoPct.map((x) => percentual(x)),
-                percentual(soma(obra.absenteismoPct) / Math.max(1, n)),
+                percentual(absenteismoMedio(obra)),
               )}
               {modo === "eq" && (
                 <>
@@ -236,7 +253,13 @@ export function AbaEfetivo({ dados, setVista }: { dados: DadosAba; setVista: Set
         no mês.
       </p>
       {pode && cel && (
-        <PainelMatriculas dados={dados} k={cel.k} i={cel.i} onFechar={() => setCel(null)} />
+        <PainelMatriculas
+          dados={dados}
+          k={cel.k}
+          i={cel.i}
+          onFechar={() => setCel(null)}
+          irPara={irPara}
+        />
       )}
     </>
   );
@@ -247,29 +270,52 @@ function PainelMatriculas({
   k,
   i,
   onFechar,
+  irPara,
 }: {
   dados: DadosAba;
   k: string;
   i: number;
   onFechar: () => void;
+  irPara: (a: Aba) => void;
 }) {
   const q = useLancamentos(dados.d.obra.id, true);
+  const rub = useRubricas();
+  const noCusto = new Map(
+    (rub.data ?? [])
+      .filter((r) => !FORA_DO_CUSTO.includes(r.componente))
+      .map((r) => [r.codigo, r.tipo]),
+  );
+  // remuneração por matrícula no mês: rubricas que entram no custo (descontos negativos)
+  const remun = new Map<string, number>();
+  for (const r of q.data?.rubricas ?? []) {
+    if (r.funcao_id !== k || r.mes_idx !== i || !noCusto.has(r.rubrica_codigo)) continue;
+    const v = Number(r.valor);
+    const sinal = noCusto.get(r.rubrica_codigo) === "desconto" ? -Math.abs(v) : v;
+    remun.set(r.matricula, (remun.get(r.matricula) ?? 0) + sinal);
+  }
   const linhas = (q.data?.lancamentos ?? []).filter((l) => l.funcao_id === k && l.mes_idx === i);
+  const pm = soma(linhas.map((l) => Number(l.equivalente)));
+  const he = soma(linhas.map((l) => Number(l.horas_extras)));
+  const total = soma([...remun.values()]);
   return (
     <Cartao aria-label="Matrículas do mês">
       <div className={f.barra}>
-        <span className="rotulo">
-          {dados.fun(k).nome} · {dados.rotulos[i]}
-        </span>
-        <span className="sub">Sem nomes: o histórico guarda só a matrícula.</span>
-        <button
-          type="button"
-          className={f.linkAcao}
-          onClick={onFechar}
-          style={{ marginLeft: "auto" }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 240 }}>
+          <span className="rotulo">
+            {dados.fun(k).nome} · {dados.rotulos[i]} · {numero(linhas.length)}{" "}
+            {linhas.length === 1 ? "pessoa" : "pessoas"}
+          </span>
+          <span className="sub">
+            {numero(pm, 1)} pessoa-mês · {numero(he)} h extras · {moeda(total, 0)} de remuneração na
+            folha
+          </span>
+        </div>
+        <Botao pequeno onClick={() => irPara("pessoas")}>
+          Ver todas as pessoas →
+        </Botao>
+        <Botao pequeno variante="fantasma" onClick={onFechar}>
           Fechar
-        </button>
+        </Botao>
       </div>
       {q.isLoading ? (
         <p className="sub" style={{ padding: 22 }}>
@@ -283,20 +329,24 @@ function PainelMatriculas({
               <th className={f.r}>Pessoa-mês</th>
               <th className={f.r}>HE (h)</th>
               <th className={f.r}>Faltas (h)</th>
+              <th className={f.r}>Remuneração na folha</th>
               <th>Situação</th>
             </tr>
           </thead>
           <tbody>
             {linhas.map((l) => (
               <tr key={l.matricula}>
-                <td className="mono">{l.matricula}</td>
+                <td className="mono">
+                  {l.matricula} {l.desligado && <Badge tom="ambar">deslig.</Badge>}
+                </td>
                 <td className={f.r}>{numero(Number(l.equivalente), 2)}</td>
                 <td className={f.r}>{numero(Number(l.horas_extras), 1)}</td>
                 <td className={f.r}>{numero(Number(l.faltas_horas), 1)}</td>
+                <td className={f.r}>{moeda(remun.get(l.matricula) ?? 0, 0)}</td>
                 <td className="sub">
                   {[
                     l.admitido && "admitido",
-                    l.desligado && "desligado",
+                    l.sem_vt && "sem VT",
                     l.realocada_para && `trabalhou em ${l.realocada_para}`,
                     Number(l.ferias_dias) > 0 && `${numero(Number(l.ferias_dias))} dias de férias`,
                     Number(l.licenca_dias) > 0 &&
@@ -309,7 +359,7 @@ function PainelMatriculas({
             ))}
             {!linhas.length && (
               <tr>
-                <td colSpan={5} className="sub">
+                <td colSpan={6} className="sub">
                   Nenhuma matrícula neste mês.
                 </td>
               </tr>
@@ -317,6 +367,10 @@ function PainelMatriculas({
           </tbody>
         </table>
       )}
+      <p className="sub" style={{ padding: "12px 22px 18px", margin: 0 }}>
+        Sem nomes: o histórico guarda só a matrícula · valores da época (CCT{" "}
+        {dados.d.obra.data_base}), como pagos na folha.
+      </p>
     </Cartao>
   );
 }

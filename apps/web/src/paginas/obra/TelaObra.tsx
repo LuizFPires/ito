@@ -45,13 +45,20 @@ export function TelaObra() {
   const obraQ = useObra(id);
   const contexto = useContextoCarga();
   const funcoesQ = useFuncoes();
-  const [vista, setVista] = useState<Vista>({
+  const [vista, setVistaEstado] = useState<Vista>(() => ({
     visao: "epoca",
     caixa: false,
     grupo: "todas",
     eixo: "data",
     agrupadas: false,
-  });
+    ...lerPreferencias(),
+  }));
+  const setVista: typeof setVistaEstado = (v) =>
+    setVistaEstado((x) => {
+      const novo = typeof v === "function" ? v(x) : v;
+      guardarPreferencias(novo);
+      return novo;
+    });
 
   const d = obraQ.data;
   const ctx = contexto.data;
@@ -174,7 +181,14 @@ export function TelaObra() {
 
   return (
     <Pagina
-      grupo={`Base histórica · ${o.cliente || "Sem cliente"}`}
+      grupo={
+        <>
+          <Link to="/base" className={s.migalha}>
+            Base histórica
+          </Link>{" "}
+          · {o.cliente || "Sem cliente"}
+        </>
+      }
       titulo={o.nome}
       resumo={meta}
       milestone="M5"
@@ -257,9 +271,9 @@ export function TelaObra() {
 
       <div id="painel-obra" role="tabpanel" aria-labelledby={`aba-${aba}`} className={s.painel}>
         {aba === "visao" && <AbaVisao dados={dados} setVista={setVista} irPara={irPara} />}
-        {aba === "efetivo" && <AbaEfetivo dados={dados} setVista={setVista} />}
+        {aba === "efetivo" && <AbaEfetivo dados={dados} setVista={setVista} irPara={irPara} />}
         {aba === "custos" && <AbaCustos dados={dados} setVista={setVista} />}
-        {aba === "he" && <AbaHE dados={dados} setVista={setVista} />}
+        {aba === "he" && <AbaHE dados={dados} setVista={setVista} irPara={irPara} />}
         {aba === "folha" && <AbaFolha dados={dados} irPara={irPara} />}
         {aba === "pessoas" && <AbaPessoas dados={dados} />}
         {aba === "aprop" && <AbaApropriacao dados={dados} />}
@@ -318,4 +332,29 @@ function KpisObra({ dados }: { dados: DadosAba }) {
       />
     </div>
   );
+}
+
+const CHAVE_PREF = "ito.obra.vista";
+/** Eixo, barras e caixa ficam lembrados neste navegador (como no protótipo). */
+function lerPreferencias(): Partial<Vista> {
+  try {
+    const p = JSON.parse(localStorage.getItem(CHAVE_PREF) ?? "{}") as Partial<Vista>;
+    return {
+      ...(p.eixo === "data" || p.eixo === "mes" ? { eixo: p.eixo } : {}),
+      ...(typeof p.agrupadas === "boolean" ? { agrupadas: p.agrupadas } : {}),
+      ...(typeof p.caixa === "boolean" ? { caixa: p.caixa } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+function guardarPreferencias(v: Vista) {
+  try {
+    localStorage.setItem(
+      CHAVE_PREF,
+      JSON.stringify({ eixo: v.eixo, agrupadas: v.agrupadas, caixa: v.caixa }),
+    );
+  } catch {
+    // navegador sem armazenamento: segue sem lembrar
+  }
 }

@@ -1,28 +1,18 @@
 import { moeda, numero } from "@ito/formato";
-import { custoFuncaoMes } from "@ito/motor";
-import { parametrosDe } from "../../lib/obraDoBanco";
 import { Badge, Cartao } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
+import { custoRealocacao } from "./calculos";
 import type { DadosAba } from "./comum";
 import { soma } from "./comum";
 import s from "./obra.module.css";
 
 /** MDO realocada (PRD §3.2.9): o custo fica onde a pessoa trabalhou. */
 export function AbaRealocada({ dados }: { dados: DadosAba }) {
-  const { d, fun, rotulos, obra, ctx } = dados;
+  const { d, fun, rotulos } = dados;
   const R = d.realocacoes;
-  const p = parametrosDe(d, ctx.tabelas, ctx.vigente, "epoca");
   const n = rotulos.length;
-  // custo das pessoas realocadas no período, com os preços e premissas desta obra (época)
-  const custo = (x: (typeof R)[number]) => {
-    const fn = ctx.ctx.funcoes.find((y) => y.id === x.funcao_id);
-    if (!fn) return 0;
-    let t = 0;
-    for (let i = x.mes_ini; i <= Math.min(x.mes_fim, n - 1); i++)
-      t += custoFuncaoMes(obra, fn, i, p, ctx.ctx, { x: x.qtd }).total;
-    return t;
-  };
+  const custo = (x: (typeof R)[number]) => custoRealocacao(dados, x);
   const pm = (x: (typeof R)[number]) => x.qtd * (Math.min(x.mes_fim, n - 1) - x.mes_ini + 1);
   const ced = R.filter((x) => x.tipo === "cedida");
   const rec = R.filter((x) => x.tipo === "recebida");

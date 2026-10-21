@@ -127,7 +127,9 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
       <Cartao aria-label="Pessoas ao longo da obra">
         <div className={f.barra}>
           <span className="rotulo">Pessoas ao longo da obra</span>
-          <span className="sub">Sem nomes: o histórico guarda só a matrícula.</span>
+          <span className="sub">
+            Sem nomes: o histórico guarda só a matrícula · valores da época, como pagos na folha.
+          </span>
         </div>
         <table className={f.tabela}>
           <thead>

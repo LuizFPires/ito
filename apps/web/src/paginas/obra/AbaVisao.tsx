@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { mesAno, moeda, numero, percentual } from "@ito/formato";
 import { anoMes, calendarioMes } from "@ito/motor";
+import { diasDoPeriodo } from "../../lib/obraDoBanco";
 import { BarraComposicao, BarrasMensais, Legenda } from "../../ui/BarrasMensais";
 import { Badge, Botao, Cartao, Segmento } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
@@ -54,6 +55,7 @@ export function AbaVisao({
       "Período",
       `${mesAno(ini.ano, ini.mes)} a ${mesAno(fim.ano, fim.mes)} · ${numero(o.meses)} competências`,
     ],
+    ["Duração", `${numero(diasDoPeriodo(o.inicio, o.meses))} dias corridos`],
     ["Data-base salarial", `CCT ${o.data_base}${oficial ? ` · oficial ${moeda(oficial)}` : ""}`],
     [
       "Troca de tabela no período",
@@ -108,7 +110,7 @@ export function AbaVisao({
             </span>
             <span className={f.linha}>
               <ControleGrupo vista={vista} setVista={setVista} />
-              <ControleLayout vista={vista} setVista={setVista} />
+              {metrica === "pessoas" && <ControleLayout vista={vista} setVista={setVista} />}
               <ControleEixo vista={vista} setVista={setVista} />
               <Segmento
                 rotulo="Métrica"
@@ -125,8 +127,8 @@ export function AbaVisao({
           <BarrasMensais
             rotulos={rotulos}
             series={series}
-            agrupadas={vista.agrupadas}
-            formatar={(v) => numero(v)}
+            agrupadas={metrica === "pessoas" && vista.agrupadas}
+            formatar={(v) => (metrica === "pessoas" ? numero(v) : `${numero(v)} k`)}
             titulo={
               metrica === "pessoas"
                 ? "Pessoas por função por mês"

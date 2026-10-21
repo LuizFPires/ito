@@ -292,6 +292,15 @@ export const edicao = {
         .insert({ obra_id: id, mes_idx: mes, data_base: dataBase, motivo: "" })
         .select(),
     ),
+  trocaTabela: (id: string, mes: number, dataBase: number) =>
+    okLinhas(
+      supabase
+        .from("obra_trocas_tabela")
+        .update({ data_base: dataBase })
+        .eq("obra_id", id)
+        .eq("mes_idx", mes)
+        .select(),
+    ),
   removerTroca: (id: string, mes: number) =>
     okLinhas(
       supabase.from("obra_trocas_tabela").delete().eq("obra_id", id).eq("mes_idx", mes).select(),

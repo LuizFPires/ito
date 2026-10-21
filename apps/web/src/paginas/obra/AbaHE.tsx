@@ -3,16 +3,24 @@ import { moeda, numero, percentual } from "@ito/formato";
 import type { TipoHe } from "@ito/motor";
 import { TIPOS_HE, tabelaDoMes } from "@ito/motor";
 import { parametrosDe } from "../../lib/obraDoBanco";
-import { Cartao } from "../../ui/componentes";
+import { Botao, Cartao } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
-import type { DadosAba } from "./comum";
+import type { Aba, DadosAba } from "./comum";
 import { gastoHe, NOME_HE, plural, soma } from "./comum";
 import type { SetVista } from "./controles";
 import { ControleEixo, ControleGrupo } from "./controles";
 import s from "./obra.module.css";
 
-export function AbaHE({ dados, setVista }: { dados: DadosAba; setVista: SetVista }) {
+export function AbaHE({
+  dados,
+  setVista,
+  irPara,
+}: {
+  dados: DadosAba;
+  setVista: SetVista;
+  irPara: (a: Aba) => void;
+}) {
   const { r, fun, rotulos, vista, d, ctx, obra } = dados;
   const ids = dados.ids.filter((k) => r.porFuncao[k]!.some((c) => c.horasExtras > 0));
   const mesTot = rotulos.map((_, i) => soma(ids.map((k) => gastoHe(r.porFuncao[k]![i]!))));
@@ -38,7 +46,7 @@ export function AbaHE({ dados, setVista }: { dados: DadosAba; setVista: SetVista
     const mix = obra.heMixPct ?? {};
     leitura = c.x
       ? `Em ${rotulos[atual.i]}, ${numero(c.x, 1)} ${c.x > 1 ? plural(nome) : nome.toLowerCase()} (pessoa-mês equivalente) fizeram em média ${numero(c.horasPorPessoa, 1)} h extras cada, a ${moeda(c.valorHoraExtra)} por hora em média (${TIPOS_HE.filter(
-          (t) => (mix[t] ?? 0) > 0,
+          (t) => c.heTipo[t] > 0.5,
         )
           .map(
             (t) =>
@@ -81,6 +89,11 @@ export function AbaHE({ dados, setVista }: { dados: DadosAba; setVista: SetVista
           <span className="rotulo">Horas extras por tipo</span>
           <span className="sub">
             Como na folha: cada tipo com seu adicional. Valores sem DSR e sem encargos.
+          </span>
+          <span style={{ marginLeft: "auto" }}>
+            <Botao pequeno onClick={() => irPara("prem")}>
+              Distribuição nas premissas
+            </Botao>
           </span>
         </div>
         <table className={f.tabela}>

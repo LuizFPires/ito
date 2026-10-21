@@ -1,6 +1,8 @@
 /** Contas das abas do detalhe da obra que não saem prontas do motor (testadas à parte). */
-import type { ResultadoObra } from "@ito/motor";
-import type { FuncaoInfo } from "./comum";
+import type { Obra, ResultadoObra } from "@ito/motor";
+import { custoFuncaoMes } from "@ito/motor";
+import { parametrosDe } from "../../lib/obraDoBanco";
+import type { DadosAba, FuncaoInfo } from "./comum";
 
 export const CONTA_VT = "04.02.07";
 export const CONTA_EXAMES = "04.01.03";
@@ -52,4 +54,31 @@ export function apropriacaoPorConta(
       add(CONTA_EXAMES, "Exames admissionais, periódicos e demissionais", i, c.exames);
     });
   return [...linhas.values()].sort((a, b) => a.conta.localeCompare(b.conta));
+}
+
+/**
+ * Absenteísmo médio da obra ponderado pelo efetivo de cada mês (protótipo `absMedio`), como a
+ * projeção usa quando a obra é referência.
+ */
+export function absenteismoMedio(o: Pick<Obra, "equivalente" | "absenteismoPct">): number {
+  const n = o.absenteismoPct.length;
+  const tot = Array.from({ length: n }, (_, i) =>
+    Object.values(o.equivalente).reduce((s, v) => s + (v[i] ?? 0), 0),
+  );
+  const pm = tot.reduce((a, b) => a + b, 0);
+  return pm ? tot.reduce((s, x, i) => s + x * (o.absenteismoPct[i] ?? 0), 0) / pm : 0;
+}
+
+/** Custo das pessoas realocadas no período, com os preços e premissas da obra (época). */
+export function custoRealocacao(
+  dados: Pick<DadosAba, "d" | "ctx" | "obra" | "rotulos">,
+  x: { funcao_id: string; mes_ini: number; mes_fim: number; qtd: number },
+): number {
+  const fn = dados.ctx.ctx.funcoes.find((y) => y.id === x.funcao_id);
+  if (!fn) return 0;
+  const p = parametrosDe(dados.d, dados.ctx.tabelas, dados.ctx.vigente, "epoca");
+  let t = 0;
+  for (let i = x.mes_ini; i <= Math.min(x.mes_fim, dados.rotulos.length - 1); i++)
+    t += custoFuncaoMes(dados.obra, fn, i, p, dados.ctx.ctx, { x: x.qtd }).total;
+  return t;
 }

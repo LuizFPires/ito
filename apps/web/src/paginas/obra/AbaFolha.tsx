@@ -8,6 +8,7 @@ import { Badge, Botao, Cartao } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
 import u from "../../ui/ui.module.css";
 import type { Aba, DadosAba } from "./comum";
+import { custoRealocacao } from "./calculos";
 import { soma } from "./comum";
 import s from "./obra.module.css";
 
@@ -65,7 +66,10 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
     );
 
   const cad = new Map((rub.data ?? []).map((r) => [r.codigo, r]));
-  const codigos = [...tabela.keys()].sort((a, b) => a - b);
+  // só rubricas com valor no período (como o protótipo)
+  const codigos = [...tabela.keys()]
+    .filter((c) => tabela.get(c)!.some((v) => Math.abs(v) > 0.5))
+    .sort((a, b) => a - b);
   // descontos com sinal negativo (a folha pode trazê-los positivos: o tipo decide)
   const valor = (c: number, v: number) => (cad.get(c)?.tipo === "desconto" ? -Math.abs(v) : v);
   const serie = (c: number) => tabela.get(c)!.map((v) => valor(c, v));
@@ -79,7 +83,7 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
   });
   const custoIto = epoca.porMes.map((m) => m.remun + m.resc + m.ferr);
   const confere = noCusto.every((v, i) => Math.abs(v - custoIto[i]!) < 1);
-  const cedidas = d.realocacoes.filter((x) => x.tipo === "cedida");
+  const realoc = d.realocacoes;
 
   return (
     <>
@@ -228,7 +232,7 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
         </p>
       </Cartao>
 
-      {cedidas.length > 0 && (
+      {realoc.length > 0 && (
         <Cartao
           aria-label="MDO realocada nesta folha"
           style={{ background: "var(--amber-tint)", borderColor: "transparent" }}
@@ -241,11 +245,15 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
               </Botao>
             </div>
             <p className="sub" style={{ margin: 0 }}>
-              {cedidas
-                .map(
-                  (x) =>
-                    `${numero(x.qtd)} ${dados.fun(x.funcao_id).nome.toLowerCase()} estavam na folha desta obra de ${rotulos[x.mes_ini]} a ${rotulos[x.mes_fim]}, mas trabalharam em ${x.outra_obra}: o custo foi apropriado lá e não aparece nesta conferência.`,
-                )
+              {realoc
+                .map((x) => {
+                  const custo = moeda(custoRealocacao(dados, x), 0);
+                  const quem = `${numero(x.qtd)} ${dados.fun(x.funcao_id).nome.toLowerCase()}`;
+                  const quando = `de ${rotulos[x.mes_ini]} a ${rotulos[x.mes_fim]}`;
+                  return x.tipo === "cedida"
+                    ? `${quem} estavam na folha desta obra ${quando}, mas trabalharam em ${x.outra_obra}: o custo (${custo}) foi apropriado lá e não aparece nesta conferência.`
+                    : `${quem} de ${x.outra_obra} trabalharam aqui ${quando}: a folha é da outra obra, mas o custo (${custo}) está incluído nesta.`;
+                })
                 .join(" ")}
             </p>
           </div>

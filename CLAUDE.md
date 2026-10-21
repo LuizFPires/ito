@@ -165,6 +165,13 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - **Resumo em cache** guarda a impressão digital dos parâmetros (tabelas, funções, benefícios, calendário) e a revisão da obra: editar um salário ou encargo deixa o resumo velho, e o banco só grava o resumo calculado sobre a revisão atual. Quem só lê recalcula na tela só a página que está vendo. (auto — recomendado)
   - Troca de tabela editada na obra precisa cair no período; funções transferidas precisam existir; resumo sem números negativos.
   - Aceito sem correção: quem carrega ou a controladoria pode gravar um resumo com números quaisquer (modelo de confiança interno; o detalhe da obra sempre recalcula pelo motor).
+- Comparação com o protótipo (21/10/2026):
+  - **Por matrícula** (painel de matrículas e aba Pessoas): mostra o que a folha traz (remuneração nas rubricas que entram no custo, HE, faltas), sem recalcular encargos, provisões e benefícios pessoa a pessoa. (auto — recomendado)
+  - **Seleção da base** fica na tela; guardá-la para o "Comparar com…" juntar obras fica para o M6. "Nova projeção →" já leva a Projeções (M7). (auto — recomendado)
+  - Base abre em **Todas** (o protótipo abria em Mart Minas por ser o exemplo); Comparar aceita até 4 obras; competência/caixa no topo das abas. (auto — recomendado)
+  - Absenteísmo médio ponderado pelo efetivo (como o protótipo e a projeção); preferências de eixo, barras e caixa lembradas no navegador.
+  - Convenção de tela aceita (regra 8): colunas juntas com segunda linha em `sub` em Folha, Pessoas, Apropriação, Realocada e Médias por função; data de feriado digitada (dd/mm/aaaa); KPI de custo em âmbar claro (o "deep" escuro do protótipo fica para o design system).
+  - Mantido diferente: MDO realocada e justificativas do ERP só leitura no M5 (vêm da carga); a troca de tabela edita a tabela, e o mês se troca removendo e incluindo.
 - O M5 começou empilhado no M4 (`feat/m5-base-historica` a partir de `feat/m4-carga`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)
