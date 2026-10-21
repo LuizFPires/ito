@@ -351,7 +351,7 @@ export function montarCarga(
     for (const l of lanc.values()) {
       const v = vt.get(`${l.mes_idx}|${l.matricula}`);
       l.vt_valor = v === undefined ? null : r2(v);
-      l.sem_vt = v === undefined && escolhas.semVtConfirmado;
+      l.sem_vt = v === undefined && escolhas.semVtConfirmado && !l.realocada_para;
     }
   }
 

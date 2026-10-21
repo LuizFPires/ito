@@ -1,47 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { calcularObra } from "@ito/motor";
-import { CADASTRO, CTX, DADOS, TABELA } from "./fixtures";
+import { CADASTRO, CTX, DADOS, FOLHA, RUB, TABELA } from "./fixtures";
 import { lerFolha } from "./leitores";
 import type { Escolhas } from "./montagem";
 import { ESCOLHAS_VAZIAS, montarCarga, periodoDaFolha } from "./montagem";
-
-const RUB = ["Competência", "Matrícula", "Função", "Rubrica", "Descrição", "Referência", "Valor"];
-const PES = [
-  "Competência",
-  "Matrícula",
-  "Função",
-  "Dias de vínculo",
-  "Admitido",
-  "Desligado",
-  "Faltas (h)",
-  "Dias de licença",
-  "Dias de férias",
-  "Obra onde trabalhou",
-];
-
-// mar/25: pedreiro 1001 (admitido, 11 h de falta, 10 h HE úteis + 5 h sábado) e servente 1002
-// abr/25: 1001 desligado, 1003 admitido com 15 dias; 1002 trabalhou na Obra B (realocada)
-export const FOLHA = lerFolha({
-  Rubricas: [
-    RUB,
-    ["03/2025", 1001, "PEDREIRO", 1, "HORAS NORMAIS", 220, 1650],
-    ["03/2025", 1001, "PEDREIRO", 200, "HE 100%", 10, 150],
-    ["03/2025", 1001, "PEDREIRO", 201, "HE SÁBADO", 5, 75],
-    ["03/2025", 1002, "SERVENTE DE OBRAS", 1, "HORAS NORMAIS", 220, 1100],
-    ["04/2025", 1001, "PEDREIRO", 1, "HORAS NORMAIS", 220, 1650],
-    ["04/2025", 1003, "PEDREIRO", 1, "HORAS NORMAIS", 110, 825],
-    ["04/2025", 1002, "SERVENTE DE OBRAS", 1, "HORAS NORMAIS", 220, 1100],
-    ["04/2025", 1003, "PEDREIRO", 7777, "PRÊMIO ASSIDUIDADE", 0, 50],
-  ],
-  Pessoas: [
-    PES,
-    ["03/2025", 1001, "PEDREIRO", "", "S", "", 11, 0, 0, ""],
-    ["03/2025", 1002, "SERVENTE DE OBRAS", "", "", "", 0, 0, 0, ""],
-    ["04/2025", 1001, "PEDREIRO", "", "", "S", 0, 0, 0, ""],
-    ["04/2025", 1003, "PEDREIRO", 15, "S", "", 0, 0, 0, ""],
-    ["04/2025", 1002, "SERVENTE DE OBRAS", "", "", "", 0, 0, 0, "OBRA B"],
-  ],
-});
 
 describe("montagem da obra a partir da folha", () => {
   const m = montarCarga(DADOS, { folha: FOLHA }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
