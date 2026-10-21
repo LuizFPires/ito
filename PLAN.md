@@ -136,6 +136,8 @@
 
 **Aceite:** a comparação abre a partir da seleção na base e do botão "Comparar com…" na obra.
 
+> Decisões (21/10/2026): seleção compartilhada na sessão; eixo em mês relativo com opção % do prazo; escolha com busca (CLAUDE.md, M6).
+
 ---
 
 ## M7 — Projeções
