@@ -20,6 +20,12 @@ describe("mensagemErroBanco", () => {
     expect(mensagemErroBanco({ code: "23505", message: "duplicate key" })).toMatch(/Use outro/);
     expect(mensagemErroBanco({ code: "23503", message: "fk" })).toMatch(/Inative/);
   });
+  it("pendências da carga dizem a etapa a corrigir", () => {
+    const m = "Rubricas sem classificação: 7777. Classifique-as na etapa Rubricas.";
+    expect(mensagemErroBanco({ code: "23503", message: m })).toBe(m);
+    const nf = "Há nota fiscal sem competência. Escolha o mês de cada nota na verificação.";
+    expect(mensagemErroBanco({ code: "23502", message: nf })).toBe(nf);
+  });
   it("rede e desconhecido", () => {
     expect(mensagemErroBanco({ message: "Failed to fetch" })).toMatch(/conexão/);
     expect(mensagemErroBanco(null)).toMatch(/Tente de novo/);
