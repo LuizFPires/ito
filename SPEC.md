@@ -211,6 +211,8 @@ No histórico real, admissões e desligamentos vêm da folha. A fórmula acima v
 
 ---
 
+> **Implementação (M3):** `packages/motor` — `modelo.ts` (entrada), `parametros.ts` (§3), `calendarioObra.ts` (§2), `custo.ts` (§4.1–§4.4), `obra.ts` (§4.5 e agregações), `movimentos.ts` (§4.6), `projecao.ts` (§5 e §5.1), `rubricas.ts` (§6.1 e §7). Cada componente do custo sai separado (`CustoMes`), rastreável até a fórmula.
+
 ## 5. Projeção de quantidades
 
 Para cada função `f` com referências `R` e estatística `agg` (média ou mediana):
