@@ -160,7 +160,7 @@ export interface RascunhoCarga {
   versao: 1;
   dados: DadosObra;
   /** nome do arquivo e o que foi lido, por tipo */
-  arquivos: Partial<Record<TipoArquivo, { nome: string; resumo: string }>>;
+  arquivos: Partial<Record<TipoArquivo, { nome: string; resumo: string; erros: string[] }>>;
   leituras: Leituras | null;
   escolhas: Escolhas;
 }

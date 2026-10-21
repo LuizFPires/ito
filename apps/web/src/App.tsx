@@ -21,6 +21,9 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
   "/parametros": async () => ({
     Component: (await import("./paginas/Parametros")).TelaParametros,
   }),
+  "/carga": async () => ({
+    Component: (await import("./paginas/carga/TelaCarga")).TelaCarga,
+  }),
 };
 
 // O shell e as telas carregam sob demanda: a tela de login fica leve.
