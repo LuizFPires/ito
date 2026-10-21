@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import { Link, Outlet, useLocation } from "react-router";
+import { useSessao } from "../auth/sessao";
 import { Badge } from "../ui/componentes";
 import { BuscaGlobal } from "./BuscaGlobal";
 import { Icone } from "./Icone";
@@ -18,6 +19,7 @@ const AMBIENTE = (import.meta.env.VITE_AMBIENTE as string | undefined) ?? "desen
 export function Shell() {
   const { pathname } = useLocation();
   const ativo = itemAtivo(pathname);
+  const { erroUsuario } = useSessao();
 
   return (
     <div className={s.app}>
@@ -53,6 +55,12 @@ export function Shell() {
             <span className={s.espaco} />
             <MenuUsuario />
           </header>
+          {erroUsuario && (
+            <p className={s.alerta} role="alert">
+              Seu cadastro no ITO está incompleto. Peça a um administrador para conferir o seu
+              perfil.
+            </p>
+          )}
           <main>
             <Outlet />
           </main>

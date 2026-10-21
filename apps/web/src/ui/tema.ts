@@ -4,7 +4,8 @@ export type Tema = "sistema" | "claro" | "escuro";
 
 const CHAVE = "ito.tema";
 
-function ler(): Tema {
+/** Tema salvo neste navegador (ou "sistema"). */
+export function temaSalvo(): Tema {
   try {
     const v = localStorage.getItem(CHAVE);
     return v === "claro" || v === "escuro" ? v : "sistema";
@@ -22,7 +23,7 @@ export function aplicarTema(t: Tema) {
 
 /** Tema escolhido pelo usuário, lembrado neste navegador. */
 export function useTema() {
-  const [tema, setTemaEstado] = useState<Tema>(ler);
+  const [tema, setTemaEstado] = useState<Tema>(temaSalvo);
 
   useEffect(() => aplicarTema(tema), [tema]);
 

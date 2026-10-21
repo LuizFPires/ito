@@ -12,6 +12,9 @@ export function Protegida({ children }: { children: ReactNode }) {
         Carregando…
       </p>
     );
-  if (!sessao) return <Navigate to="/entrar" replace state={{ de: local.pathname }} />;
+  if (!sessao)
+    return (
+      <Navigate to="/entrar" replace state={{ de: local.pathname + local.search + local.hash }} />
+    );
   return <>{children}</>;
 }

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { data, mesAno, mesDoIndice, moeda, numero, parseNumero, percentual } from "./index";
+import {
+  data,
+  dataHora,
+  mesAno,
+  mesDoIndice,
+  moeda,
+  numero,
+  parseNumero,
+  percentual,
+} from "./index";
 
 describe("numero", () => {
   it("usa ponto no milhar e vírgula no decimal", () => {
@@ -16,6 +25,16 @@ describe("numero", () => {
   it("não mostra -0", () => {
     expect(numero(-0.001, 2)).toBe("0,00");
     expect(numero(-0)).toBe("0");
+  });
+  it("resíduo de ponto flutuante vira zero (conferência R$ 0,00)", () => {
+    expect(moeda(0.1 + 0.2 - 0.3)).toBe("R$ 0,00");
+    expect(moeda(-1e-10)).toBe("R$ 0,00");
+    expect(numero(1e-7, 2)).toBe("0,00");
+  });
+  it("valores enormes e notação exponencial", () => {
+    expect(numero(1e21)).toBe("1.000.000.000.000.000.000.000");
+    expect(numero(1.5e-2, 2)).toBe("0,02");
+    expect(moeda(123456789.125)).toBe("R$ 123.456.789,13");
   });
   it("negativos com hífen", () => {
     expect(numero(-1234.5, 2)).toBe("-1.234,50");
@@ -115,5 +134,29 @@ describe("roda-trip", () => {
     for (const x of [0, 1, 999.99, 1234.56, -98765.43, 1_000_000]) {
       expect(parseNumero(numero(x, 2))).toBe(x);
     }
+  });
+});
+
+describe("dataHora", () => {
+  it("timestamptz no horário de Brasília", () => {
+    expect(dataHora("2026-10-21T01:30:00+00:00")).toBe("20/10/2026 22:30");
+    expect(dataHora("2026-01-05T15:04:00Z")).toBe("05/01/2026 12:04");
+  });
+  it("inválido vira travessão", () => {
+    expect(dataHora("x")).toBe("—");
+    expect(dataHora(null)).toBe("—");
+  });
+});
+
+describe("parseNumero — espaços", () => {
+  it("não junta números separados por espaço", () => {
+    expect(parseNumero("12 34")).toBeNull();
+  });
+  it("aceita espaço em volta de R$ e %", () => {
+    expect(parseNumero("-R$ 38,50")).toBe(-38.5);
+    expect(parseNumero("25 %")).toBe(25);
+  });
+  it("-0 vira 0", () => {
+    expect(Object.is(parseNumero("-0"), 0)).toBe(true);
   });
 });

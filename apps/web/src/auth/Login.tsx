@@ -16,7 +16,9 @@ export function Login() {
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  const destino = (local.state as { de?: string } | null)?.de ?? "/base";
+  const de = (local.state as { de?: unknown } | null)?.de;
+  // Só caminhos internos ("/x", nunca "//host").
+  const destino = typeof de === "string" && /^\/(?!\/)/.test(de) ? de : "/base";
   if (sessao) return <Navigate to={destino} replace />;
 
   async function entrar(e: FormEvent) {

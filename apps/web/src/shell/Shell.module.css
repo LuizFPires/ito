@@ -253,3 +253,12 @@
     white-space: nowrap;
   }
 }
+
+.alerta {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--raio-campo);
+  background: var(--err-tint);
+  color: var(--err);
+  font-size: 14px;
+}

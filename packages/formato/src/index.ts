@@ -39,8 +39,13 @@ function formatador(casas: number): Intl.NumberFormat {
 
 /** Arredonda meio para cima no valor decimal escrito (1,005 → 1,01), sem o erro do binário. */
 export function arredondar(v: number, casas = 2): number {
-  const abs = Math.abs(v);
-  const r = Number(Math.round(Number(`${abs}e${casas}`)) + `e-${casas}`);
+  if (!Number.isFinite(v)) return v;
+  // Escala pela representação decimal (mantissa e expoente) para não cair no erro do binário
+  // nem gerar "1e-7e2" quando o número já vem em notação exponencial.
+  const [mant, exp] = Math.abs(v).toExponential().split("e") as [string, string];
+  const escalado = Math.round(Number(`${mant}e${Number(exp) + casas}`));
+  const [m2, e2] = escalado.toExponential().split("e") as [string, string];
+  const r = Number(`${m2}e${Number(e2) - casas}`);
   return r === 0 ? 0 : Math.sign(v) * r;
 }
 
@@ -77,8 +82,8 @@ function dois(n: number): string {
 }
 
 /**
- * Data em dd/mm/aaaa. Strings ISO ("2024-03-16" ou com hora) são lidas sem fuso,
- * para a data não "voltar um dia". `Date` usa os componentes locais.
+ * Data em dd/mm/aaaa para colunas `date` (ISO "2024-03-16"), lidas sem fuso para a data
+ * não "voltar um dia". `Date` usa os componentes locais. Para `timestamptz` use `dataHora`.
  */
 export function data(v: string | Date | null | undefined): string {
   if (v instanceof Date) {
@@ -93,6 +98,24 @@ export function data(v: string | Date | null | undefined): string {
     return VAZIO;
   }
   return `${dois(dia)}/${dois(mes)}/${ano}`;
+}
+
+const FMT_DATA_HORA = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/** Instante (`timestamptz`) em "dd/mm/aaaa hh:mm", no horário de Brasília. */
+export function dataHora(v: string | Date | null | undefined): string {
+  if (v == null || v === "") return VAZIO;
+  const d = v instanceof Date ? v : new Date(v);
+  if (Number.isNaN(d.getTime())) return VAZIO;
+  return FMT_DATA_HORA.format(d).replace(",", "");
 }
 
 /** Mês abreviado: mesAno(2027, 1) → "jan/27". `mes` de 1 a 12. */
@@ -120,8 +143,14 @@ const NUMERO_BR = /^-?\d{1,3}(\.\d{3})*(,\d+)?$|^-?\d+(,\d+)?$/;
 
 /** Lê número digitado no formato brasileiro ("R$ 1.234,56", "43,96%"). Inválido → null. */
 export function parseNumero(txt: string): number | null {
-  // \s cobre o espaço não separável (U+00A0) que o Excel e o Intl usam.
-  const limpo = txt.replace(/R\$/g, "").replace(/%/g, "").replace(/\s/g, "").replace(/^−/, "-");
+  // Espaços (inclusive o NBSP do Excel e do Intl) só nas pontas e em volta de "R$" e "%";
+  // "12 34" não vira 1234.
+  const limpo = txt
+    .trim()
+    .replace(/^(-|−)?\s*R\$\s*/, "$1")
+    .replace(/\s*%$/, "")
+    .replace(/^−/, "-");
   if (!NUMERO_BR.test(limpo)) return null;
-  return Number(limpo.replace(/\./g, "").replace(",", "."));
+  const n = Number(limpo.replace(/\./g, "").replace(",", "."));
+  return n === 0 ? 0 : n;
 }

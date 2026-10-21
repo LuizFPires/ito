@@ -42,7 +42,7 @@ export function BuscaGlobal() {
   function teclas(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSel((i) => Math.min(i + 1, achados.length - 1));
+      setSel((i) => Math.max(0, Math.min(i + 1, achados.length - 1)));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSel((i) => Math.max(i - 1, 0));
@@ -63,8 +63,9 @@ export function BuscaGlobal() {
         ref={input}
         role="combobox"
         aria-label="Buscar no ITO"
-        aria-expanded={mostrar}
-        aria-controls={idLista}
+        aria-expanded={mostrar && achados.length > 0}
+        aria-autocomplete="list"
+        aria-controls={mostrar && achados.length ? idLista : undefined}
         aria-activedescendant={mostrar && achados[sel] ? `${idLista}-${sel}` : undefined}
         placeholder="Buscar obras, projeções, funções, rubricas…"
         autoComplete="off"
@@ -82,32 +83,31 @@ export function BuscaGlobal() {
       <span className={s.kbd} aria-hidden="true">
         {ehMac ? "⌘K" : "Ctrl K"}
       </span>
-      {mostrar && (
+      {mostrar && achados.length > 0 && (
         <ul className={s.resultados} role="listbox" id={idLista}>
-          {achados.length ? (
-            achados.map((d, i) => (
-              <li
-                key={d.caminho}
-                id={`${idLista}-${i}`}
-                role="option"
-                aria-selected={i === sel}
-                className={s.resultado}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  ir(d.caminho);
-                }}
-                onMouseEnter={() => setSel(i)}
-              >
-                <span>{d.nome}</span>
-                <span className="sub">Tela · {d.grupo}</span>
-              </li>
-            ))
-          ) : (
-            <li className={s.vazio} role="option" aria-selected={false} aria-disabled="true">
-              Nada encontrado para “{q}”.
+          {achados.map((d, i) => (
+            <li
+              key={d.caminho}
+              id={`${idLista}-${i}`}
+              role="option"
+              aria-selected={i === sel}
+              className={s.resultado}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                ir(d.caminho);
+              }}
+              onMouseEnter={() => setSel(i)}
+            >
+              <span>{d.nome}</span>
+              <span className="sub">Tela · {d.grupo}</span>
             </li>
-          )}
+          ))}
         </ul>
+      )}
+      {mostrar && achados.length === 0 && (
+        <div className={`${s.resultados} ${s.vazio}`} role="status">
+          Nada encontrado para “{q}”.
+        </div>
       )}
     </div>
   );
