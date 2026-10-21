@@ -14,6 +14,7 @@ const queryClient = new QueryClient({
 // Telas que já têm conteúdo; as demais mostram "chega no Mx".
 const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>> = {
   "/funcoes": async () => ({ Component: (await import("./paginas/Funcoes")).TelaFuncoes }),
+  "/rubricas": async () => ({ Component: (await import("./paginas/Rubricas")).TelaRubricas }),
 };
 
 // O shell e as telas carregam sob demanda: a tela de login fica leve.

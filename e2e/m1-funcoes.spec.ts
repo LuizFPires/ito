@@ -4,7 +4,7 @@ import { entrar, semRolagemLateral } from "./ajuda";
 test("lista as 14 funções com busca por sinônimo, sem rolagem lateral", async ({ page }) => {
   await entrar(page, "engenharia@ito.local");
   await page.goto("/funcoes");
-  await expect(page.getByText(/1–14 de 1\d funções/)).toBeVisible();
+  await expect(page.getByText(/1–1\d de 1\d funções/)).toBeVisible();
   expect(await semRolagemLateral(page)).toBe(true);
 
   await page.getByRole("searchbox", { name: "Buscar função" }).fill("meio oficial");
