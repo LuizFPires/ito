@@ -9,6 +9,7 @@ import { useContextoCarga } from "../../dados/carga";
 import { useObra } from "../../dados/obras";
 import { diasDoPeriodo, inicioDe, obraDoBanco, parametrosDe } from "../../lib/obraDoBanco";
 import { podeCarregar } from "../../lib/permissoes";
+import { juntarASelecao } from "../../lib/selecao";
 import { Cartao, Segmento } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
@@ -227,7 +228,8 @@ export function TelaObra() {
         <span className={f.linha}>
           <Link
             className={`${u.botao} ${u.pequeno}`}
-            to={`/comparar?obras=${o.id}`}
+            to="/comparar"
+            onClick={() => juntarASelecao([o.id])}
             style={{ textDecoration: "none" }}
           >
             Comparar com…

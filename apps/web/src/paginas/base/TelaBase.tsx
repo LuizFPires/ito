@@ -15,6 +15,7 @@ import {
 import { alternarOrdem, paginar } from "../../lib/lista";
 import type { Ordem } from "../../lib/lista";
 import { podeCarregar, podeEditarConfig } from "../../lib/permissoes";
+import { MAX_COMPARAR, useSelecaoObras } from "../../lib/selecao";
 import { MENU } from "../../shell/rotas";
 import { Botao, Cartao, Chip } from "../../ui/componentes";
 import { CampoBusca, Kpi, Paginacao, ThOrdem } from "../../ui/formulario";
@@ -43,7 +44,8 @@ export function TelaBase() {
   const [q, setQ] = useState("");
   const [ordem, setOrdem] = useState<Ordem<ChaveBase>>({ chave: "periodo", dir: -1 });
   const [pagina, setPagina] = useState(1);
-  const [sel, setSel] = useState<string[]>([]);
+  // seleção compartilhada com a obra e a comparação (decisão M6)
+  const [sel, definir] = useSelecaoObras();
   // resumos recalculados na tela (obra editada, tabela vigente nova)
   const [novos, setNovos] = useState<Record<string, Resumo>>({});
   const [recalculando, setRecalculando] = useState(0);
@@ -124,7 +126,7 @@ export function TelaBase() {
     setPagina(1);
   };
   const alternar = (id: string) =>
-    setSel((x) => (x.includes(id) ? x.filter((y) => y !== id) : [...x, id]));
+    definir(sel.includes(id) ? sel.filter((y) => y !== id) : [...sel, id]);
   const periodo = (o: LinhaBase) => {
     const ini = inicioDe(o.inicio);
     const fim = anoMes(ini, o.meses - 1);
@@ -222,12 +224,12 @@ export function TelaBase() {
             {numero(sel.length)} {sel.length === 1 ? "obra selecionada" : "obras selecionadas"}
           </strong>
           <span className={f.linha}>
-            <Botao pequeno variante="fantasma" onClick={() => setSel([])}>
+            <Botao pequeno variante="fantasma" onClick={() => definir([])}>
               Limpar
             </Botao>
             <Botao
               pequeno
-              disabled={sel.length < 2 || sel.length > 4}
+              disabled={sel.length < 2 || sel.length > MAX_COMPARAR}
               title={
                 sel.length < 2
                   ? "Selecione ao menos 2 obras"
@@ -235,7 +237,7 @@ export function TelaBase() {
                     ? "Compare até 4 obras"
                     : undefined
               }
-              onClick={() => navegar(`/comparar?obras=${sel.join(",")}`)}
+              onClick={() => navegar("/comparar")}
             >
               Comparar
             </Botao>
