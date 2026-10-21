@@ -1,0 +1,39 @@
+/* Base histórica: tabela compacta sem rolagem lateral em 1.280 px (regra 8). */
+
+.tabela td,
+.tabela th {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.sel {
+  width: 36px;
+  padding-right: 0 !important;
+}
+.hist {
+  width: 128px;
+}
+/* mini-histograma some abaixo de 1.340 px (PRD §3.1) */
+@media (max-width: 1340px) {
+  .hist {
+    display: none;
+  }
+}
+.nowrap {
+  white-space: nowrap;
+}
+.obra {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+}
+.obra:hover {
+  text-decoration: underline;
+}
+.selecao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 22px;
+}
