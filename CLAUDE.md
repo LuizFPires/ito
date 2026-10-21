@@ -159,6 +159,8 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Abas por matrícula** (painel de matrículas do Efetivo, Pessoas e valores por matrícula da Folha): quem não carrega vê só os agregados, com aviso (coerente com a privacidade do M4). (auto — recomendado)
 - **Resumo da obra em cache no banco** (pico, pessoa-mês, HE/pessoa, custo época e atualizado, histograma), calculado pelo motor ao gravar ou editar a obra e recalculado quando a tabela vigente muda; a lista de 1.000 obras lê só o resumo. (auto — recomendado)
 - **Edição grava ao sair do campo** ("Salvo"), como no M1, com recálculo imediato na tela. (auto — recomendado)
+- Tabelas **mês a mês** do detalhe da obra (24+ colunas) rolam dentro do próprio cartão, com a primeira coluna fixa; a página e as tabelas principais (base, médias por função) não rolam de lado (regra 8). (auto — recomendado)
+- Apropriação × ERP no detalhe usa os valores gravados na carga (caixa do ITO × ERP, M4); a tabela por conta mostra a competência da época, como no protótipo. MDO realocada e justificativas ficam como a carga gravou (só leitura no M5). (auto — recomendado)
 - O M5 começou empilhado no M4 (`feat/m5-base-historica` a partir de `feat/m4-carga`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)
