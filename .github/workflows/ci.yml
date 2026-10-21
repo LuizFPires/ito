@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Só leitura: o CI não publica nada nem usa segredos.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Formatação, lint, testes, banco, build e e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Formatação
+        run: pnpm format:check
+
+      - name: Lint e tipos
+        run: pnpm lint
+
+      - name: Testes unitários (formato, motor, web)
+        run: pnpm test
+
+      - name: Supabase local
+        run: pnpm db:start
+
+      - name: Testes de banco (RLS)
+        run: pnpm db:test
+
+      - name: Tipos do banco em dia
+        run: |
+          pnpm gen:types
+          git diff --exit-code apps/web/src/lib/tipos-banco.ts
+
+      - name: Variáveis do Supabase local
+        run: |
+          pnpm exec supabase status -o env \
+            --override-name api.url=VITE_SUPABASE_URL \
+            --override-name auth.publishable_key=VITE_SUPABASE_PUBLISHABLE_KEY \
+            | grep -E '^VITE_SUPABASE_(URL|PUBLISHABLE_KEY)=' > apps/web/.env.local
+          cut -d= -f1 apps/web/.env.local
+
+      - name: Build
+        run: pnpm build
+
+      - name: Navegador do Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Testes e2e
+        run: pnpm e2e
+
+      - name: Relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

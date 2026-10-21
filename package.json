@@ -19,10 +19,12 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "gen:types": "supabase gen types typescript --local > apps/web/src/lib/tipos-banco.ts && prettier --write apps/web/src/lib/tipos-banco.ts"
+    "gen:types": "supabase gen types typescript --local > apps/web/src/lib/tipos-banco.ts && prettier --write apps/web/src/lib/tipos-banco.ts",
+    "e2e": "playwright test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "^24.19.2",
     "eslint": "10.13.0",
     "eslint-plugin-react-hooks": "7.1.1",

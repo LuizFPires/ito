@@ -16,6 +16,7 @@ const router = createBrowserRouter([
   { path: "/entrar", element: <Login /> },
   {
     path: "/",
+    hydrateFallbackElement: null,
     element: (
       <Protegida>
         <ShellPreguicoso />

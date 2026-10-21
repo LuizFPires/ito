@@ -75,7 +75,8 @@ export function BuscaGlobal() {
           setAberta(true);
         }}
         onFocus={() => setAberta(true)}
-        onBlur={() => setTimeout(() => setAberta(false), 120)}
+        // As opções usam onMouseDown + preventDefault, então clicar nelas não tira o foco.
+        onBlur={() => setAberta(false)}
         onKeyDown={teclas}
       />
       <span className={s.kbd} aria-hidden="true">
