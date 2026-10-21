@@ -111,6 +111,12 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Comparar: célula sem salário na CCT nem na empresa mostra "—" e não entra em maior/menor. (auto — recomendado)
   - Feriados municipais e passagens de outras origens ficam no detalhe da cidade (regra 8); a linha mostra a contagem.
   - Tela abre na CCT de BH; cidade nova nasce na CCT de BH (como o protótipo).
+
+### M3 — Motor de cálculo (21/10/2026)
+- **Validação diferencial:** além dos golden do SPEC §8, um teste roda o motor do próprio protótipo (`docs/prototipo/ITO_2.0.html`) sobre as obras de exemplo dele e exige o mesmo resultado do `packages/motor`, componente a componente e mês a mês, até o centavo. As obras de exemplo viram fixtures sintéticas (só matrícula).
+- **Salário com faltas limitado a zero:** `salv = máx(0, bruto − faltasH − faltasD)`, como no protótipo (esclarecimento no SPEC §4.1).
+- **Movimentação sintética** (admissões e desligamentos por rotatividade, só em projeções e dados sintéticos): mesmo sorteio determinístico do protótipo (hash FNV de obra + função + mês), SPEC §4.6.
+- O M3 começou empilhado no M2 (`feat/m3-motor` a partir de `feat/m2-cidades-cct`), pela mesma pendência do CI.
 - **Pendência externa (para resolver no futuro):** o CI do GitHub está bloqueado por cobrança da conta (Billing & plans). Os PRs seguem empilhados (#1 M0 → #2 M1 → M2) e só entram na `main` quando o CI rodar verde.
 
 ## Design system "Canteiro" (ITO)

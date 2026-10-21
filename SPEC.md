@@ -130,7 +130,7 @@ pres = xa × (1 − a)                                 pessoa-mês presente
 bruto   = xa × s
 faltasH = bruto × a
 faltasD = faltasH × DSR%(i)                          (0 para estágio) — perda do repouso
-salv    = bruto − faltasH − faltasD
+salv    = máx(0, bruto − faltasH − faltasD)              (limite em zero: decisão M3, como o protótipo)
 bolsa   = salv se estágio, senão 0
 ```
 
