@@ -73,6 +73,15 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Região dos projetos Supabase: `sa-east-1` (São Paulo). (auto — recomendado)
 - Tokens do Canteiro = os do protótipo ITO 2.0, exceto `--ok` (#18784e) e `--err` (#b83427) no modo claro, escurecidos para passar contraste AA sobre o próprio fundo; teste em `apps/web/src/estilo/tokens.test.ts`. (auto — recomendado)
 
+### M1 — Cadastros base (21/10/2026)
+- Edição: **controladoria** edita tudo (parâmetros, encargos, calendário, funções, rubricas); **DP/RH** edita funções e rubricas; **admin** edita tudo; os demais perfis só leem. Regra no banco (RLS), não só na tela.
+- Carga inicial com os **valores do protótipo ITO 2.0**: encargos reais (AF v07); salários e benefícios ilustrativos, marcados "a revisar pela controladoria". Os golden tests dependem deles.
+- Função ou rubrica fora de uso é **inativada** (some das listas e da carga, fica no histórico). Apagar só o que nunca foi usado.
+- Nova data-base = **cópia da vigente + reajuste %** em salários e benefícios (encargos e regras iguais). Só vira vigente quando alguém escolher.
+- Carga de **14 funções**: as 13 do SPEC §4.3 + Estagiário (vínculo estágio). (auto — recomendado)
+- Calendário e encargos são calculados no motor (`packages/motor`) já no M1; banco e telas só guardam e mostram. (auto — recomendado)
+- O M1 começou empilhado na branch do M0 (`feat/m1-cadastros` a partir de `feat/m0-fundacao`) porque o CI do GitHub está bloqueado por cobrança; o PR do M1 aponta para a `main` depois do merge do M0.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
