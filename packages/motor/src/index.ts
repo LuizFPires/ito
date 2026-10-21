@@ -7,3 +7,4 @@ export * from "./local";
 export * from "./modelo";
 export * from "./parametros";
 export * from "./calendarioObra";
+export * from "./custo";
