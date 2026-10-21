@@ -327,6 +327,11 @@ export function verificarCarga(
   }
 
   // 8. NF sem competência
+  const atribuidas = payload.notas
+    .filter(
+      (n) => n.mes_idx !== null && escolhas.nfMes[`${n.prestador_cnpj}|${n.numero}`] === n.mes_idx,
+    )
+    .map((n) => `NF ${n.numero} atribuída a ${nomeMes(n.mes_idx!)}`);
   const notas = leituras.notas ?? [];
   const nfSemMes = payload.notas
     .filter((n) => n.mes_idx === null)
@@ -357,6 +362,8 @@ export function verificarCarga(
             estado: "ok",
             titulo: `${plural(payload.notas.length, "nota fiscal lida", "notas fiscais lidas")}`,
             detalhe: `Todas com competência dentro do período da obra.${
+              atribuidas.length ? ` ${lista(atribuidas)}.` : ""
+            }${
               m.notasDuplicadas
                 ? ` ${plural(m.notasDuplicadas, "nota repetida (mesmo CNPJ e número) foi ignorada", "notas repetidas (mesmo CNPJ e número) foram ignoradas")}.`
                 : ""
@@ -364,7 +371,26 @@ export function verificarCarga(
           },
   );
 
-  // 9. itens lidos
+  // 9. itens lidos (categorias encontradas na folha, como no protótipo)
+  const componentes = new Set(
+    payload.lancamentos.flatMap((l) =>
+      l.rubricas.map((r) => rubricaDe(r.codigo, cadastro, escolhas)?.componente),
+    ),
+  );
+  const tem = (c: string) => componentes.has(c as never);
+  const soma = (k: "licenca_dias" | "ferias_dias" | "faltas_horas") =>
+    payload.lancamentos.reduce((s, l) => s + l[k], 0);
+  const categorias = [
+    tem("he") && "horas extras por tipo",
+    tem("extras") && "adicionais",
+    (tem("faltas") || soma("faltas_horas") > 0) && "faltas com perda do DSR",
+    soma("licenca_dias") > 0 && "dias de licença sem remuneração",
+    soma("ferias_dias") > 0 && "dias de férias gozadas",
+    tem("ferr") && "depreciação de ferramentas",
+    tem("compgps") && "salário-família",
+    tem("resc") && "rescisões",
+    !m.semAbaPessoas && "admissões e desligamentos (exames por tipo)",
+  ].filter((x): x is string => !!x);
   const matriculas = new Set(payload.lancamentos.map((l) => l.matricula)).size;
   const rubs = new Set(payload.lancamentos.flatMap((l) => l.rubricas.map((r) => r.codigo))).size;
   const heT = m.heHorasPorTipo;
@@ -372,7 +398,9 @@ export function verificarCarga(
     id: "lidos",
     estado: m.semAbaPessoas ? "aviso" : "ok",
     titulo: "Lidos da folha por competência",
-    detalhe: `${plural(N, "competência", "competências")} · ${plural(payload.lancamentos.length, "lançamento", "lançamentos")} · ${plural(matriculas, "matrícula", "matrículas")} · ${plural(rubs, "rubrica", "rubricas")}. HE: ${numero(heT.util, 1)} h úteis, ${numero(heT.sabado, 1)} h sábado, ${numero(heT.intervalo, 1)} h intervalo, ${numero(heT.feriado, 1)} h domingos e feriados.${
+    detalhe: `${plural(N, "competência", "competências")} · ${plural(payload.lancamentos.length, "lançamento", "lançamentos")} · ${plural(matriculas, "matrícula", "matrículas")} · ${plural(rubs, "rubrica", "rubricas")}.${
+      categorias.length ? ` Lidos: ${lista(categorias, 9)}.` : ""
+    } HE: ${numero(heT.util, 1)} h úteis, ${numero(heT.sabado, 1)} h sábado, ${numero(heT.intervalo, 1)} h intervalo, ${numero(heT.feriado, 1)} h domingos e feriados.${
       m.semAbaPessoas
         ? " Sem a aba Pessoas: cada matrícula conta 1 pessoa-mês, sem faltas, licenças, férias nem movimentação."
         : ""
@@ -409,6 +437,16 @@ export function verificarCarga(
       destinos.get(p.obra)!.add(p.matricula);
     }
   const destinosRealocada = [...destinos].map(([texto, ms]) => ({ texto, matriculas: ms.size }));
+  const porFuncao = new Map<string, Set<string>>();
+  for (const l of payload.lancamentos)
+    if (l.realocada_para) {
+      if (!porFuncao.has(l.funcao_id)) porFuncao.set(l.funcao_id, new Set());
+      porFuncao.get(l.funcao_id)!.add(l.matricula);
+    }
+  const realocadosPorFuncao = [...porFuncao].map(
+    ([f, ms]) =>
+      `${(cadastro.nomesFuncoes[f] ?? f).toLowerCase()}: ${ms.size === 1 ? "matrícula" : "matrículas"} ${lista([...ms], 4)}`,
+  );
   if (destinosRealocada.length) {
     const semEscolha = destinosRealocada.filter((d) => !escolhas.realocacao[d.texto]);
     const n = destinosRealocada.reduce((s, d) => s + d.matriculas, 0);
@@ -416,7 +454,7 @@ export function verificarCarga(
       id: "realocada",
       estado: semEscolha.length ? "erro" : "ok",
       titulo: `${plural(n, "trabalhador marcado", "trabalhadores marcados")} como MDO realocada`,
-      detalhe: `Estão na folha desta obra mas trabalharam em ${lista(destinosRealocada.map((d) => `“${d.texto}”`))}. O custo sai desta obra e o saldo de VT vai junto.${
+      detalhe: `Estão na folha desta obra mas trabalharam em ${lista(destinosRealocada.map((d) => `“${d.texto}”`))} (${lista(realocadosPorFuncao)}). O custo sai desta obra e o saldo de VT vai junto.${
         semEscolha.length ? " Escolha a obra de destino (da base ou fora dela)." : ""
       }`,
     });

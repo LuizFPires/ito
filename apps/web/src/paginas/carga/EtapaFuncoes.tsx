@@ -6,14 +6,30 @@ import { numero } from "@ito/formato";
 import { NOME_GRUPO, useCriarFuncao } from "../../dados/cadastros";
 import { codigoDe, contemTermos, paginar } from "../../lib/lista";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
+import { useToast } from "../../ui/toast";
 import { CampoBusca, Interruptor, Paginacao, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import type { PropsEtapa } from "./Assistente";
 
 const POR_PAGINA = 15;
 
-/** "AJUDANTE GERAL" → "Ajudante geral" */
-const nomeDe = (t: string) => t.charAt(0) + t.slice(1).toLowerCase();
+/**
+ * Nome da função criada a partir do texto da folha, como no protótipo: até 3 palavras, sem
+ * " de obra" no fim ("TECNICO DE SEGURANÇA DO TRABALHO" → "Tecnico de segurança").
+ */
+export const nomeDe = (t: string) => {
+  const w = t.trim().split(/\s+/);
+  return w
+    .slice(0, w.length > 2 ? 3 : w.length)
+    .map((x, i) => (i ? x.toLowerCase() : x.charAt(0) + x.slice(1).toLowerCase()))
+    .join(" ")
+    .replace(/ de obras?$/, "");
+};
+/** Rótulo do botão: só a primeira palavra ("Criar “Tecnico”"). */
+const primeira = (t: string) => {
+  const w = t.trim().split(/\s+/)[0] ?? "";
+  return w.charAt(0) + w.slice(1).toLowerCase();
+};
 
 export function EtapaFuncoes({
   r,
@@ -24,7 +40,8 @@ export function EtapaFuncoes({
   const [q, setQ] = useState("");
   const [pagina, setPagina] = useState(1);
   const [soPendentes, setSoPendentes] = useState(false);
-  const criar = useCriarFuncao();
+  const criar = useCriarFuncao("");
+  const avisar = useToast();
   const qc = useQueryClient();
 
   // texto da folha → pico de pessoas num mês
@@ -72,10 +89,19 @@ export function EtapaFuncoes({
 
   async function criarFuncao(texto: string) {
     const nome = nomeDe(texto);
-    const id = codigoDe(nome);
-    await criar.gravar({ id, nome, grupo: "direta", sinonimo: texto });
+    // código livre: acrescenta 2, 3… como no protótipo
+    const base = codigoDe(nome);
+    const usados = new Set(ctx.cadastro.funcoes.map((x) => x.id));
+    let id = base;
+    for (let i = 2; usados.has(id); i++) id = `${base.slice(0, 30)}${i}`;
+    try {
+      await criar.gravar({ id, nome, grupo: "direta", sinonimo: texto });
+    } catch {
+      return; // o aviso do erro já apareceu
+    }
     await qc.invalidateQueries({ queryKey: ["carga", "contexto"] });
     mapear(texto, id);
+    avisar(`Função “${nome}” criada e mapeada`);
   }
 
   return (
@@ -135,6 +161,10 @@ export function EtapaFuncoes({
                         {x.nome}
                       </option>
                     ))}
+                    {/* sinônimo que aponta para função inativa: aparece para não ficar sem opção */}
+                    {id && !fn && (
+                      <option value={id}>{ctx.cadastro.nomesFuncoes[id] ?? id} (inativa)</option>
+                    )}
                   </Selecao>
                   {fn && <div className="sub">{NOME_GRUPO[fn.grupo]}</div>}
                 </td>
@@ -157,9 +187,9 @@ export function EtapaFuncoes({
                       disabled={criar.isPending}
                       onClick={() => criarFuncao(l.texto)}
                     >
-                      Criar “{nomeDe(l.texto)}”
+                      Criar “{primeira(l.texto)}”
                     </Botao>
-                  ) : escolhida && ctx.cadastro.sinonimos[l.texto] !== escolhida ? (
+                  ) : escolhida ? (
                     <Badge tom="ambar">mapeada agora</Badge>
                   ) : (
                     <Badge tom="ok">reconhecida</Badge>

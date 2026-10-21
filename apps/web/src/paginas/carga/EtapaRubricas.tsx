@@ -9,6 +9,7 @@ import { contemTermos, paginar } from "../../lib/lista";
 import { Badge, Cartao } from "../../ui/componentes";
 import { CampoBusca, Interruptor, Paginacao, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
+import u from "../../ui/ui.module.css";
 import type { PropsEtapa } from "./Assistente";
 import s from "./carga.module.css";
 
@@ -21,6 +22,20 @@ const NOME_HE: Record<TipoHe, string> = {
   feriado: "Domingos e feriados",
 };
 type Nova = Omit<RubricaCadastro, "codigo">;
+/** Opções com a explicação, como no protótipo (COMPR). */
+const COMPONENTE_LONGO: Record<ComponenteRubrica, string> = {
+  sal: "Salário (horas normais)",
+  extras: "Adicionais",
+  he: "Horas extras",
+  dsr: "Reflexo DSR",
+  faltas: "Faltas (desconta do salário)",
+  resc: "Rescisão",
+  ferr: "Ferramentas (indenizatória, sem encargos)",
+  provpaga: "Baixa de provisão (já custeada pela provisão)",
+  compgps: "Compensado na guia do INSS (custo zero)",
+  nao: "Não entra no custo (desconto do empregado)",
+  info: "Só informativo",
+};
 
 export function EtapaRubricas({ r, mudar, ctx }: PropsEtapa) {
   const [q, setQ] = useState("");
@@ -77,13 +92,16 @@ export function EtapaRubricas({ r, mudar, ctx }: PropsEtapa) {
           <span className="rotulo">Rubricas encontradas na folha</span>
           <span className="sub">
             Defina se cada verba nova é provento, desconto ou informativa, e como entra no custo.
-            Rubricas novas param a carga até serem classificadas. As do dicionário mudam em{" "}
-            <Link className={f.linkAcao} to="/rubricas">
-              Rubricas da folha
-            </Link>
-            .
+            Rubricas novas param a carga até serem classificadas.
           </span>
         </div>
+        <Link
+          className={`${u.botao} ${u.pequeno}`}
+          to="/rubricas"
+          style={{ textDecoration: "none" }}
+        >
+          Dicionário completo
+        </Link>
         <CampoBusca
           rotulo="Buscar rubrica"
           placeholder="Código ou nome"
@@ -178,7 +196,7 @@ export function EtapaRubricas({ r, mudar, ctx }: PropsEtapa) {
                     }
                   >
                     <option value="">Escolher…</option>
-                    {Object.entries(NOME_COMPONENTE).map(([k, v]) => (
+                    {Object.entries(COMPONENTE_LONGO).map(([k, v]) => (
                       <option key={k} value={k}>
                         {v}
                       </option>

@@ -209,3 +209,32 @@ describe("verificações da revisão do M4", () => {
     expect(r.conferencia[0]!.rubricas).toBe(2975 - 82.5);
   });
 });
+
+describe("textos da verificação como no protótipo", () => {
+  it("MDO realocada cita função e matrícula; itens lidos listam as categorias", () => {
+    const r = verificar({ folha: FOLHA });
+    expect(item(r, "realocada").detalhe).toContain("servente: matrícula 1002");
+    expect(item(r, "lidos").detalhe).toContain("Lidos: horas extras por tipo, adicionais");
+  });
+
+  it("NF com competência escolhida: eco da nota e do mês", () => {
+    const nota = {
+      arquivo: "n.xml",
+      numero: "412",
+      prestadorCnpj: "12345678000199",
+      comp: null,
+      valor: 1,
+      iss: 0,
+      pis: 0,
+      cofins: 0,
+      inss: 0,
+      ir: 0,
+      csll: 0,
+    };
+    const r = verificar(
+      { folha: FOLHA, notas: [nota] },
+      { ...CLASSIFICADA, nfMes: { "12345678000199|412": 1 } },
+    );
+    expect(item(r, "nf").detalhe).toContain("NF 412 atribuída a abr/25");
+  });
+});
