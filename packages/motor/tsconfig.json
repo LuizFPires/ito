@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // tipos do Node só para os testes (harness do protótipo); o código do motor segue puro
+    "types": ["node"]
+  },
   "include": ["src"]
 }

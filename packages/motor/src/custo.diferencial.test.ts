@@ -53,48 +53,43 @@ const PARES: [keyof CustoMes, string][] = [
   ["horasExtras", "hh"],
 ];
 
-describe.each(P.D.obras.map((o: { nome: string }, j: number) => [o.nome, j]))(
-  "custo(o, f, i, p) = protótipo · %s",
-  (_nome, j) => {
-    const po = P.D.obras[j as number];
-    const obra = obraDe(P, po);
-    const pp = P.pObra(po);
-    const params = parametrosDe(pp);
-    const mov = P.movimentos(po);
-    const n = po.he.length;
+const CASOS: [string, number][] = P.D.obras.map((o: { nome: string }, j: number) => [o.nome, j]);
 
-    for (const f of ctx.funcoes) {
-      if (!(po.q[f.id] ?? []).some((v: number) => v > 0)) continue;
-      it(`${f.id}: todos os componentes, ${n} meses`, () => {
-        for (let i = 0; i < n; i++) {
-          const ref = P.custoFun(po, f.id, i, pp, mov);
-          const c = custoFuncaoMes(obra, f, i, params, ctx, {
-            admissoes: mov.adm[f.id]![i],
-            desligamentos: mov.dem[f.id]![i],
-          });
-          for (const [nosso, deles] of PARES) {
-            const v = c[nosso] as number;
-            if (Math.abs(v - ref[deles]) >= CENTAVO)
-              expect.fail(
-                `${f.id} mês ${i} ${String(nosso)}: motor ${v} × protótipo ${ref[deles]}`,
-              );
-          }
-          const tiposHe: [keyof CustoMes["heTipo"], string][] = [
-            ["util", "a"],
-            ["sabado", "sab"],
-            ["intervalo", "int"],
-            ["feriado", "fer"],
-          ];
-          for (const [t, k] of tiposHe)
-            expect(Math.abs(c.heTipo[t] - (ref.heB[k] ?? 0))).toBeLessThan(CENTAVO);
-          for (const [k, v] of Object.entries(ref.adB as Record<string, number>))
-            expect(Math.abs(c.adicionais[k as keyof typeof c.adicionais] - v)).toBeLessThan(
-              CENTAVO,
-            );
-          for (const [k, v] of Object.entries(ref.benB as Record<string, number>))
-            expect(Math.abs((c.beneficiosItem[k] ?? 0) - v)).toBeLessThan(CENTAVO);
+describe.each(CASOS)("custo(o, f, i, p) = protótipo · %s", (_nome: string, j: number) => {
+  const po = P.D.obras[j];
+  const obra = obraDe(P, po);
+  const pp = P.pObra(po);
+  const params = parametrosDe(pp);
+  const mov = P.movimentos(po);
+  const n = po.he.length;
+
+  for (const f of ctx.funcoes) {
+    if (!(po.q[f.id] ?? []).some((v: number) => v > 0)) continue;
+    it(`${f.id}: todos os componentes, ${n} meses`, () => {
+      for (let i = 0; i < n; i++) {
+        const ref = P.custoFun(po, f.id, i, pp, mov);
+        const c = custoFuncaoMes(obra, f, i, params, ctx, {
+          admissoes: mov.adm[f.id]![i],
+          desligamentos: mov.dem[f.id]![i],
+        });
+        for (const [nosso, deles] of PARES) {
+          const v = c[nosso] as number;
+          if (Math.abs(v - ref[deles]) >= CENTAVO)
+            expect.fail(`${f.id} mês ${i} ${String(nosso)}: motor ${v} × protótipo ${ref[deles]}`);
         }
-      });
-    }
-  },
-);
+        const tiposHe: [keyof CustoMes["heTipo"], string][] = [
+          ["util", "a"],
+          ["sabado", "sab"],
+          ["intervalo", "int"],
+          ["feriado", "fer"],
+        ];
+        for (const [t, k] of tiposHe)
+          expect(Math.abs(c.heTipo[t] - (ref.heB[k] ?? 0))).toBeLessThan(CENTAVO);
+        for (const [k, v] of Object.entries(ref.adB as Record<string, number>))
+          expect(Math.abs(c.adicionais[k as keyof typeof c.adicionais] - v)).toBeLessThan(CENTAVO);
+        for (const [k, v] of Object.entries(ref.benB as Record<string, number>))
+          expect(Math.abs((c.beneficiosItem[k] ?? 0) - v)).toBeLessThan(CENTAVO);
+      }
+    });
+  }
+});
