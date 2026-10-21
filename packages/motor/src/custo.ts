@@ -6,6 +6,7 @@ import { diasDoMes } from "./calendarioObra";
 import { taxasEncargos } from "./encargos";
 import { HE_MIX_PADRAO, PREMISSAS_PADRAO, TIPOS_HE, tabelaDoMes } from "./modelo";
 import type { Contexto, Funcao, Obra, ParametrosObra, Premissas, Regime, TipoHe } from "./modelo";
+import { cabecasMes } from "./movimentos";
 import { salarioDe } from "./parametros";
 
 /** Cotas de salário-família por trabalhador elegível (média), como no protótipo. */
@@ -83,6 +84,8 @@ export interface CustoMes {
   dias: number;
   /** horas extras totais (pessoas × horas) */
   horasExtras: number;
+  /** pessoas diferentes no mês */
+  cabecas: number;
 }
 
 export interface OpcoesCusto {
@@ -274,5 +277,6 @@ export function custoFuncaoMes(
     caixa,
     dias: pres * diasTrabalhados,
     horasExtras: pres * h,
+    cabecas: cabecasMes(o, f.id, i),
   };
 }

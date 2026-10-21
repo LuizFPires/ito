@@ -11,3 +11,4 @@ export * from "./custo";
 export * from "./movimentos";
 export * from "./obra";
 export * from "./projecao";
+export * from "./rubricas";

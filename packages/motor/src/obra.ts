@@ -46,6 +46,7 @@ export const CAMPOS_SOMAVEIS = [
   "dias",
   "licD",
   "ferD",
+  "cabecas",
 ] as const;
 export type CampoSomavel = (typeof CAMPOS_SOMAVEIS)[number];
 
