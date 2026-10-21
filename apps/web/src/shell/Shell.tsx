@@ -8,6 +8,11 @@ import { MenuUsuario } from "./MenuUsuario";
 import { GRUPOS, itemAtivo, MENU } from "./rotas";
 import s from "./Shell.module.css";
 
+const AMBIENTES: Record<string, string> = {
+  desenvolvimento: "Desenvolvimento",
+  homologacao: "Homologação",
+  producao: "Produção",
+};
 const AMBIENTE = (import.meta.env.VITE_AMBIENTE as string | undefined) ?? "desenvolvimento";
 
 export function Shell() {
@@ -36,7 +41,9 @@ export function Shell() {
             </Fragment>
           ))}
           <div className={s.rodape}>
-            {AMBIENTE !== "producao" && <Badge tom="ambar">{AMBIENTE}</Badge>}
+            {AMBIENTE !== "producao" && (
+              <Badge tom="ambar">{AMBIENTES[AMBIENTE] ?? AMBIENTE}</Badge>
+            )}
             <Badge tom="escuro">Versão 0.1</Badge>
           </div>
         </nav>
