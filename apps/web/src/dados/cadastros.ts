@@ -32,11 +32,11 @@ export const NOME_COMPONENTE: Record<ComponenteRubrica, string> = {
   ferr: "Ferramentas",
   provpaga: "Baixa de provisão",
   compgps: "Compensado na GPS",
-  nao: "Não entra",
+  nao: "Não entra (desconto do empregado)",
   info: "Informativo",
 };
 
-/** Explicação de cada componente (protótipo ITO 2.0, COMPR). */
+/** Explicação de cada componente (com base no COMPR do protótipo ITO 2.0 e no PRD §3.9). */
 export const DESCRICAO_COMPONENTE: Record<ComponenteRubrica, string> = {
   sal: "Horas normais e bolsa: entram como salário.",
   extras: "Gratificações, prêmios e adicionais legais.",
@@ -208,16 +208,11 @@ export function useAtualizarEncargo(ano: number) {
   );
 }
 
+/** Nova data-base: sempre cópia da vigente + reajuste (decisão M1). */
 export function useCriarDataBase() {
   return useGravar(
-    (a: { ano: number; origem: number; reajuste: number }) =>
-      ok(
-        supabase.rpc("criar_data_base", {
-          p_ano: a.ano,
-          p_origem: a.origem,
-          p_reajuste_pct: a.reajuste,
-        }),
-      ),
+    (a: { ano: number; reajuste: number }) =>
+      ok(supabase.rpc("criar_data_base", { p_ano: a.ano, p_reajuste_pct: a.reajuste })),
     [chaves.datasBase],
     "Data-base criada. Revise os valores antes de torná-la vigente.",
   );
@@ -277,8 +272,9 @@ export function useCriarFuncao() {
           p_sinonimo: f.sinonimo,
         }),
       ),
-    [chaves.funcoes],
-    "Função criada. Defina o salário em Parâmetros.",
+    // nasce com salário de oficial: recarrega também as data-bases
+    [chaves.funcoes, ["data-base"]],
+    "Função criada com o salário de oficial. Ajuste em Parâmetros → Salários.",
     "Já existe uma função com esse código. Use outro nome.",
   );
 }

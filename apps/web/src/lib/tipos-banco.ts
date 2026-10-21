@@ -473,10 +473,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      criar_data_base: {
-        Args: { p_ano: number; p_origem: number; p_reajuste_pct: number };
-        Returns: number;
-      };
+      criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
       criar_funcao: {
         Args: {
           p_grupo: Database["public"]["Enums"]["grupo_funcao"];
@@ -486,6 +483,7 @@ export type Database = {
         };
         Returns: string;
       };
+      data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
       meu_perfil: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];
