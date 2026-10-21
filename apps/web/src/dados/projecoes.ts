@@ -2,7 +2,7 @@
  * Projeções (M7): lista com o resumo, projeção completa, preços da cidade e gravação. O banco
  * guarda as entradas; o motor calcula na tela (decisão M7).
  */
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CctPrecos, Tabela } from "@ito/motor";
 import type {
@@ -102,36 +102,45 @@ export const cidadeComPrecos = (c: Cidade): CidadeComPrecos => ({
   feriados: c.feriados,
 });
 
+export type CctComPrecos = CctPrecos & { id: string; nome: string };
+
 /** CCT da cidade com os preços que o motor usa (mês da data-base e reajuste estimado). */
+export const consultaCctPrecos = (cctId: string) => ({
+  queryKey: ["projecoes", "cct", cctId] as const,
+  queryFn: async (): Promise<CctComPrecos> => {
+    const [c, det] = await Promise.all([
+      ok(supabase.from("ccts").select("*").eq("id", cctId).single()),
+      carregarCct(cctId),
+    ]);
+    return {
+      id: c.id,
+      nome: c.nome,
+      mesDataBase: c.mes_data_base,
+      reajusteEstimadoPct: Number(c.reajuste_estimado_pct),
+      ...det,
+    };
+  },
+});
+
 export function useCctPrecos(cctId: string | null | undefined) {
-  return useQuery({
-    queryKey: ["projecoes", "cct", cctId ?? ""],
-    enabled: !!cctId,
-    queryFn: async (): Promise<CctPrecos & { id: string; nome: string }> => {
-      const [c, det] = await Promise.all([
-        ok(supabase.from("ccts").select("*").eq("id", cctId!).single()),
-        carregarCct(cctId!),
-      ]);
-      return {
-        id: c.id,
-        nome: c.nome,
-        mesDataBase: c.mes_data_base,
-        reajusteEstimadoPct: Number(c.reajuste_estimado_pct),
-        ...det,
-      };
-    },
-  });
+  return useQuery({ ...consultaCctPrecos(cctId ?? ""), enabled: !!cctId });
 }
 
 export type { Tabela };
 
 /** Obras de referência com os dados de cálculo (as que sumiram da base ficam de fora). */
-export function useReferencias(ids: readonly string[]) {
+export const consultaReferencias = (ids: readonly string[]) => {
   const chave = [...ids].sort().join(",");
-  return useQuery({
-    queryKey: ["projecoes", "refs", chave],
-    enabled: ids.length > 0,
+  return {
+    queryKey: ["projecoes", "refs", chave] as const,
     queryFn: () => carregarObrasBanco(chave.split(",")),
+  };
+};
+
+export function useReferencias(ids: readonly string[]) {
+  return useQuery({
+    ...consultaReferencias(ids),
+    enabled: ids.length > 0,
     placeholderData: keepPreviousData,
   });
 }
@@ -141,6 +150,26 @@ export const origemPadrao = (cidades: readonly { id: string }[], cidadeId: strin
   cidades.find((c) => c.id === "bh" && c.id !== cidadeId)?.id ??
   cidades.find((c) => c.id !== cidadeId)?.id ??
   null;
+
+/** Preços da projeção a partir dos cadastros já carregados (nulo se falta a CCT da cidade). */
+export function montarPrecos(
+  tabela: Tabela | undefined,
+  cidades: readonly Cidade[],
+  cidadeId: string | null,
+  origemId: string | null,
+  cct: CctComPrecos | undefined,
+): Precos | null {
+  const cid = cidades.find((c) => c.id === cidadeId) ?? null;
+  if (!tabela || (cid && !cct)) return null;
+  const orig = origemId ?? origemPadrao(cidades, cidadeId);
+  const de = cidades.find((c) => c.id === orig && c.id !== cidadeId) ?? null;
+  return {
+    vigente: tabela,
+    cidade: cid ? cidadeComPrecos(cid) : null,
+    cidadeOrigem: de ? cidadeComPrecos(de) : null,
+    cct: cid ? cct! : null,
+  };
+}
 
 /**
  * Contexto do motor, cidades e preços da cidade da projeção (tabela vigente, CCT, VT, ISS).
@@ -153,18 +182,12 @@ export function usePrecos(cidadeId: string | null, origemId: string | null) {
   const cid = cidades?.find((c) => c.id === cidadeId) ?? null;
   const cctQ = useCctPrecos(cid?.cct_id);
   const ctx = contexto.data;
-  const orig = origemId ?? (cidades ? origemPadrao(cidades, cidadeId) : null);
-  const de = cidades?.find((c) => c.id === orig && c.id !== cidadeId) ?? null;
-  const pronto = !!ctx && !!cidades && (!cid || !!cctQ.data);
-  const precos: Precos | null =
-    pronto && ctx.tabelas[ctx.vigente]
-      ? {
-          vigente: ctx.tabelas[ctx.vigente]!,
-          cidade: cid ? cidadeComPrecos(cid) : null,
-          cidadeOrigem: de ? cidadeComPrecos(de) : null,
-          cct: cid ? cctQ.data! : null,
-        }
-      : null;
+  const tabela = ctx?.tabelas[ctx.vigente];
+  const cct = cctQ.data;
+  const precos = useMemo(
+    () => (cidades ? montarPrecos(tabela, cidades, cidadeId, origemId, cct) : null),
+    [tabela, cidades, cidadeId, origemId, cct],
+  );
   return {
     contexto: ctx,
     cidades: cidades ?? [],
