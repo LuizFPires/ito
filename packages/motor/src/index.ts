@@ -3,3 +3,4 @@
  */
 export * from "./calendario";
 export * from "./encargos";
+export * from "./local";
