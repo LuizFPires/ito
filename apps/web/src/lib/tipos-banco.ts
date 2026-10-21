@@ -1059,6 +1059,7 @@ export type Database = {
           fora_da_sede: boolean;
           funcoes_transferidas: string[];
           grat_premios_pct: number;
+          grupo: string;
           he_mix_feriado: number;
           he_mix_intervalo: number;
           he_mix_sabado: number;
@@ -1088,6 +1089,7 @@ export type Database = {
           fora_da_sede?: boolean;
           funcoes_transferidas?: string[];
           grat_premios_pct?: number;
+          grupo?: string;
           he_mix_feriado?: number;
           he_mix_intervalo?: number;
           he_mix_sabado?: number;
@@ -1116,6 +1118,7 @@ export type Database = {
           fora_da_sede?: boolean;
           funcoes_transferidas?: string[];
           grat_premios_pct?: number;
+          grupo?: string;
           he_mix_feriado?: number;
           he_mix_intervalo?: number;
           he_mix_sabado?: number;

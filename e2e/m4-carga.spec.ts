@@ -159,6 +159,9 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
     ["ped", 1, 1],
     ["serv", 0, 1],
   ]);
+  expect(await api.ler("obras?id=eq.obra_e2e_carga&select=grupo,meses,inicio")).toEqual([
+    { grupo: "galpao", meses: 2, inicio: "2025-03-01" },
+  ]);
   const realoc = await api.ler<{ outra_obra: string; qtd: number }[]>(
     "realocacoes?obra_id=eq.obra_e2e_carga",
   );
