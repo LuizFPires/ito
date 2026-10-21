@@ -63,14 +63,17 @@ export function CompararCcts({ ccts, onVoltar }: { ccts: CctResumo[]; onVoltar: 
                 <td colSpan={col}>Mão de obra {nomeG.toLowerCase()}</td>
               </tr>,
               ...fs.map((x) => {
-                const vs = D.map(
-                  (d) => valorOuEmpresa(d.salarios, empresa.salarios, x.id).valor ?? 0,
-                );
-                const mn = Math.min(...vs);
-                const mx = Math.max(...vs);
+                // Sem salário na CCT nem na empresa: "—", fora do maior/menor.
+                const vs = D.map((d) => valorOuEmpresa(d.salarios, empresa.salarios, x.id).valor);
+                const def = vs.filter((v): v is number => v !== undefined);
+                const mn = Math.min(...def);
+                const mx = Math.max(...def);
                 return (
                   <tr key={x.id}>
-                    <td className={f.forte}>{x.nome}</td>
+                    <td>
+                      <span className={f.amostra} style={{ background: `var(--${x.cor})` }} />
+                      <span className={f.forte}>{x.nome}</span>
+                    </td>
                     {vs.map((v, j) => {
                       const gr = D[j]!.gratificacoes[x.id] ?? 0;
                       return (
@@ -78,7 +81,9 @@ export function CompararCcts({ ccts, onVoltar }: { ccts: CctResumo[]; onVoltar: 
                           <span className={v === mx && mx > mn ? f.forte : undefined}>
                             {moeda(v)}
                           </span>
-                          {v === mn && mx > mn && <span className="sub"> menor</span>}
+                          {v !== undefined && v === mn && mx > mn && (
+                            <span className="sub"> menor</span>
+                          )}
                           {gr > 0 && <div className="sub">+ {moeda(gr, 0)} gratificação</div>}
                         </td>
                       );
@@ -97,7 +102,7 @@ export function CompararCcts({ ccts, onVoltar }: { ccts: CctResumo[]; onVoltar: 
               <td key={ccts[j]!.id} className={`${f.r} sub`} style={{ whiteSpace: "normal" }}>
                 {Object.entries(d.gratificacoes)
                   .filter(([, v]) => v > 0)
-                  .map(([k]) => ativas.find((x) => x.id === k)?.nome.toLowerCase() ?? k)
+                  .map(([k]) => (funcoes ?? []).find((x) => x.id === k)?.nome.toLowerCase() ?? k)
                   .join(", ") || "—"}
               </td>
             ))}

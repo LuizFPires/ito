@@ -51,7 +51,7 @@ export function AbaCidades({ pode }: { pode: boolean }) {
   const lista = useMemo(
     () =>
       (cidades ?? []).filter(
-        (c) => (!cct || c.cct_id === cct) && contemTermos(`${c.nome} ${c.uf}`, q),
+        (c) => (!cct || c.cct_id === cct) && contemTermos(`${c.nome} ${c.uf} ${nomeCidade(c)}`, q),
       ),
     [cidades, cct, q],
   );
@@ -480,7 +480,8 @@ function NovaCidade() {
   const [uf, setUf] = useState("MG");
   const [cct, setCct] = useState("");
   const [erro, setErro] = useState<string | null>(null);
-  const cctEscolhida = cct || ccts?.[0]?.id || "";
+  // Padrão: a CCT de BH, como no protótipo; sem ela, a primeira da lista.
+  const cctEscolhida = cct || ccts?.find((t) => t.id === "bh")?.id || ccts?.[0]?.id || "";
 
   function enviar() {
     const n = nome.trim();

@@ -103,6 +103,14 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Mês da data-base da CCT guardado de **1 a 12** (no protótipo era 0–11). (auto — recomendado)
 - Cidade guarda nome e UF separados (exibição "Nome/UF"). Feriado municipal recorrente = dia + mês; o motor converte para a data de cada ano. (auto — recomendado)
 - CCT só é excluída sem cidades vinculadas (PLAN).
+- Revisão e comparação com o protótipo (21/10/2026):
+  - **Ajuste em lote** vale para tudo o que o editor mostra: funções ativas que usavam o salário da empresa ganham salário próprio já ajustado; pede confirmação e avisa CCT e percentual. (auto — recomendado)
+  - Reajuste estimado da CCT aceita de **−50% a 100%** (o protótipo começava em 0). (auto — recomendado)
+  - **Nome da CCT é único** (duplicar duas vezes pede renomear a cópia anterior). (auto — recomendado)
+  - Aviso genérico "Salvo" também no M2, como no M1. (auto — recomendado)
+  - Comparar: célula sem salário na CCT nem na empresa mostra "—" e não entra em maior/menor. (auto — recomendado)
+  - Feriados municipais e passagens de outras origens ficam no detalhe da cidade (regra 8); a linha mostra a contagem.
+  - Tela abre na CCT de BH; cidade nova nasce na CCT de BH (como o protótipo).
 - **Pendência externa (para resolver no futuro):** o CI do GitHub está bloqueado por cobrança da conta (Billing & plans). Os PRs seguem empilhados (#1 M0 → #2 M1 → M2) e só entram na `main` quando o CI rodar verde.
 
 ## Design system "Canteiro" (ITO)

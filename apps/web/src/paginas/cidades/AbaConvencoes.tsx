@@ -25,6 +25,7 @@ import {
 } from "../../dados/cadastros";
 import type { GrupoFuncao } from "../../dados/cadastros";
 import { valorOuEmpresa } from "../../lib/ccts";
+import { useToast } from "../../ui/toast";
 import { codigoDe, contemTermos, ordenar, paginar } from "../../lib/lista";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
 import {
@@ -76,7 +77,9 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
     );
   }, [ccts, cidadesDe, q, ordem]);
   const pg = paginar(lista, pagina, POR_PAGINA);
-  const atual = (ccts ?? []).find((t) => t.id === (sel ?? pg.itens[0]?.id));
+  // Sem escolha, abre a CCT de BH (como o protótipo); sem ela, a primeira da página.
+  const padrao = (ccts ?? []).some((t) => t.id === "bh") ? "bh" : pg.itens[0]?.id;
+  const atual = (ccts ?? []).find((t) => t.id === (sel ?? padrao));
   // Só as que ainda existem (uma CCT marcada pode ter sido excluída).
   const paraComparar = marcadas
     .map((id) => (ccts ?? []).find((t) => t.id === id))
@@ -103,7 +106,9 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
   }
 
   function marcar(id: string, v: boolean) {
-    setMarcadas((m) => (v ? [...m, id].slice(0, MAX_COMPARAR) : m.filter((x) => x !== id)));
+    const novas = v ? [...marcadas, id].slice(0, MAX_COMPARAR) : marcadas.filter((x) => x !== id);
+    setMarcadas(novas);
+    if (novas.length < 2) setComparando(false); // não reabre sozinha depois
   }
 
   return (
@@ -126,7 +131,10 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
                 <Selecao
                   value={ordem}
                   style={{ width: "auto", minHeight: 32, borderRadius: 999, fontSize: 12 }}
-                  onChange={(e) => setOrdem(e.target.value as OrdemCct)}
+                  onChange={(e) => {
+                    setOrdem(e.target.value as OrdemCct);
+                    setPagina(1);
+                  }}
                 >
                   <option value="nome">Nome</option>
                   <option value="base">Mês da data-base</option>
@@ -282,6 +290,7 @@ function EditorCct({
   const duplicar = useDuplicarCct();
   const excluir = useExcluirCct();
   const ajustar = useAjustarCct();
+  const avisar = useToast();
   const vincular = useAtualizarCidade();
   const [nome, setNome] = useState(cct.nome);
   const [comId, setComId] = useState("");
@@ -304,7 +313,16 @@ function EditorCct({
     const ok = window.confirm(
       `Aplicar ${percentual(pct, 1)} a todos os salários e gratificações de "${cct.nome}"? Funções que hoje usam o salário da empresa passam a ter valor próprio já ajustado.`,
     );
-    if (ok) ajustar.mutate({ id: cct.id, pct });
+    if (ok)
+      ajustar.mutate(
+        { id: cct.id, pct },
+        {
+          onSuccess: () =>
+            avisar(
+              `Salários e gratificações de ${nomeCurtoCct(cct.nome)} ajustados em ${percentual(pct, 1)}`,
+            ),
+        },
+      );
   }
 
   function duplicarCct() {

@@ -249,7 +249,7 @@ export function useAjustarCct() {
     (a: { id: string; pct: number }) =>
       ok(supabase.rpc("ajustar_cct", { p_cct: a.id, p_pct: a.pct })),
     recCcts,
-    "Salários e gratificações ajustados",
+    "", // a tela avisa com o nome da CCT e o percentual
   );
 }
 
