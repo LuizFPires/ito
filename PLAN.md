@@ -132,10 +132,12 @@
 ---
 
 ## M6 — Comparar obras
-- [ ] 2 a 4 obras: histogramas alinhados por mês relativo, indicadores lado a lado e custos a valores vigentes
+- [x] 2 a 4 obras: histogramas alinhados por mês relativo, indicadores lado a lado e custos a valores vigentes
 
 **Aceite:** a comparação abre a partir da seleção na base e do botão "Comparar com…" na obra.
 
+> ✅ 21/10/2026: abre pela seleção na base e por "Comparar com…" na obra (e2e `m6-comparar`).
+>
 > Decisões (21/10/2026): seleção compartilhada na sessão; eixo em mês relativo com opção % do prazo; escolha com busca (CLAUDE.md, M6).
 
 ---
