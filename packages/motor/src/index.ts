@@ -4,3 +4,5 @@
 export * from "./calendario";
 export * from "./encargos";
 export * from "./local";
+export * from "./modelo";
+export * from "./parametros";
