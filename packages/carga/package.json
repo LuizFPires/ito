@@ -1,0 +1,17 @@
+{
+  "name": "@ito/carga",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ito/formato": "workspace:*",
+    "@ito/motor": "workspace:*",
+    "fast-xml-parser": "5.11.2"
+  }
+}

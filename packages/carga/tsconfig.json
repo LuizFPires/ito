@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // leitura e montagem da carga: puro, roda no navegador (o arquivo com nomes não sai da máquina)
+  "compilerOptions": { "types": [] },
+  "include": ["src"]
+}
