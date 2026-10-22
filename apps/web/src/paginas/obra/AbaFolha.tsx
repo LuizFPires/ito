@@ -10,6 +10,8 @@ import u from "../../ui/ui.module.css";
 import type { Aba, DadosAba } from "./comum";
 import { custoRealocacao } from "./calculos";
 import { soma } from "./comum";
+import { BotaoCopiar } from "../../ui/BotaoCopiar";
+import { rubricasPorMes, tabelaRubricas, tituloObra } from "./exportar";
 import s from "./obra.module.css";
 
 export function Restrito({ oque, feminino = true }: { oque: string; feminino?: boolean }) {
@@ -32,20 +34,10 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
   const rub = useRubricas();
   const n = rotulos.length;
 
-  const tabela = useMemo(() => {
-    const realocado = new Set(
-      (q.data?.lancamentos ?? [])
-        .filter((l) => l.realocada_para)
-        .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}`),
-    );
-    const porCodigo = new Map<number, number[]>();
-    for (const x of q.data?.rubricas ?? []) {
-      if (realocado.has(`${x.mes_idx}|${x.matricula}|${x.funcao_id}`)) continue;
-      if (!porCodigo.has(x.rubrica_codigo)) porCodigo.set(x.rubrica_codigo, Array(n).fill(0));
-      porCodigo.get(x.rubrica_codigo)![x.mes_idx]! += Number(x.valor);
-    }
-    return porCodigo;
-  }, [q.data, n]);
+  const tabela = useMemo(
+    () => rubricasPorMes(q.data?.lancamentos ?? [], q.data?.rubricas ?? [], n),
+    [q.data, n],
+  );
 
   if (!pode) return <Restrito oque="A folha por rubrica" />;
   if (q.isError || rub.isError)
@@ -96,6 +88,7 @@ export function AbaFolha({ dados, irPara }: { dados: DadosAba; irPara: (a: Aba) 
               dicionário · sem a MDO realocada
             </span>
           </div>
+          <BotaoCopiar tabela={() => tabelaRubricas(tabela, cad, rotulos, tituloObra(dados))} />
           <Link
             className={`${u.botao} ${u.pequeno}`}
             to="/rubricas"

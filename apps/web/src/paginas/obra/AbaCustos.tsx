@@ -5,7 +5,9 @@ import { parametrosDe } from "../../lib/obraDoBanco";
 import { BarrasMensais, Legenda } from "../../ui/BarrasMensais";
 import { Badge, Cartao, Segmento } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
+import { BotaoCopiar } from "../../ui/BotaoCopiar";
 import type { DadosAba } from "./comum";
+import { tabelaCustoComponente, tabelaCustoFuncao, tituloObra, tituloVisao } from "./exportar";
 import {
   COMPONENTES,
   componentesVisiveis,
@@ -105,6 +107,14 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
               ? `CCT ${d.obra.data_base} · como foi pago`
               : `Preços de ${ctx.vigente}`}
           </Badge>
+          <BotaoCopiar
+            tabela={() => {
+              const t = [...tituloObra(dados), tituloVisao(dados)];
+              return porComp
+                ? tabelaCustoComponente(r, ids, rotulos, V, vista.caixa, t)
+                : tabelaCustoFuncao(r, ids, fun, rotulos, V, t);
+            }}
+          />
         </div>
         <div className={s.mensal}>
           <table className={f.tabela} aria-label="Custos">

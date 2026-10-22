@@ -8,6 +8,8 @@ import u from "../../ui/ui.module.css";
 import { apropriacaoPorConta } from "./calculos";
 import type { DadosAba } from "./comum";
 import { soma } from "./comum";
+import { BotaoCopiar } from "../../ui/BotaoCopiar";
+import { tabelaApropriacao, tituloObra } from "./exportar";
 import s from "./obra.module.css";
 
 /**
@@ -64,6 +66,7 @@ export function AbaApropriacao({ dados }: { dados: DadosAba }) {
               competência
             </span>
           </div>
+          <BotaoCopiar tabela={() => tabelaApropriacao(R, rotulos, tituloObra(dados))} />
           <Link
             className={`${u.botao} ${u.pequeno}`}
             to="/funcoes"

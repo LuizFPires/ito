@@ -5,7 +5,9 @@ import { FORA_DO_CUSTO } from "@ito/motor";
 import { useRubricas } from "../../dados/cadastros";
 import { Badge, Botao, Cartao, Segmento } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
+import { BotaoCopiar } from "../../ui/BotaoCopiar";
 import { absenteismoMedio } from "./calculos";
+import { tabelaEfetivo, tituloObra } from "./exportar";
 import type { Aba, DadosAba } from "./comum";
 import { NOME_GRUPO_F, ORDEM_GRUPOS, soma } from "./comum";
 import type { SetVista } from "./controles";
@@ -81,6 +83,9 @@ export function AbaEfetivo({
           />
           <ControleGrupo vista={vista} setVista={setVista} />
           <ControleEixo vista={vista} setVista={setVista} />
+          <BotaoCopiar
+            tabela={() => tabelaEfetivo(obra, ids, fun, rotulos, tituloObra(dados), modo === "cab")}
+          />
         </div>
         <div className={s.mensal}>
           <table className={f.tabela} aria-label="Efetivo">
