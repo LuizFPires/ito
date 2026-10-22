@@ -1,0 +1,19 @@
+{
+  "name": "@ito/migracao",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ito/carga": "workspace:*",
+    "@ito/formato": "workspace:*",
+    "@ito/motor": "workspace:*",
+    "fflate": "0.8.3",
+    "read-excel-file": "9.3.12"
+  }
+}

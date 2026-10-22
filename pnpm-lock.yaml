@@ -129,6 +129,24 @@ importers:
 
   packages/formato: {}
 
+  packages/migracao:
+    dependencies:
+      '@ito/carga':
+        specifier: workspace:*
+        version: link:../carga
+      '@ito/formato':
+        specifier: workspace:*
+        version: link:../formato
+      '@ito/motor':
+        specifier: workspace:*
+        version: link:../motor
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
+      read-excel-file:
+        specifier: 9.3.12
+        version: 9.3.12
+
   packages/motor: {}
 
 packages:
