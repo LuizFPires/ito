@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { moeda, numero, percentual } from "@ito/formato";
 import { useLancamentos } from "../../dados/obras";
 import { FORA_DO_CUSTO } from "@ito/motor";
@@ -6,7 +6,7 @@ import { useRubricas } from "../../dados/cadastros";
 import { Badge, Botao, Cartao, Segmento } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
 import { BotaoCopiar } from "../../ui/BotaoCopiar";
-import { absenteismoMedio } from "./calculos";
+import { absenteismoMedio, NOME_CONSTRUTORA, porConstrutora } from "./calculos";
 import { tabelaEfetivo, tituloObra } from "./exportar";
 import type { Aba, DadosAba } from "./comum";
 import { NOME_GRUPO_F, ORDEM_GRUPOS, soma } from "./comum";
@@ -257,6 +257,7 @@ export function AbaEfetivo({
         16 de um mês de 31 dias conta 0,52). Cabeças: quantas pessoas diferentes passaram pela folha
         no mês.
       </p>
+      {pode && <PorConstrutora dados={dados} />}
       {pode && cel && (
         <PainelMatriculas
           dados={dados}
@@ -291,12 +292,15 @@ function PainelMatriculas({
       .map((r) => [r.codigo, r.tipo]),
   );
   // remuneração por matrícula no mês: rubricas que entram no custo (descontos negativos)
+  // a mesma matrícula pode existir na Clássica e na Ampla (decisão M9)
+  const chave = (x: { matricula: string; construtora: string }) =>
+    `${x.matricula}|${x.construtora}`;
   const remun = new Map<string, number>();
   for (const r of q.data?.rubricas ?? []) {
     if (r.funcao_id !== k || r.mes_idx !== i || !noCusto.has(r.rubrica_codigo)) continue;
     const v = Number(r.valor);
     const sinal = noCusto.get(r.rubrica_codigo) === "desconto" ? -Math.abs(v) : v;
-    remun.set(r.matricula, (remun.get(r.matricula) ?? 0) + sinal);
+    remun.set(chave(r), (remun.get(chave(r)) ?? 0) + sinal);
   }
   const linhas = (q.data?.lancamentos ?? []).filter((l) => l.funcao_id === k && l.mes_idx === i);
   const pm = soma(linhas.map((l) => Number(l.equivalente)));
@@ -340,14 +344,15 @@ function PainelMatriculas({
           </thead>
           <tbody>
             {linhas.map((l) => (
-              <tr key={l.matricula}>
+              <tr key={chave(l)}>
                 <td className="mono">
-                  {l.matricula} {l.desligado && <Badge tom="ambar">deslig.</Badge>}
+                  {l.matricula} {l.construtora === "ampla" && <Badge>Ampla</Badge>}{" "}
+                  {l.desligado && <Badge tom="ambar">deslig.</Badge>}
                 </td>
                 <td className={f.r}>{numero(Number(l.equivalente), 2)}</td>
                 <td className={f.r}>{numero(Number(l.horas_extras), 1)}</td>
                 <td className={f.r}>{numero(Number(l.faltas_horas), 1)}</td>
-                <td className={f.r}>{moeda(remun.get(l.matricula) ?? 0, 0)}</td>
+                <td className={f.r}>{moeda(remun.get(chave(l)) ?? 0, 0)}</td>
                 <td className="sub">
                   {[
                     l.admitido && "admitido",
@@ -376,6 +381,63 @@ function PainelMatriculas({
         Sem nomes: o histórico guarda só a matrícula · valores da época (CCT{" "}
         {dados.d.obra.data_base}), como pagos na folha.
       </p>
+    </Cartao>
+  );
+}
+
+/** Efetivo e folha por construtora (Clássica e Ampla na mesma obra, decisão M9). */
+function PorConstrutora({ dados }: { dados: DadosAba }) {
+  const q = useLancamentos(dados.d.obra.id, true);
+  const rub = useRubricas();
+  const linhas = useMemo(() => {
+    if (!q.data || !rub.data) return [];
+    const noCusto = new Map(
+      rub.data.filter((r) => !FORA_DO_CUSTO.includes(r.componente)).map((r) => [r.codigo, r.tipo]),
+    );
+    return porConstrutora(q.data.lancamentos, q.data.rubricas, noCusto, dados.rotulos.length);
+  }, [q.data, rub.data, dados.rotulos.length]);
+  if (linhas.length < 2) return null;
+  return (
+    <Cartao aria-label="Efetivo por construtora">
+      <div className={f.barra}>
+        <span className="rotulo">Efetivo por construtora</span>
+        <span className="sub">
+          Pessoa-mês e, abaixo, a remuneração na folha (rubricas que entram no custo) de quem estava
+          fichado em cada construtora
+        </span>
+      </div>
+      <div className={s.mensal}>
+        <table className={f.tabela} aria-label="Pessoa-mês por construtora">
+          <thead>
+            <tr>
+              <th>Construtora</th>
+              {dados.rotulos.map((m) => (
+                <th key={m} className={f.r}>
+                  {m}
+                </th>
+              ))}
+              <th className={f.r}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {linhas.map((l) => (
+              <tr key={l.construtora}>
+                <td className={f.forte}>{NOME_CONSTRUTORA[l.construtora]}</td>
+                {l.pm.map((v, i) => (
+                  <td key={i} className={f.r}>
+                    {numero(v, 1)}
+                    <div className="sub">{moeda(l.remun[i], 0)}</div>
+                  </td>
+                ))}
+                <td className={f.r}>
+                  <strong>{numero(soma(l.pm), 1)}</strong>
+                  <div className="sub">{moeda(soma(l.remun), 0)}</div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Cartao>
   );
 }

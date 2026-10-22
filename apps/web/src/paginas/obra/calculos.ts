@@ -82,3 +82,82 @@ export function custoRealocacao(
     t += custoFuncaoMes(dados.obra, fn, i, p, dados.ctx.ctx, { x: x.qtd }).total;
   return t;
 }
+
+export const NOME_CONSTRUTORA = { classica: "Clássica", ampla: "Ampla" } as const;
+export type Construtora = keyof typeof NOME_CONSTRUTORA;
+
+export interface LinhaConstrutora {
+  construtora: Construtora;
+  /** pessoa-mês por mês (sem a MDO realocada) */
+  pm: number[];
+  /** pessoas diferentes por mês */
+  cabecas: number[];
+  /** remuneração na folha (rubricas que entram no custo, descontos negativos) */
+  remun: number[];
+}
+
+/**
+ * Efetivo e folha por construtora (decisão M9: Ampla e Clássica na mesma obra). Lê os lançamentos
+ * por matrícula, que só quem carrega vê.
+ */
+export function porConstrutora(
+  lancamentos: readonly {
+    mes_idx: number;
+    matricula: string;
+    funcao_id: string;
+    construtora: string;
+    equivalente: number | string;
+    realocada_para: string | null;
+  }[],
+  rubricas: readonly {
+    mes_idx: number;
+    matricula: string;
+    funcao_id: string;
+    construtora: string;
+    rubrica_codigo: number;
+    valor: number | string;
+  }[],
+  noCusto: ReadonlyMap<number, string>,
+  n: number,
+): LinhaConstrutora[] {
+  const linhas = new Map<Construtora, LinhaConstrutora & { vistos: Set<string>[] }>();
+  const obter = (c: string) => {
+    const k = (c === "ampla" ? "ampla" : "classica") as Construtora;
+    let l = linhas.get(k);
+    if (!l) {
+      l = {
+        construtora: k,
+        pm: Array(n).fill(0),
+        cabecas: Array(n).fill(0),
+        remun: Array(n).fill(0),
+        vistos: Array.from({ length: n }, () => new Set<string>()),
+      };
+      linhas.set(k, l);
+    }
+    return l;
+  };
+  const realocado = new Set<string>();
+  for (const x of lancamentos) {
+    if (x.realocada_para) {
+      realocado.add(`${x.mes_idx}|${x.matricula}|${x.funcao_id}|${x.construtora}`);
+      continue;
+    }
+    const l = obter(x.construtora);
+    const eq = Number(x.equivalente);
+    l.pm[x.mes_idx]! += eq;
+    if (eq > 0 && !l.vistos[x.mes_idx]!.has(x.matricula)) {
+      l.vistos[x.mes_idx]!.add(x.matricula);
+      l.cabecas[x.mes_idx]! += 1;
+    }
+  }
+  for (const r of rubricas) {
+    if (realocado.has(`${r.mes_idx}|${r.matricula}|${r.funcao_id}|${r.construtora}`)) continue;
+    const tipo = noCusto.get(r.rubrica_codigo);
+    if (!tipo) continue;
+    const v = Number(r.valor);
+    obter(r.construtora).remun[r.mes_idx]! += tipo === "desconto" ? -Math.abs(v) : v;
+  }
+  return [...linhas.values()]
+    .sort((a, b) => a.construtora.localeCompare(b.construtora) * -1)
+    .map(({ vistos: _v, ...l }) => l);
+}
