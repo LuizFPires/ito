@@ -191,7 +191,7 @@
 
 **Aceite:** todas as planilhas disponíveis estão na base; as divergências estão listadas e justificadas.
 
-> Decisões (21/10/2026): base = zip "Histogramas das Obras" (.xlsm 2017–2020 e .xlsb 2023–2026); Ampla e Clássica numa obra só; versão mais recente nas duplicatas; script local de migração pelo caminho da carga; destino local → homologação (CLAUDE.md, M9).
+> Decisões (21/10/2026): base = zip "Histogramas das Obras" (.xlsm 2017–2020 e .xlsb 2023–2026); Ampla e Clássica numa obra só, com a construtora de cada pessoa guardada; versão mais recente nas duplicatas; script local de migração pelo caminho da carga; destino local → homologação (CLAUDE.md, M9).
 
 ---
 
