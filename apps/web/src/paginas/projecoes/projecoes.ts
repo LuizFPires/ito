@@ -10,7 +10,7 @@ import type { Ordem } from "../../lib/lista";
 import type { Situacao } from "../../lib/projecaoDoBanco";
 
 export type FiltroSituacao = "todas" | Situacao;
-export type ChaveProjecao = "nome" | "area" | "pico" | "total" | "criado";
+export type ChaveProjecao = "nome" | "area" | "pico" | "total" | "situacao" | "criado";
 
 export const SITUACOES: readonly Situacao[] = ["rascunho", "em_analise", "aprovada"];
 export const TOM_SITUACAO = { rascunho: "neutro", em_analise: "ambar", aprovada: "ok" } as const;
@@ -43,6 +43,8 @@ export function ordenarProjecoes(
         return p.resumo.pico ?? -1;
       case "total":
         return p.resumo.total ?? -1;
+      case "situacao":
+        return SITUACOES.indexOf(p.situacao);
       case "criado":
         return p.criado_em;
     }

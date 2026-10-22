@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { mesAno, moeda, numero, percentual } from "@ito/formato";
-import type { CustoMes, Soma } from "@ito/motor";
-import { anoMes, indicadores, somar, tabelaDoMes } from "@ito/motor";
+import type { CustoMes, GrupoFuncao, Soma } from "@ito/motor";
+import { anoMes, indicadores, PREMISSAS_PADRAO, somar, tabelaDoMes } from "@ito/motor";
 import type { ContextoCarga } from "../../dados/carga";
 import type { ObraBanco } from "../../lib/obraDoBanco";
 import { resumoDaObra } from "../../lib/obraDoBanco";
@@ -16,7 +16,7 @@ import { useToast } from "../../ui/toast";
 import { COMPONENTES, NOME_GRUPO_F, notaVisao, ORDEM_GRUPOS, soma } from "../obra/comum";
 import o from "../obra/obra.module.css";
 import { useInfoFuncoes } from "./funcoes";
-import { rotulosMeses, textoTabulado } from "./projecoes";
+import { manualValido, rotulosMeses, textoTabulado } from "./projecoes";
 import s from "./projecoes.module.css";
 
 const NOME_CENARIO = {
@@ -57,9 +57,12 @@ export function Resultado({
   const [relativo, setRelativo] = useState(false);
   const [caixa, setCaixa] = useState(false);
   const [porComp, setPorComp] = useState(false);
+  const [grupo, setGrupo] = useState<"todas" | GrupoFuncao>("todas");
+  const [agrupadas, setAgrupadas] = useState(false);
   const { fun, ordenarFuncoes } = useInfoFuncoes(contexto.ctx);
   const r = calc.r;
   const ctx = contexto.ctx;
+  const manual = manualValido(e.quantidadesManuais, e.prazo);
 
   const cen = useMemo(() => (cidade ? cenarios(calc, ctx) : []), [calc, ctx, cidade]);
   const refs = useMemo(
@@ -95,13 +98,17 @@ export function Resultado({
   const p0 = tabelaDoMes(calc.parametros, 0);
   const vig = contexto.vigente;
   const M = rotulos.map((_, i) => somar(ids.map((k) => R.porFuncao[k]![i]!)));
-  const series = ids.map((k) => ({
-    id: k,
-    nome: fun(k).nome,
-    cor: fun(k).cor,
-    valores:
-      modo === "pessoas" ? (r.obra.equivalente[k] ?? []) : R.porFuncao[k]!.map((c) => V(c) / 1000),
-  }));
+  const series = ids
+    .filter((k) => grupo === "todas" || fun(k).grupo === grupo)
+    .map((k) => ({
+      id: k,
+      nome: fun(k).nome,
+      cor: fun(k).cor,
+      valores:
+        modo === "pessoas"
+          ? (r.obra.equivalente[k] ?? [])
+          : R.porFuncao[k]!.map((c) => V(c) / 1000),
+    }));
   const totComp = soma(M.map((m) => m.total));
   const curva = [
     {
@@ -121,6 +128,17 @@ export function Resultado({
     },
   ];
   const reaj = calc.reajustes[0];
+  const pr = { ...PREMISSAS_PADRAO, ...e.premissas };
+  const porDia = (k: string | null) => {
+    const t2 = somar(k ? (R.porFuncao[k] ?? []) : M);
+    return t2.dias ? t2.total / t2.dias : null;
+  };
+  const nSp = ids.filter((k) => e.regime[k] === "sp").length;
+  const nTransf = pr.funcoesTransferidas.filter((k) => ids.includes(k)).length;
+  const origens = (["local", "diaria", "aloj"] as const).map(
+    (og) => ids.filter((k) => !fun(k).estagio && (e.origem[k] ?? "local") === og).length,
+  );
+  const mix = r.aplicadas.heMixPct;
   const nomeMes = (i: number) => {
     const m = anoMes(e.inicio, i);
     return mesAno(m.ano, m.mes);
@@ -174,9 +192,9 @@ export function Resultado({
           sub={`${numero((r.pessoaMes / e.area) * 1000, 1)} por 1.000 m² · ${percentual(ind.indiretaPct, 0)} indireta`}
         />
         <Kpi
-          rotulo="R$ por dia trabalhado"
-          valor={moeda(ind.porDiaComTaxa, 0)}
-          sub={`${moeda(ind.porDiaSemTaxa, 0)} sem encargos e benefícios`}
+          rotulo="R$ por dia · pedreiro"
+          valor={moeda(porDia("ped"), 0)}
+          sub={`servente ${moeda(porDia("serv"), 0)} · todas as funções ${moeda(ind.porDiaComTaxa, 0)}`}
         />
       </div>
 
@@ -205,10 +223,42 @@ export function Resultado({
             <span>Sem cidade: tabela da empresa {vig}</span>
           )}
           <span>Oficial {moeda(p0.salarios.ped ?? 0)}</span>
+          <span>Gratificações e prêmios {percentual(pr.gratPremiosPct, 1)}</span>
+          {nTransf > 0 && (
+            <span>
+              Transferência {percentual(pr.transfPct, 0)} em {numero(nTransf)}{" "}
+              {nTransf === 1 ? "função" : "funções"}
+            </span>
+          )}
+          <span>
+            HE {percentual(mix.util, 0)} úteis · {percentual(mix.sabado, 0)} sábados ·{" "}
+            {percentual(mix.intervalo, 0)} intervalo · {percentual(mix.feriado, 0)} domingos e
+            feriados
+          </span>
+          <span>
+            {nSp ? `${numero(nSp)} ${nSp === 1 ? "função" : "funções"} S/P` : "Nenhuma função S/P"}
+          </span>
+          {cidade && (
+            <span>
+              Origem: {numero(origens[0]!)} local · {numero(origens[1]!)} vem todo dia ·{" "}
+              {numero(origens[2]!)} alojada
+            </span>
+          )}
+          <span>{pr.provisionar ? "Com provisões (competência)" : "Sem provisões"}</span>
+          <span>
+            {pr.adiantamento
+              ? `Caixa: adiantamento de ${percentual(pr.adiantamentoPct, 0)} + saldo no mês seguinte`
+              : "Caixa: folha paga no mês"}
+          </span>
+          <span>
+            {pr.riscoPct || pr.lucroPct || pr.tribLucroPct
+              ? `Risco ${percentual(pr.riscoPct, 1)} · lucro ${percentual(pr.lucroPct, 1)} · tributos s/ lucro ${percentual(pr.tribLucroPct, 1)}`
+              : "Sem risco e lucro"}
+          </span>
           <span>VT local {moeda(p0.vtDiaria)} por dia</span>
           <span>
             {reaj
-              ? `Reajuste de ${percentual(reaj.pct, 1)} a partir de ${nomeMes(reaj.mesIdx)}${reaj.automatico ? " (data-base da CCT)" : " (informado)"}`
+              ? `Reajuste de ${percentual(reaj.pct, 1)} a partir de ${calc.reajustes.map((x) => nomeMes(x.mesIdx)).join(" e ")}${reaj.automatico ? (calc.reajustes.length > 1 ? " (data-base da CCT, composto)" : " (data-base da CCT)") : " (informado)"}`
               : "Sem reajuste no prazo"}
           </span>
         </div>
@@ -225,6 +275,28 @@ export function Resultado({
               {modo === "pessoas" ? "pessoas por função" : "custo por função (R$ mil)"}
             </span>
             <span className={f.linha}>
+              <Segmento
+                rotulo="Grupo de funções"
+                opcoes={[
+                  { valor: "todas", texto: "Todas" },
+                  { valor: "direta", texto: "Direta" },
+                  { valor: "indireta", texto: "Indireta" },
+                  { valor: "adm", texto: "Adm." },
+                ]}
+                valor={grupo}
+                onChange={setGrupo}
+              />
+              {modo === "pessoas" && (
+                <Segmento
+                  rotulo="Barras"
+                  opcoes={[
+                    { valor: "emp", texto: "Empilhadas" },
+                    { valor: "agr", texto: "Agrupadas" },
+                  ]}
+                  valor={agrupadas ? "agr" : "emp"}
+                  onChange={(v) => setAgrupadas(v === "agr")}
+                />
+              )}
               <Segmento
                 rotulo="Eixo"
                 opcoes={[
@@ -249,6 +321,7 @@ export function Resultado({
           <BarrasMensais
             rotulos={rotulos}
             series={series}
+            agrupadas={agrupadas && modo === "pessoas"}
             formatar={(v) => (modo === "pessoas" ? numero(v) : `${numero(v)} k`)}
             titulo={modo === "pessoas" ? "Histograma projetado" : "Custo projetado por função"}
           />
@@ -263,7 +336,7 @@ export function Resultado({
               .slice(0, 4)
               .map((k) => {
                 const pm = r.pmPorMilM2[k];
-                return `${fun(k).nome} ${pm == null ? (e.quantidadesManuais ? "informado" : "fixo/mês") : `${numero(pm, 1)} PM/1.000 m²`}`;
+                return `${fun(k).nome} ${pm == null ? (manual ? "informado" : "fixo/mês") : `${numero(pm, 1)} PM/1.000 m²`}`;
               })
               .join(" · ")}
             {ids.length > 4 ? "…" : ""}
@@ -299,6 +372,14 @@ export function Resultado({
                         <td className={f.forte}>
                           <span className={o.amostra} style={{ background: fun(k).cor }} />
                           {fun(k).nome}
+                          <div className="sub">
+                            {r.pmPorMilM2[k] == null
+                              ? manual
+                                ? "informado"
+                                : "fixo por mês"
+                              : `${numero(r.pmPorMilM2[k]!, 1)} PM/1.000 m²`}
+                            {e.regime[k] === "sp" && " · prestador S/P"}
+                          </div>
                         </td>
                         {rotulos.map((_, i) => (
                           <td key={i} className={f.r}>

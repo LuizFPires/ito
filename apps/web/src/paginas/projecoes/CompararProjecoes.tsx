@@ -12,7 +12,7 @@ import {
   useProjecoes,
 } from "../../dados/projecoes";
 import type { Calculo } from "../../lib/projecaoDoBanco";
-import { calcularProjecao, entradasDaLinha } from "../../lib/projecaoDoBanco";
+import { calcularProjecao, entradasDaLinha, NOME_SITUACAO } from "../../lib/projecaoDoBanco";
 import { Legenda } from "../../ui/BarrasMensais";
 import { Cartao } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
@@ -38,13 +38,18 @@ const LINHAS: readonly Linha[] = [
   ["Rotatividade", (_, c) => `${percentual(c.r!.aplicadas.rotatividadePct, 1)} a.m.`],
   [
     "Funções por prestador S/P",
-    (p) =>
-      numero(
-        Object.values((p.regime ?? {}) as Record<string, string>).filter((v) => v === "sp").length,
-      ),
+    (p) => {
+      const n = Object.values((p.regime ?? {}) as Record<string, string>).filter(
+        (v) => v === "sp",
+      ).length;
+      return n ? numero(n) : "nenhuma";
+    },
   ],
+  ["Provisões incluídas", (_, c) => moeda(c.r!.resultado.total.prov, 0)],
+  ["Custo / pessoa·mês", (_, c) => moeda(c.r!.pessoaMes ? c.r!.total / c.r!.pessoaMes : null, 0)],
   ["Custo total", (_, c) => moeda(c.r!.total, 0)],
   ["Custo / m²", (p, c) => moeda(c.r!.total / Number(p.area_m2), 0)],
+  ["Situação", (p) => NOME_SITUACAO[p.situacao]],
 ];
 
 /** Comparar projeções lado a lado (protótipo `telaCmpProj`), até 4, com os preços vigentes. */

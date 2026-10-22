@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { MESES, mesAno, moeda, numero, percentual } from "@ito/formato";
-import { vtDiario } from "@ito/motor";
+import type { Reajuste } from "@ito/motor";
+import { indicadores, vtDiario } from "@ito/motor";
 import { useSessao } from "../../auth/sessao";
 import { nomeCidade, nomeCurtoCct } from "../../dados/cidades";
 import { useListaObras } from "../../dados/obras";
@@ -34,7 +35,8 @@ import { GRUPOS, mediana } from "../base/base";
 import { soma } from "../obra/comum";
 import { Pagina } from "../Pagina";
 import { PassoAjustes } from "./PassoAjustes";
-import { manualValido } from "./projecoes";
+import { TIPOLOGIAS } from "../carga/estado";
+import { manualValido, rotulosMeses } from "./projecoes";
 import { Resultado } from "./Resultado";
 import s from "./projecoes.module.css";
 
@@ -163,9 +165,11 @@ function Assistente({
   const pode3 = okObra && okRefs;
   const liberado = (n: number) => n === 1 || (n === 2 ? pode2 : pode3);
   const r = calc?.r ?? null;
+  const carregandoRefs =
+    e.referencias.length > 0 && !manual && (!refsQ.data || refsQ.isPlaceholderData);
 
   async function salvar() {
-    if (!calc?.r || !contexto) return;
+    if (!calc?.r || !contexto || carregandoRefs) return;
     const resumo = resumoDaProjecao(calc, contexto.vigente);
     try {
       if (id) {
@@ -186,7 +190,7 @@ function Assistente({
       <div className={f.linha} style={{ justifyContent: "flex-end", marginTop: -12 }}>
         <Botao onClick={() => navegar(id ? `/projecoes/${id}` : "/projecoes")}>Cancelar</Botao>
         {passo === 4 && (
-          <Botao variante="primario" disabled={!r || salvando} onClick={salvar}>
+          <Botao variante="primario" disabled={!r || salvando || carregandoRefs} onClick={salvar}>
             Salvar projeção →
           </Botao>
         )}
@@ -239,6 +243,11 @@ function Assistente({
             valor={moeda(r.total / e.area, 0)}
             sub={`sobre ${numero(e.area)} m²`}
           />
+          <Kpi
+            rotulo="% indireta"
+            valor={percentual(indicadores(r.resultado).indiretaPct, 0)}
+            sub="das pessoa-mês"
+          />
         </div>
       )}
 
@@ -249,7 +258,8 @@ function Assistente({
           cidades={cidades}
           cct={cct}
           precos={precos}
-          lista={lista.data ?? []}
+          reajustes={calc?.reajustes ?? []}
+          funcoes={contexto?.funcoes ?? []}
         />
       )}
       {passo === 2 && (
@@ -258,10 +268,20 @@ function Assistente({
           up={up}
           lista={lista.data ?? []}
           vigente={contexto?.vigente}
+          cidades={cidades}
           onManual={() => {
+            const das =
+              refs.length && precos && ctx
+                ? calcularProjecao({ ...e, quantidadesManuais: null }, refs, precos, ctx).r
+                : null;
             up({
               quantidadesManuais: Object.fromEntries(
-                (contexto?.funcoes ?? []).map((x) => [x.id, Array<number>(e.prazo).fill(0)]),
+                (contexto?.funcoes ?? []).map((x) => [
+                  x.id,
+                  das?.obra.equivalente[x.id]
+                    ? [...das.obra.equivalente[x.id]!]
+                    : Array<number>(e.prazo).fill(0),
+                ]),
               ),
             });
             setPasso(3);
@@ -305,7 +325,7 @@ function Assistente({
             Continuar →
           </Botao>
         ) : (
-          <Botao variante="primario" disabled={!r || salvando} onClick={salvar}>
+          <Botao variante="primario" disabled={!r || salvando || carregandoRefs} onClick={salvar}>
             Salvar projeção →
           </Botao>
         )}
@@ -320,14 +340,16 @@ function PassoObra({
   cidades,
   cct,
   precos,
-  lista,
+  reajustes,
+  funcoes,
 }: {
   e: Entradas;
   up: (p: Partial<Entradas>) => void;
   cidades: ReturnType<typeof usePrecos>["cidades"];
   cct: ReturnType<typeof usePrecos>["cct"];
   precos: ReturnType<typeof usePrecos>["precos"];
-  lista: readonly ObraLista[];
+  reajustes: readonly Reajuste[];
+  funcoes: readonly { id: string; nome: string }[];
 }) {
   const hoje = new Date();
   const opcoesInicio = Array.from({ length: 24 }, (_, i) => {
@@ -336,7 +358,11 @@ function PassoObra({
   });
   if (!opcoesInicio.some((x) => x.ano === e.inicio.ano && x.mes === e.inicio.mes))
     opcoesInicio.unshift(e.inicio);
-  const tipologias = [...new Set(lista.map((o) => o.tipologia).filter(Boolean))].sort();
+  // lista fechada (decisão M4); mantém a de uma projeção antiga fora da lista
+  const tipologias =
+    e.tipologia && !TIPOLOGIAS.includes(e.tipologia) ? [...TIPOLOGIAS, e.tipologia] : TIPOLOGIAS;
+  const auto = reajustes.filter((x) => x.automatico);
+  const gratificacoes = cct ? Object.entries(cct.gratificacoes).filter(([, x]) => x > 0) : [];
   const cid = precos?.cidade;
   const v = precos?.vigente;
   const oficialEmp = v?.salarios.ped;
@@ -368,19 +394,15 @@ function PassoObra({
             />
           </Campo>
           <Campo rotulo="Tipologia" dica="Mesma tipologia pesa nas 5 mais parecidas">
-            <input
-              className={f.input}
-              list="tipologias-projecao"
-              value={e.tipologia}
-              maxLength={80}
-              onChange={(ev) => up({ tipologia: ev.target.value })}
-            />
+            <Selecao value={e.tipologia} onChange={(ev) => up({ tipologia: ev.target.value })}>
+              <option value="">Escolha a tipologia…</option>
+              {tipologias.map((x) => (
+                <option key={x} value={x}>
+                  {x}
+                </option>
+              ))}
+            </Selecao>
           </Campo>
-          <datalist id="tipologias-projecao">
-            {tipologias.map((t) => (
-              <option key={t} value={t} />
-            ))}
-          </datalist>
           <Campo rotulo="Cidade da obra" dica="Define CCT, VT, ISS e feriados">
             <Selecao
               value={e.cidadeId ?? ""}
@@ -388,6 +410,7 @@ function PassoObra({
                 const id = ev.target.value || null;
                 up({
                   cidadeId: id,
+                  reajuste: id === e.cidadeId ? e.reajuste : null,
                   cidadeOrigemId:
                     e.cidadeOrigemId && e.cidadeOrigemId !== id
                       ? e.cidadeOrigemId
@@ -423,7 +446,9 @@ function PassoObra({
             sufixo="m²"
             valor={e.area}
             casas={0}
+            min={100}
             max={10_000_000}
+            dica="A partir de 100 m²"
             onSalvar={(x) => up({ area: x })}
           />
           <CampoNumero
@@ -474,13 +499,21 @@ function PassoObra({
             <span>Servente {moeda(valor("serv"))}</span>
             <span>Mestre {moeda(valor("mestre"))}</span>
             <span>
-              Gratificações {Object.keys(cct.gratificacoes).length ? "da CCT" : "nenhuma"}
+              Gratificações:{" "}
+              {gratificacoes.length
+                ? gratificacoes
+                    .map(([k, x]) => `${funcoes.find((y) => y.id === k)?.nome ?? k} ${moeda(x)}`)
+                    .join(", ")
+                : "nenhuma"}
             </span>
             <span>VT local {moeda(vtDiario(cid))} por dia</span>
             <span>ISS {percentual(cid.issPct)}</span>
             <span>
               Data-base em {MESES[cct.mesDataBase - 1]} · reajuste estimado{" "}
-              {percentual(cct.reajusteEstimadoPct, 1)}
+              {percentual(cct.reajusteEstimadoPct, 1)}{" "}
+              {auto.length
+                ? `a partir de ${auto.map((x) => rotulosMeses(e.inicio, e.prazo)[x.mesIdx]).join(" e ")}`
+                : "(fora do prazo)"}
             </span>
           </div>
         </Cartao>
@@ -494,14 +527,20 @@ function PassoReferencias({
   up,
   lista,
   vigente,
+  cidades,
   onManual,
 }: {
   e: Entradas;
   up: (p: Partial<Entradas>) => void;
   lista: readonly ObraLista[];
   vigente: number | undefined;
+  cidades: ReturnType<typeof usePrecos>["cidades"];
   onManual: () => void;
 }) {
+  const nomeDe = (id: string | null) => {
+    const c = id ? cidades.find((x) => x.id === id) : undefined;
+    return c ? nomeCidade(c) : "";
+  };
   const [q, setQ] = useState("");
   const [grupo, setGrupo] = useState<Grupo>("todas");
   const [faixa, setFaixa] = useState<"20" | "50" | "qualquer">("qualquer");
@@ -515,7 +554,7 @@ function PassoReferencias({
       (o) =>
         (grupo === "todas" || o.grupo === grupo) &&
         dentro(o) &&
-        contemTermos(`${o.nome} ${o.cliente} ${o.tipologia}`, q),
+        contemTermos(`${o.nome} ${o.cliente} ${o.tipologia} ${nomeDe(o.cidade_id)}`, q),
     ),
     lista.length,
   );
@@ -626,7 +665,7 @@ function PassoReferencias({
           </span>
           <CampoBusca
             rotulo="Buscar obra de referência"
-            placeholder="Buscar por nome, cliente ou tipologia"
+            placeholder="Buscar por nome, cliente, tipologia ou cidade"
             valor={q}
             onChange={setQ}
           />
@@ -674,8 +713,12 @@ function PassoReferencias({
                   </span>
                   {o.resumo && <MiniHistograma valores={o.resumo.histograma} />}
                   <span className={f.r} style={{ minWidth: 110, textAlign: "right" }}>
-                    {o.resumo ? moeda(o.resumo.custo_atual / o.area_m2, 0) : "—"}
-                    <div className="sub">/m² · {vigente ?? ""}</div>
+                    {o.resumo ? numero((o.resumo.pessoa_mes / o.area_m2) * 1000, 1) : "—"}
+                    <div className="sub">
+                      PM / 1.000 m²
+                      {o.resumo &&
+                        ` · ${moeda(o.resumo.custo_atual / o.area_m2, 0)}/m² ${vigente ?? ""}`}
+                    </div>
                   </span>
                 </button>
               );

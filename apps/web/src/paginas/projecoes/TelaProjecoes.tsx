@@ -189,7 +189,7 @@ export function TelaProjecoes() {
                   <ThOrdem chave="total" ordem={ordem} direita onOrdenar={ordenarPor}>
                     Custo total
                   </ThOrdem>
-                  <ThOrdem chave="criado" ordem={ordem} onOrdenar={ordenarPor}>
+                  <ThOrdem chave="situacao" ordem={ordem} onOrdenar={ordenarPor}>
                     Situação
                   </ThOrdem>
                 </tr>

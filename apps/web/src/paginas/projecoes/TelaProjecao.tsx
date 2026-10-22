@@ -61,7 +61,9 @@ export function TelaProjecao() {
     () => (refsQ.data ?? []).filter((b) => e?.referencias.includes(b.obra.id)),
     [refsQ.data, e],
   );
-  const refsProntas = !e?.referencias.length || manual || !!refsQ.data;
+  // dado provisório da projeção anterior (‹ ›) não entra no cálculo nem no resumo gravado
+  const refsProntas =
+    !e?.referencias.length || manual || (!!refsQ.data && !refsQ.isPlaceholderData);
   const calc = useMemo(
     () =>
       e && precos && contexto && refsProntas
@@ -71,7 +73,9 @@ export function TelaProjecao() {
   );
   // resumo da lista desatualizado (preço da cidade, tabela vigente, referência apagada): regrava
   const resumo = calc && contexto ? resumoDaProjecao(calc, contexto.vigente) : null;
-  const atrasado = !!(p && resumo && projeta && !mesmoResumo(p.resumo, resumo));
+  // aprovada: só quem aprova e edita regrava (regra no banco)
+  const gravaResumo = !!p && projeta && (p.situacao !== "aprovada" || aprova);
+  const atrasado = !!(p && resumo && gravaResumo && !mesmoResumo(p.resumo, resumo));
   const chaveResumo = atrasado ? JSON.stringify([p!.id, resumo]) : "";
   useEffect(() => {
     if (!chaveResumo) return;
@@ -189,6 +193,11 @@ export function TelaProjecao() {
           >
             ›
           </Botao>
+          {i >= 0 && (
+            <span className="sub">
+              {numero(i + 1)} de {numero(todas.length)}
+            </span>
+          )}
         </div>
       </div>
 

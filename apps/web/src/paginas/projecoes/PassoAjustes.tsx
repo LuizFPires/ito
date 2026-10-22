@@ -62,6 +62,15 @@ export function PassoAjustes({
   const nomeDe = de ? de.nome.replace(/\/[A-Z]{2}$/, "").replace("Belo Horizonte", "BH") : "fora";
   const reajAuto = !e.reajuste;
   const reaj = calc.reajustes[0];
+  const automaticos = calc.reajustes.filter((x) => x.automatico);
+  // alojamento e viagens: benefícios só de quem está fora da sede, por pessoa·mês
+  const fora = contexto.ctx.beneficios.filter((b) => b.soForaSede).map((b) => b.id);
+  const alojamento = (k: string) => {
+    const linha = r?.resultado.porFuncao[k] ?? [];
+    const pm = soma(linha.map((c) => c.x));
+    const v = soma(linha.map((c) => soma(fora.map((b) => c.beneficiosItem[b] ?? 0))));
+    return pm ? v / pm : 0;
+  };
   const nomeMes = (i: number) => {
     const m = anoMes(e.inicio, i);
     return mesAno(m.ano, m.mes);
@@ -268,7 +277,8 @@ export function PassoAjustes({
               {e.heMedia === null
                 ? `Das referências: ${numero(r?.aplicadas.heMedia ?? 0, 1)} h.`
                 : "Valor próprio desta projeção."}{" "}
-              Adicionais por tipo da tabela da empresa; DSR pelo calendário de cada mês.
+              Adicionais por tipo da tabela da empresa (dias úteis{" "}
+              {percentual(precos.vigente.heAdicionalPct.util, 0)}); DSR pelo calendário de cada mês.
             </div>
           </span>
           <Interruptor
@@ -463,6 +473,7 @@ export function PassoAjustes({
                 <th>Função</th>
                 <th>Origem</th>
                 <th className={f.r}>VT por dia</th>
+                <th className={f.r}>Alojamento e viagens</th>
               </tr>
             </thead>
             <tbody>
@@ -490,13 +501,20 @@ export function PassoAjustes({
                         />
                       </td>
                       <td className={f.r}>
-                        {og === "local"
-                          ? moeda(vtDiario(cid))
-                          : vt === 0
-                            ? "sem VT"
-                            : vt && typeof vt === "object"
-                              ? `${moeda(vt.valor)}${vt.estimado ? " (estimado)" : ""}`
-                              : "—"}
+                        {e.regime[k] === "sp"
+                          ? "prestador S/P"
+                          : og === "local"
+                            ? moeda(vtDiario(cid))
+                            : vt === 0
+                              ? "sem VT"
+                              : vt && typeof vt === "object"
+                                ? `${moeda(vt.valor)}${vt.estimado ? " (estimado)" : ""}`
+                                : "—"}
+                      </td>
+                      <td className={f.r}>
+                        {og === "aloj" && alojamento(k) > 0
+                          ? `${moeda(alojamento(k), 0)} por pessoa·mês`
+                          : "—"}
                       </td>
                     </tr>
                   );
@@ -536,7 +554,7 @@ export function PassoAjustes({
                 : "Sem cidade: a tabela da empresa não tem reajuste automático. "}
               {reaj
                 ? reaj.automatico
-                  ? `Ela cai em ${nomeMes(reaj.mesIdx)}: os meses seguintes saem com ${percentual(reaj.pct, 1)} de reajuste estimado (cadastro da CCT).`
+                  ? `Ela cai em ${automaticos.map((x) => nomeMes(x.mesIdx)).join(" e ")}: os meses seguintes saem com ${percentual(reaj.pct, 1)} de reajuste estimado (cadastro da CCT)${automaticos.length > 1 ? ", composto a cada data-base." : "."}`
                   : `Reajuste informado: ${percentual(reaj.pct, 1)} a partir de ${nomeMes(reaj.mesIdx)}.`
                 : e.reajuste
                   ? "Reajuste informado de 0%: sem reajuste no prazo."
@@ -546,13 +564,20 @@ export function PassoAjustes({
             </p>
             <Interruptor
               rotulo="Informar o reajuste"
-              texto="Informar o reajuste (em vez da data-base da CCT)"
+              texto={
+                e.prazo < 2
+                  ? "Informar o reajuste (precisa de ao menos 2 meses de prazo)"
+                  : automaticos.length > 1 && reajAuto
+                    ? `Informar o reajuste (substitui os ${numero(automaticos.length)} reajustes da data-base)`
+                    : "Informar o reajuste (em vez da data-base da CCT)"
+              }
+              desabilitado={e.prazo < 2 && reajAuto}
               ligado={!reajAuto}
               onChange={(v) =>
                 up({
                   reajuste: v
                     ? {
-                        mesIdx: reaj?.mesIdx ?? Math.min(1, e.prazo - 1),
+                        mesIdx: reaj?.mesIdx ?? 1,
                         pct: reaj?.pct ?? 0,
                       }
                     : null,
