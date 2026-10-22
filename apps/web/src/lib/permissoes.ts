@@ -11,3 +11,8 @@ export function podeEditarConfig(u: Usuario | null | undefined): boolean {
 export function podeEditarCadastros(u: Usuario | null | undefined): boolean {
   return !!u && (u.admin || u.perfil === "controladoria" || u.perfil === "dp_rh");
 }
+
+/** Espelho de pode_carregar (decisão M4): DP/RH, controladoria e admin carregam obras. */
+export function podeCarregar(u: Usuario | null | undefined): boolean {
+  return !!u && (u.admin || u.perfil === "controladoria" || u.perfil === "dp_rh");
+}

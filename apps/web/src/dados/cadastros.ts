@@ -253,6 +253,17 @@ export function useFuncoes(ativo = true) {
   });
 }
 
+/** Em quantas obras da base cada função teve efetivo (view funcao_obras). */
+export function useObrasPorFuncao() {
+  return useQuery({
+    queryKey: ["obras", "por-funcao"],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const r = await ok(supabase.from("funcao_obras").select("funcao_id, obras"));
+      return Object.fromEntries(r.map((x) => [x.funcao_id ?? "", x.obras ?? 0]));
+    },
+  });
+}
+
 export function useAtualizarFuncao() {
   return useGravar(
     ({ id, patch }: { id: string; patch: T["funcoes"]["Update"] }) =>
@@ -261,7 +272,10 @@ export function useAtualizarFuncao() {
   );
 }
 
-export function useCriarFuncao() {
+/** `sucesso` vazio: quem chama dá o aviso (ex.: o assistente de carga). */
+export function useCriarFuncao(
+  sucesso = "Função criada com o salário de oficial. Ajuste em Parâmetros → Salários.",
+) {
   return useGravar(
     (f: { id: string; nome: string; grupo: GrupoFuncao; sinonimo?: string }) =>
       ok(
@@ -274,7 +288,7 @@ export function useCriarFuncao() {
       ),
     // nasce com salário de oficial: recarrega também as data-bases
     [chaves.funcoes, ["data-base"]],
-    "Função criada com o salário de oficial. Ajuste em Parâmetros → Salários.",
+    sucesso,
     "Já existe uma função com esse código. Use outro nome.",
   );
 }

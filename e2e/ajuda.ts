@@ -60,6 +60,11 @@ export async function apiAdmin() {
     "Content-Type": "application/json",
   };
   return {
+    ler: async <T = unknown>(caminho: string): Promise<T> => {
+      const r = await fetch(`${url}/rest/v1/${caminho}`, { headers: cab });
+      if (!r.ok) throw new Error(`GET ${caminho}: ${r.status} ${await r.text()}`);
+      return (await r.json()) as T;
+    },
     apagar: (caminho: string) =>
       fetch(`${url}/rest/v1/${caminho}`, { method: "DELETE", headers: cab }),
     inserir: async (caminho: string, corpo: unknown) => {

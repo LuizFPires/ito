@@ -89,22 +89,26 @@
 
 ## M4 — Carga de dados
 **Objetivo:** levar uma obra concluída para a base, com conferência.
-- [ ] Assistente em 5 etapas (PRD §3.6), com rascunho salvo
-- [ ] **Leitores de arquivo:**
+- [x] Assistente em 5 etapas (PRD §3.6), com rascunho salvo
+- [x] **Leitores de arquivo** (layout padrão do ITO; adaptadores das exportações reais quando chegarem as amostras):
   - folha por competência com rubricas, matrícula e função, sem nomes;
   - ponto, VT, XML de NF, realizado do ERP.
-- [ ] Mapeamento de funções (sinônimos) e classificação de rubricas novas (bloqueante)
-- [ ] Leitura de HE por tipo, adicionais, licenças, férias, ferramentas, bolsa, salário-família, exames por tipo e marcação de **MDO realocada** (com a obra de destino)
-- [ ] Troca de tabela no meio da obra
-- [ ] **Verificações:**
+- [x] Mapeamento de funções (sinônimos) e classificação de rubricas novas (bloqueante)
+- [x] Leitura de HE por tipo, adicionais, licenças, férias, ferramentas, bolsa, salário-família, exames por tipo e marcação de **MDO realocada** (com a obra de destino) — HE por tipo, licenças, férias e realocada viram quantidades; adicionais, ferramentas, bolsa e salário-família ficam guardados por rubrica (para a aba Folha, M5); exames por tipo saem das admissões e desligamentos
+- [x] Troca de tabela no meio da obra
+- [x] **Verificações:**
   - proventos × resumo;
   - ponto × folha;
   - VT ausente;
   - NF sem competência;
   - apropriação × ERP com justificativa.
-- [ ] Gravação com efetivo equivalente e cabeças por função e mês
+- [x] Gravação com efetivo equivalente e cabeças por função e mês
 
 **Aceite:** carga de uma obra real (Mart Minas Paracatu) com conferência de rubricas "Confere" em todos os meses e apropriação × ERP justificada.
+
+> ⏳ 21/10/2026: itens implementados e testados com folha sintética (pacote `@ito/carga`, tela `/carga`, função `gravar_carga`). **Aceite pendente:** carga real da Mart Minas Paracatu depende das exportações anonimizadas da folha e do ERP.
+>
+> Decisões (21/10/2026): leitores no layout padrão do ITO; adaptadores das exportações reais e o aceite com a Paracatu dependem das amostras anonimizadas. Carga por DP/RH, controladoria e admin; originais não guardados; rascunho no banco por usuário (CLAUDE.md, M4).
 
 ---
 

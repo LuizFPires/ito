@@ -127,6 +127,33 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - O M3 começou empilhado no M2 (`feat/m3-motor` a partir de `feat/m2-cidades-cct`), pela mesma pendência do CI.
 - **Pendência externa (para resolver no futuro):** o CI do GitHub está bloqueado por cobrança da conta (Billing & plans). Os PRs seguem empilhados (#1 M0 → #2 M1 → M2) e só entram na `main` quando o CI rodar verde.
 
+### M4 — Carga de dados (21/10/2026)
+- **Formato dos arquivos:** layout padrão do ITO agora — modelo .xlsx para baixar na tela (folha por competência com matrícula, função e rubricas; ponto; VT; realizado do ERP) e XML de NF. Os adaptadores para as exportações reais do sistema de folha e do ERP entram quando chegarem amostras anonimizadas; **o aceite com a Mart Minas Paracatu fica pendente até lá**.
+- **Quem carrega:** DP/RH, controladoria e admin; os demais perfis só leem (regra no banco).
+- **Arquivos originais não são guardados:** a leitura descarta nomes e guarda só os dados com matrícula (regra 2). Para recarregar, envia-se o arquivo de novo.
+- **Rascunho da carga no banco, por usuário:** guarda só dados lidos (sem nomes) e as escolhas de mapeamento; quem carrega vê os próprios, admin vê todos.
+- **Leitura no navegador** (`packages/carga`, puro): o arquivo com nomes não sai da máquina de quem carrega; só os dados com matrícula vão para o rascunho e para o banco. Substitui, para a carga, a "biblioteca .xlsx no servidor" da stack. (auto — recomendado)
+- **Gravação só pela função `gravar_carga`** (uma transação; pendências bloqueantes recusadas no banco); as tabelas da base histórica são só leitura pela API. Código de obra repetido exige confirmar a substituição. (auto — recomendado)
+- **Layout da folha:** abas Rubricas, Pessoas e Resumo; HE por tipo pela nova coluna `rubricas.tipo_he` (200/201/205/210 já classificadas). Quantidades = inversas das fórmulas do motor (SPEC §6.4). (auto — recomendado)
+- **Bloqueia:** proventos × resumo com diferença, função/rubrica pendente, competência fora do período, NF sem competência e diferença com o ERP sem justificativa. **Alerta:** ponto × folha, VT ausente e conferência rubricas × custo. MDO realocada sem destino passou a bloquear na revisão. (auto — recomendado)
+- **Apropriação × ERP** = caixa do ITO (tabela da época) × soma das contas do ERP, por mês. (auto — recomendado)
+- Funções por prestador **S/P** são marcadas na etapa Funções; a obra de destino da MDO realocada é uma obra da base ou "fora da base" (mantém o nome). (auto — recomendado)
+- Coluna "Obras" de Funções (pendente do M1) entrou como "N obras" na segunda linha da função (regra 8), pela view `funcao_obras`. (auto — recomendado)
+- Revisão do M4 (21/10/2026):
+  - **Remuneração por matrícula** (`lancamentos`, `lancamento_rubricas`) só é lida por quem carrega; os demais perfis leem os agregados (LGPD). (auto — recomendado; **confirmar com a diretoria**)
+  - Matrícula com ao menos um número; destino da MDO realocada obrigatório (da base ou "fora da base", confirmando o texto da folha).
+  - `gravar_carga` confere o mês de todas as listas e soma o ERP no banco; rascunho guarda as leituras numa coluna própria (só sobe quando um arquivo muda).
+  - Aceito sem correção: sinônimo existente remapeado na carga troca a função dele (é a escolha explícita de quem carrega); substituir uma obra desfaz o vínculo `outra_obra_id` de realocações de outras obras (o nome fica).
+- Comparação com o protótipo (21/10/2026):
+  - **Período por competência** (mês/ano de início e término), não por dia: a fração do primeiro e do último mês vem dos dias de vínculo de cada pessoa na folha. A etapa Obra pode seguir sem datas e a folha preenche o período. (auto — recomendado)
+  - **Arquivos em qualquer ordem**; remover a folha tira só a folha. (auto — recomendado)
+  - **Tipologia em lista fechada** (as 5 do protótipo) e **grupo da obra** (mm, galpão, academia, outras) deduzido de cliente e tipologia por gatilho no banco, como no protótipo. (auto — recomendado)
+  - Cliente vazio fica vazio no banco; as telas da base histórica (M5) mostram "Sem cliente". Função criada no assistente nasce "direta", como no protótipo (ajuste em Funções). (auto — recomendado)
+  - Área a partir de 100 m²; troca de tabela sugere a data-base seguinte; criar função segue o protótipo (até 3 palavras, sufixo no código, "Função “X” criada e mapeada").
+  - Mantido diferente: sem a aba Pessoas o ITO não sabe quem trabalhou; "NF não enviadas" diz "sem conferência" (o custo S/P vem do regime, não das notas); etapa 2 exige a etapa 1 completa (menos as datas).
+- **Risco do aceite:** com folha real, a conferência rubricas × custo compara a folha com o custo modelado pelo motor na tabela da época; pode não fechar no centavo. Avaliar quando chegarem as amostras.
+- O M4 começou empilhado no M3 (`feat/m4-carga` a partir de `feat/m3-motor`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
