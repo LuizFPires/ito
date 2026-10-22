@@ -19,3 +19,6 @@ supabase/.branches
 @obsoletos/
 playwright-report/
 test-results/
+
+# scripts temporários da migração (M9): rodam nas planilhas reais na máquina de quem migra
+packages/migracao/src/_*.tmp.ts
