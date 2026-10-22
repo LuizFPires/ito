@@ -124,6 +124,8 @@ async function mudarSituacao(id: string, ativo: boolean, quem: string) {
     await chamar(`/rest/v1/usuarios?id=eq.${id}`, { method: "PATCH", json: { ativo: !ativo } });
     return erro(502, "Não foi possível mudar o acesso no login. Tente de novo.");
   }
+  // quem foi desativado sai na hora: sem sessão nem renovação do token (a RLS já nega leituras)
+  if (!ativo) await chamar("/rest/v1/rpc/encerrar_sessoes", { method: "POST", json: { p_id: id } });
   return resposta(200, { id, ativo });
 }
 

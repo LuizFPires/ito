@@ -1,5 +1,5 @@
 begin;
-select plan(9);
+select plan(12);
 
 -- um usuário de teste por perfil, mais um admin (o gatilho cria a linha em usuarios)
 insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data)
@@ -9,13 +9,17 @@ select '00000000-0000-0000-0000-000000000000', gen_random_uuid(), 'authenticated
 from unnest(array['planejamento', 'engenharia', 'dp_rh', 'controladoria', 'diretoria', null]) p;
 
 -- diverge: o que a tabela de permissões diz × o que as funções e a RLS deixam, por usuário
-create function public.teste_divergencias() returns setof text language plpgsql as $$
+-- recebe os usuários prontos: lidos como postgres (a RLS de usuarios esconderia as linhas)
+create function public.teste_divergencias(usuarios jsonb) returns setof text language plpgsql as $$
 declare
   u record;
   t record;
   linhas integer;
+  vistos integer := 0;
 begin
-  for u in select * from public.usuarios where email like 'perm-%' loop
+  for u in select * from jsonb_to_recordset(usuarios)
+             as x (id uuid, email text, perfil public.perfil, admin boolean) loop
+    vistos := vistos + 1;
     perform set_config('request.jwt.claims',
       jsonb_build_object('sub', u.id, 'role', 'authenticated')::text, true);
     for t in select * from public.permissoes() x
@@ -42,14 +46,17 @@ begin
       end if;
     end loop;
   end loop;
+  if vistos <> 6 then return next 'usuários de teste conferidos: ' || vistos; end if;
 end;
 $$;
-grant execute on function public.teste_divergencias() to authenticated;
+grant execute on function public.teste_divergencias(jsonb) to authenticated;
 
 select is((select count(*)::integer from public.permissoes()), 12 * 6, '12 módulos × 6 colunas');
 
+select set_config('teste.usuarios', (select jsonb_agg(jsonb_build_object('id', id, 'email', email,
+  'perfil', perfil, 'admin', admin)) from public.usuarios where email like 'perm-%')::text, true);
 set local role authenticated;
-select is(array(select public.teste_divergencias()), array[]::text[],
+select is(array(select public.teste_divergencias(current_setting('teste.usuarios')::jsonb)), array[]::text[],
   'tabela de permissões = funções pode_* e RLS, para cada perfil e para o admin');
 
 -- quem não carrega vê a folha por matrícula só nos totais
@@ -59,10 +66,14 @@ select is((select so_totais from public.permissoes() where ordem = 2 and perfil 
 -- desativado perde a escrita na hora
 reset role;
 update public.usuarios set ativo = false where email = 'perm-dp_rh@ito.local';
-set local role authenticated;
+-- o id é lido antes de virar "authenticated" (a RLS esconderia a linha de outro usuário)
 select set_config('request.jwt.claims', jsonb_build_object('sub',
   (select id from public.usuarios where email = 'perm-dp_rh@ito.local'), 'role', 'authenticated')::text, true);
+select isnt(current_setting('request.jwt.claims')::jsonb ->> 'sub', null, 'claims do desativado');
+set local role authenticated;
 select is(public.pode_carregar(), false, 'desativado não carrega');
+select is((select count(*)::integer from public.funcoes), 0, 'desativado não lê nem os cadastros');
+select is((select count(*)::integer from public.usuarios), 1, 'desativado ainda vê a própria linha (aviso na tela)');
 
 -- lista de usuários: só o admin
 select throws_ok('select * from public.listar_usuarios()', '42501', null, 'não admin não lista');
