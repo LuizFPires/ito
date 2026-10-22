@@ -172,11 +172,15 @@
 ---
 
 ## M8 — Exportações e relatórios
-- [ ] Exportar para .xlsx (efetivo, custo por função e por componente, rubricas, apropriação, projeção) com **formato contábil brasileiro**
-- [ ] Copiar tabela para Excel (área de transferência) mantendo o formato BR
-- [ ] PDF de resumo da projeção para a diretoria
+- [x] Exportar para .xlsx (efetivo, custo por função e por componente, rubricas, apropriação, projeção) com **formato contábil brasileiro**
+- [x] Copiar tabela para Excel (área de transferência) mantendo o formato BR
+- [x] PDF de resumo da projeção para a diretoria
 
 **Aceite:** os arquivos abrem no Excel com ponto no milhar e vírgula no decimal, sem reformatar.
+
+> Aceite verificado em 21/10/2026: `e2e/m8-exportacoes.spec.ts` baixa os .xlsx da obra e da projeção e confere que os valores são números (R$ em centavos) com o código de formato contábil (`"R$" * #,##0.00`), que o Excel em português mostra com ponto no milhar e vírgula no decimal; o texto copiado sai em 1.234,56; o resumo da projeção vira PDF A4.
+
+> Decisões (21/10/2026): .xlsx com números e formato contábil BR gerado no navegador; rubricas agregadas sem matrícula, só para quem carrega; copiar para Excel nas tabelas mês a mês da obra; PDF da projeção por página de impressão (CLAUDE.md, M8).
 
 ---
 

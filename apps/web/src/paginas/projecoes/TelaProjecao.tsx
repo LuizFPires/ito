@@ -260,6 +260,8 @@ export function TelaProjecao() {
           cct={cct ? nomeCurtoCct(cct.nome) : null}
           origem={precos?.cidadeOrigem?.nome ?? null}
           detalhe
+          situacao={NOME_SITUACAO[p.situacao]}
+          imprimir={`/projecoes/${p.id}/imprimir`}
           onAlterarPremissas={
             projeta && !aprovada ? () => navegar(`/projecoes/${p.id}/editar`) : undefined
           }

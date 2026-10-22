@@ -25,6 +25,7 @@ import { AbaPessoas } from "./AbaPessoas";
 import { AbaPremissas } from "./AbaPremissas";
 import { AbaRealocada } from "./AbaRealocada";
 import { AbaVisao } from "./AbaVisao";
+import { BotaoExportarObra } from "./BotaoExportarObra";
 import type { Aba, DadosAba, FuncaoInfo, Vista } from "./comum";
 import { ABAS, ORDEM_GRUPOS, rotulosDe } from "./comum";
 import s from "./obra.module.css";
@@ -226,6 +227,7 @@ export function TelaObra() {
           ))}
         </div>
         <span className={f.linha}>
+          <BotaoExportarObra dados={dados} />
           <Link
             className={`${u.botao} ${u.pequeno}`}
             to="/comparar"

@@ -223,35 +223,38 @@ export function useObra(id: string | undefined) {
 }
 
 /** Lançamentos por matrícula com as rubricas (só quem carrega lê: RLS devolve vazio aos demais). */
+export const consultaLancamentos = (id: string) => ({
+  queryKey: ["obras", "lancamentos", id] as const,
+  queryFn: () => carregarLancamentos(id),
+});
+
 export function useLancamentos(id: string | undefined, ativo: boolean) {
-  return useQuery({
-    queryKey: ["obras", "lancamentos", id ?? ""],
-    enabled: !!id && ativo,
-    queryFn: async () => {
-      const [lancamentos, rubricas] = await Promise.all([
-        todas((de, ate) =>
-          supabase
-            .from("lancamentos")
-            .select("*")
-            .eq("obra_id", id!)
-            .order("mes_idx")
-            .order("matricula")
-            .range(de, ate),
-        ),
-        todas((de, ate) =>
-          supabase
-            .from("lancamento_rubricas")
-            .select("mes_idx, matricula, funcao_id, rubrica_codigo, referencia, valor")
-            .eq("obra_id", id!)
-            .order("mes_idx")
-            .order("matricula")
-            .order("rubrica_codigo")
-            .range(de, ate),
-        ),
-      ]);
-      return { lancamentos, rubricas };
-    },
-  });
+  return useQuery({ ...consultaLancamentos(id ?? ""), enabled: !!id && ativo });
+}
+
+async function carregarLancamentos(id: string) {
+  const [lancamentos, rubricas] = await Promise.all([
+    todas((de, ate) =>
+      supabase
+        .from("lancamentos")
+        .select("*")
+        .eq("obra_id", id)
+        .order("mes_idx")
+        .order("matricula")
+        .range(de, ate),
+    ),
+    todas((de, ate) =>
+      supabase
+        .from("lancamento_rubricas")
+        .select("mes_idx, matricula, funcao_id, rubrica_codigo, referencia, valor")
+        .eq("obra_id", id)
+        .order("mes_idx")
+        .order("matricula")
+        .order("rubrica_codigo")
+        .range(de, ate),
+    ),
+  ]);
+  return { lancamentos, rubricas };
 }
 
 // ── edição de premissas e ausências (decisão M5: quem carrega; RLS no banco) ─────

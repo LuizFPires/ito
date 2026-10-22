@@ -28,7 +28,10 @@ const obra = (id: string, nome: string, meses: number, pedreiros: number) => ({
 
 async function limpar() {
   const api = await apiAdmin();
-  const ps = await api.ler<{ id: string }[]>("projecoes?select=id&nome=like.E2E*");
+  // só as projeções deste arquivo (outros arquivos e2e rodam em paralelo)
+  const ps = await api.ler<{ id: string }[]>(
+    "projecoes?select=id&or=(nome.like.E2E%20Golden*,nome.like.E2E%20Refs*)",
+  );
   for (const p of ps) {
     // aprovada não se apaga: admin volta para Em análise antes
     await api.inserir("rpc/definir_situacao", { p_id: p.id, p_situacao: "em_analise" });

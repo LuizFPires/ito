@@ -8,6 +8,8 @@ import u from "../../ui/ui.module.css";
 import { apropriacaoPorConta } from "./calculos";
 import type { DadosAba } from "./comum";
 import { soma } from "./comum";
+import { BotaoCopiar } from "../../ui/BotaoCopiar";
+import { contasComValor, tabelaApropriacao, tituloObra } from "./exportar";
 import s from "./obra.module.css";
 
 /**
@@ -18,7 +20,7 @@ import s from "./obra.module.css";
 export function AbaApropriacao({ dados }: { dados: DadosAba }) {
   const { epoca, fun, rotulos, d } = dados;
   const ben = useBeneficios();
-  const R = apropriacaoPorConta(epoca, fun, ben.data ?? []).filter((l) => soma(l.v) > 0.5);
+  const R = contasComValor(apropriacaoPorConta(epoca, fun, ben.data ?? []));
   const tot = rotulos.map((_, i) => soma(R.map((l) => l.v[i]!)));
   const comErp = d.erp.length > 0;
   const comp = (i: number) => d.competencias.find((c) => c.mes_idx === i);
@@ -64,6 +66,7 @@ export function AbaApropriacao({ dados }: { dados: DadosAba }) {
               competência
             </span>
           </div>
+          <BotaoCopiar tabela={() => tabelaApropriacao(R, rotulos, tituloObra(dados))} />
           <Link
             className={`${u.botao} ${u.pequeno}`}
             to="/funcoes"
