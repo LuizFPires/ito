@@ -22,3 +22,8 @@ test-results/
 
 # scripts temporários da migração (M9): rodam nas planilhas reais na máquina de quem migra
 packages/migracao/src/_*.tmp.ts
+
+# planilhas históricas com nomes de trabalhadores (M9): nunca vão para o git (regra 2)
+Histogramas*
+*.xlsm
+*.xlsb
