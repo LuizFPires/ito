@@ -6,7 +6,7 @@ Publicação, usuários, backup e restauração: [OPERACAO.md](OPERACAO.md).
 |---|---|---|---|
 | Desenvolvimento | Supabase local (`pnpm db:start`, portas 548xx) | `pnpm dev` (localhost:5173) | equipe de desenvolvimento, CI |
 | Homologação | Supabase `ito-homologacao` (ref `rtciuljdjdvocxitaepz`, sa-east-1) | Vercel **Preview** (cada PR) | validação com a Clássica |
-| Produção | Supabase `ito-producao` (ref `pntkdmzbuqvhypebbhhn`, sa-east-1) | Vercel **Production** (branch `main`): https://ito-three-beryl.vercel.app | usuários |
+| Produção | Supabase `ito-producao` (ref `pntkdmzbuqvhypebbhhn`, sa-east-1) | Vercel **Production** (branch `main`): https://ito-histogramas.vercel.app | usuários |
 
 As senhas do banco dos projetos remotos ficam em `.env.supabase.local` (fora do git) na máquina de quem criou os projetos. Guarde-as também no cofre de senhas da empresa.
 
@@ -33,7 +33,7 @@ Declarado em `supabase/config.toml` (`[remotes.homologacao]` e `[remotes.produca
 
 - **Sign up**: desligado (acesso por convite).
 - **Senha mínima**: 10 caracteres.
-- **Site URL**: `https://ito-three-beryl.vercel.app` nos dois. **Redirect URLs**: em produção, só o domínio de produção; em homologação, nenhuma.
+- **Site URL**: `https://ito-histogramas.vercel.app` nos dois. **Redirect URLs**: em produção, só o domínio de produção; em homologação, nenhuma.
   Não use curinga do tipo `https://ito-*-luiz-fp-ires.vercel.app/**`: qualquer pessoa pode criar na Vercel um projeto cujo domínio case com o padrão e receber tokens de convite ou de recuperação de senha. Como o preview não tem URL fixa, em homologação crie os usuários pelo painel (Authentication → Users → Add user → com senha e "Auto Confirm"), sem link por e-mail. Se um dia precisar de link em homologação, use um domínio próprio para os previews e libere só ele.
 - Primeiro admin: convidar pelo painel (Authentication → Users → Invite) e, depois que a conta existir, rodar no SQL Editor:
   `update public.usuarios set admin = true, perfil = 'controladoria' where email = '<e-mail>';`
