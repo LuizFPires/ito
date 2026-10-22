@@ -426,7 +426,7 @@ enabled = true
 project_id = "rtciuljdjdvocxitaepz"
 
 [remotes.homologacao.auth]
-site_url = "https://ito-three-beryl.vercel.app"
+site_url = "https://ito-histogramas.vercel.app"
 additional_redirect_urls = []
 
 [remotes.homologacao.auth.rate_limit]
@@ -453,8 +453,8 @@ max_namespaces = 10
 project_id = "pntkdmzbuqvhypebbhhn"
 
 [remotes.producao.auth]
-site_url = "https://ito-three-beryl.vercel.app"
-additional_redirect_urls = ["https://ito-three-beryl.vercel.app/**"]
+site_url = "https://ito-histogramas.vercel.app"
+additional_redirect_urls = ["https://ito-histogramas.vercel.app/**"]
 
 [remotes.producao.auth.rate_limit]
 sign_in_sign_ups = 30
