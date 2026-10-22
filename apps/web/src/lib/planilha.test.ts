@@ -78,6 +78,9 @@ describe("injeção de fórmula no texto colado", () => {
     expect(semFormula('=HYPERLINK("x")')).toBe('\'=HYPERLINK("x")');
     expect(semFormula("@SOMA")).toBe("'@SOMA");
     expect(semFormula("Obra -1")).toBe("Obra -1");
+    expect(semFormula('"=1+1"')).toBe(`'"=1+1"`);
+    expect(semFormula("  -2+3")).toBe("'  -2+3");
+    expect(semFormula("\u0001=x")).toBe("'\u0001=x");
     const t = textoDaTabela({
       aba: "x",
       colunas: [

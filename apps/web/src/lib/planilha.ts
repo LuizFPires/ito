@@ -106,7 +106,9 @@ export async function baixarXlsx(arquivo: string, tabelas: readonly Tabela[]): P
  */
 export const semFormula = (s: string) => {
   const limpo = s.replace(/[\t\r\n]+/g, " ");
-  return /^[=+\-@]/.test(limpo) ? `'${limpo}` : limpo;
+  // aspas, espaços e controles à esquerda não escondem a fórmula ("=x" ou " =x" também ganham)
+  // eslint-disable-next-line no-control-regex -- controles fazem parte do ataque
+  return /^[\s"'\u0000-\u001f]*[=+\-@]/.test(limpo) ? `'${limpo}` : limpo;
 };
 
 /**
