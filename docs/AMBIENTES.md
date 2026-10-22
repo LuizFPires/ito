@@ -64,7 +64,9 @@ A chave publicável sai de `pnpm exec supabase projects api-keys --project-ref <
 ## Estado da produção (22/10/2026)
 
 - M0 a M10 publicados na `main` (PRs #1 a #11, CI verde em cada um) e na produção (Vercel). Antes de cada merge, as migrações daquele milestone foram aplicadas em `ito-producao` (autorizado pelo usuário): banco e front andaram juntos.
-- Produção tem só a estrutura e as cargas iniciais das migrações (funções, rubricas, tabela da empresa, cidades e CCTs). **Sem** seed (usuários `*@ito.local`) e **sem** o histórico migrado da homologação.
+- Produção tem a estrutura e as cargas iniciais das migrações, **sem** seed (usuários `*@ito.local`).
+- Histórico migrado (M9) carregado em 22/10/2026, autorizado pelo usuário: 23 obras, 3.172 lançamentos, 2.640,4 pessoa-mês (mesmos totais da homologação), com o usuário `migracao@ito-producao.local` (controladoria + admin), **bloqueado** depois da carga (senha em `.env.supabase.local`). Funções e cidades novas da migração criadas também na produção. Os resumos das obras são calculados na primeira vez que um admin abre a base.
+- Primeiro admin: `luizfsap@gmail.com` (controladoria + admin), criado em 22/10/2026.
 - Edge Function `usuarios` publicada; modelos de e-mail de convite e de troca de senha em português (`config push`).
-- **Falta para o primeiro uso:** SMTP próprio (OPERACAO.md §1) e o primeiro admin (OPERACAO.md §2). O histórico (M9) entra na produção só com OK do usuário.
+- **Falta para convidar pela tela:** SMTP próprio (OPERACAO.md §1).
 
