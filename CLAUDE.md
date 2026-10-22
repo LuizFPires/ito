@@ -9,7 +9,7 @@ O ITO é uma plataforma de **histórico de mão de obra** das obras da Clássica
 - `PRD.md`: o que o produto faz, tela a tela.
 - `SPEC.md`: modelo de dados e **todas as fórmulas**. É a fonte de verdade do cálculo.
 - `PLAN.md`: implementação por milestones. Marque `[x]` ao concluir cada item e só feche um milestone com os critérios de aceite passando.
-- Protótipo **ITO 2.0** (artifact): referência de telas e de comportamento.
+- Protótipo **ITO 2.0** (artifact https://claude.ai/artifact/VHYM9uygpEMPPAJVV8a2PS; cópia em `docs/prototipo/ITO_2.0.html`): referência de telas e de comportamento. Os dados dele são ilustrativos.
 
 ## Regras invioláveis
 
@@ -40,12 +40,38 @@ O ITO é uma plataforma de **histórico de mão de obra** das obras da Clássica
 
 Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 
-## Stack (sugestão; confirmar com o usuário antes do M0)
+## Stack (confirmada em 21/10/2026)
 
+- Monorepo **pnpm**: `apps/web`, `packages/formato`, `packages/motor`.
 - Front: TypeScript + React (Vite), com o design system "Canteiro" em tokens CSS.
-- Back: TypeScript (Node) + PostgreSQL.
+- Back: **Supabase** (PostgreSQL + Auth + RLS). Migrações SQL versionadas em `supabase/migrations`, testes de banco com pgTAP em `supabase/tests`. Lógica de servidor que não couber em SQL/RLS vai para Edge Functions (TypeScript).
 - Motor de cálculo: pacote TypeScript compartilhado (`packages/motor`), sem dependências de interface, testado com Vitest.
-- Leitura de planilhas e arquivos: biblioteca .xlsx no back, com testes sobre arquivos de exemplo anonimizados.
+- Formatação BR: `packages/formato`, usada pela interface e pelas exportações.
+- Leitura de planilhas e arquivos: biblioteca .xlsx no servidor, com testes sobre arquivos de exemplo anonimizados.
+- Ambientes: **dev** = Supabase local (Docker); **homologação** = Supabase `ito-homologacao` + Vercel Preview; **produção** = Supabase `ito-producao` + Vercel Production. Repositório: `github.com/LuizFPires/ito` (privado).
+
+## Comandos
+
+- `pnpm install` · `pnpm dev` (web em http://localhost:5173)
+- `pnpm format:check` · `pnpm lint` (ESLint + tipos) · `pnpm test` (Vitest, todos os pacotes)
+- `pnpm db:start` (Supabase local) · `pnpm db:test` (pgTAP) · `pnpm db:reset` (recria e aplica migrações + seed)
+- `pnpm build` · `pnpm e2e` (Playwright, precisa do Supabase local)
+- Verificação completa antes de PR: `pnpm format:check && pnpm lint && pnpm test && pnpm db:test && pnpm build && pnpm e2e`
+
+## Decisões tomadas
+
+### M0 — Fundação (21/10/2026)
+- Repositório próprio e privado do ITO; a pasta `@obsoletos/` (marca antiga e o protótipo "Repositório inteligente de projetos", de outro produto) fica fora do git.
+- Stack: monorepo pnpm, React + Vite, Supabase; ambientes de homologação e produção criados já no M0.
+- Autenticação por **e-mail e senha** (Supabase Auth), **sem cadastro aberto**: usuários entram por convite. (auto — recomendado)
+- Cada usuário tem **um perfil**: `planejamento`, `engenharia`, `dp_rh`, `controladoria`, `diretoria`. Um campo `admin` (independente do perfil) permite gerir usuários. Permissões provisórias até a diretoria confirmar: todos os perfis leem tudo; a escrita por módulo é definida no milestone de cada módulo. (auto — recomendado)
+- As **10 rotas** do aceite do M0 = 8 itens do menu (Base histórica, Comparar obras, Projeções, Carga de dados, Cidades e CCTs, Parâmetros, Funções padrão, Rubricas da folha) + detalhe da obra + detalhe da projeção. (auto — recomendado)
+- Identidade visual = a do protótipo ITO 2.0 (marca "I" em âmbar + "ITO" em Geist Mono espaçada). Fontes Geist e Geist Mono embarcadas via pacote npm, sem depender do Google Fonts. (auto — recomendado)
+- Tema: claro, escuro ou do sistema, escolhido pelo usuário e lembrado no navegador. (auto — recomendado)
+- Atalho da busca global: **Ctrl+K** no Windows/Linux e **⌘K** no Mac; a dica na tela mostra a tecla do sistema. (auto — recomendado)
+- Roteamento com React Router; dados do servidor com TanStack Query; CSS com tokens + CSS Modules, sem framework de CSS. (auto — recomendado)
+- Região dos projetos Supabase: `sa-east-1` (São Paulo). (auto — recomendado)
+- Tokens do Canteiro = os do protótipo ITO 2.0, exceto `--ok` (#18784e) e `--err` (#b83427) no modo claro, escurecidos para passar contraste AA sobre o próprio fundo; teste em `apps/web/src/estilo/tokens.test.ts`. (auto — recomendado)
 
 ## Design system "Canteiro" (ITO)
 

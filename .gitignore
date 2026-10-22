@@ -17,3 +17,5 @@ supabase/.branches
 
 # Material de marca antigo (não versionado)
 @obsoletos/
+playwright-report/
+test-results/

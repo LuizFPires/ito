@@ -1,0 +1,264 @@
+/* Shell do ITO 2.0: menu lateral fixo (232px) + coluna de conteúdo. */
+
+.app {
+  padding: 16px 16px 56px;
+}
+.shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 18px;
+}
+.marcaSelo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--amber);
+  color: var(--on-amber);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+.marcaPalavra {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  font-weight: 500;
+}
+
+.lateral {
+  position: sticky;
+  top: 16px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+.grupo {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  padding: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 12px;
+  color: var(--body);
+  text-decoration: none;
+  font-size: 14px;
+}
+.item:hover {
+  background: var(--surface-2);
+}
+.item[aria-current="page"] {
+  background: var(--active-bg);
+  color: var(--active-fg);
+  font-weight: 500;
+}
+.item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.rodape {
+  margin-top: auto;
+  padding: 18px 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.principal {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.espaco {
+  flex: 1;
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--active-bg);
+  color: var(--active-fg);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  border: 0;
+}
+
+.busca {
+  flex: 1 1 260px;
+  max-width: 480px;
+  height: 42px;
+  border-radius: var(--raio-pill);
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: var(--muted);
+  position: relative;
+}
+.busca input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--ink);
+  font-size: 13px;
+}
+.busca:focus-within {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+.kbd {
+  font-family: var(--mono);
+  font-size: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.resultados {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  list-style: none;
+}
+.resultado {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.resultado[aria-selected="true"] {
+  background: var(--surface-muted);
+}
+.vazio {
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.cabeca {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 780px;
+}
+.lede {
+  margin: 0;
+  font-size: 15px;
+  color: var(--body);
+  line-height: 1.6;
+  max-width: 70ch;
+}
+.emBreve {
+  padding: 40px 22px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.menuUsuario {
+  position: relative;
+}
+.menuUsuarioPainel {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  z-index: 30;
+  min-width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lateral {
+    position: static;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-height: none;
+    padding: 10px;
+    gap: 6px;
+    align-items: center;
+  }
+  .marca {
+    padding: 0 8px 0 4px;
+  }
+  .grupo,
+  .rodape {
+    display: none;
+  }
+  .item {
+    width: auto;
+    white-space: nowrap;
+  }
+}
+
+.alerta {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--raio-campo);
+  background: var(--err-tint);
+  color: var(--err);
+  font-size: 14px;
+}

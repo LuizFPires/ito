@@ -1,0 +1,193 @@
+/*
+ * Design system "Canteiro" (ITO) — tokens tirados do protótipo ITO 2.0 (docs/prototipo/ITO_2.0.html).
+ * Âmbar = ação. Grafite = estado ativo. Séries: direta em âmbar/terra (--d*), indireta em grafites (--i*),
+ * adm em verde-azulado (--m*). Componentes do custo: --c*.
+ */
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-muted: #f7f8fa;
+  --surface-2: #f0f2f5;
+  --line: #e4e7ec;
+  --line-strong: #d0d5dd;
+  --ink: #17191c;
+  --body: #344054;
+  --muted: #5c6677;
+  --faint: #98a2b3;
+  --amber: #f2b705;
+  --amber-hi: #f8cb3e;
+  --amber-text: #8a6400;
+  --amber-tint: #fdf4d4;
+  --on-amber: #17191c;
+  --active-bg: #1f2226;
+  --active-fg: #ffffff;
+  --deep-a: #363a40;
+  --deep-b: #1f2226;
+  --on-deep: #ffffff;
+  --on-deep-muted: rgba(255, 255, 255, 0.76);
+  --ok: #18784e; /* protótipo: #1f8a5b, escurecido para AA sobre --ok-tint */
+  --ok-tint: #e7f4ec;
+  --err: #b83427; /* protótipo: #c0392b, escurecido para AA sobre --err-tint */
+  --err-tint: #f9e1e1;
+  --d1: #8a6400;
+  --d2: #e0a800;
+  --d3: #f5d36b;
+  --d4: #b5651d;
+  --d5: #d9822b;
+  --d6: #5e4400;
+  --i1: #17191c;
+  --i2: #475467;
+  --i3: #6b7a8f;
+  --i4: #98a2b3;
+  --i5: #c3cad3;
+  --i6: #2f3b48;
+  --m1: #0f6e6e;
+  --m2: #3d9a97;
+  --x1: #7a4b8c;
+  --x2: #a0729f;
+  --c1: #17191c;
+  --c2: #475467;
+  --c3: #8a6400;
+  --c4: #b98600;
+  --c5: #6b7a8f;
+  --c6: #a3afbf;
+  --c7: #e0a800;
+  --c8: #f5d36b;
+  --c9: #0f6e6e;
+  --c10: #7a4b2a;
+  --c11: #3d9a97;
+  --c12: #d0d5dd;
+  --shadow-sm: 0 4px 16px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 14px 34px rgba(16, 24, 40, 0.12);
+  --shadow-lg: 0 24px 56px rgba(16, 24, 40, 0.14);
+  --scrim: rgba(16, 24, 40, 0.32);
+
+  --font: "Geist Sans", "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --raio-pill: 999px;
+  --raio-cartao: 20px;
+  --raio-campo: 12px;
+  --raio-badge: 6px;
+
+  color-scheme: light;
+}
+
+/* Escuro: segue o sistema, a menos que o usuário tenha escolhido "claro". */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111315;
+    --surface: #181b1e;
+    --surface-muted: #15181b;
+    --surface-2: #232830;
+    --line: #2a2f35;
+    --line-strong: #3a4048;
+    --ink: #f2f3f5;
+    --body: #c9ced6;
+    --muted: #98a2b3;
+    --faint: #667085;
+    --amber-text: #f2c94c;
+    --amber-tint: #2c2510;
+    --active-bg: #e9ebee;
+    --active-fg: #17191c;
+    --deep-a: #2a2e33;
+    --deep-b: #1c1f22;
+    --on-deep: #f2f3f5;
+    --on-deep-muted: rgba(242, 243, 245, 0.72);
+    --ok: #4cc38a;
+    --ok-tint: #12301f;
+    --err: #f07167;
+    --err-tint: #3a1a18;
+    --d1: #b98600;
+    --d2: #f2b705;
+    --d3: #f7e09a;
+    --d4: #d27a3a;
+    --d5: #f0a35e;
+    --d6: #8a6a1e;
+    --i1: #e9ebee;
+    --i2: #98a2b3;
+    --i3: #8fa0b5;
+    --i4: #667085;
+    --i5: #4a5462;
+    --i6: #c9ced6;
+    --m1: #3d9a97;
+    --m2: #7cc6c1;
+    --x1: #b48cc4;
+    --x2: #d2b1d0;
+    --c1: #e9ebee;
+    --c2: #98a2b3;
+    --c3: #b98600;
+    --c4: #f2c94c;
+    --c5: #8fa0b5;
+    --c6: #5c6677;
+    --c7: #f2b705;
+    --c8: #f7e09a;
+    --c9: #3d9a97;
+    --c10: #c08457;
+    --c11: #7cc6c1;
+    --c12: #3a4048;
+    --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.45);
+    --scrim: rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #111315;
+  --surface: #181b1e;
+  --surface-muted: #15181b;
+  --surface-2: #232830;
+  --line: #2a2f35;
+  --line-strong: #3a4048;
+  --ink: #f2f3f5;
+  --body: #c9ced6;
+  --muted: #98a2b3;
+  --faint: #667085;
+  --amber-text: #f2c94c;
+  --amber-tint: #2c2510;
+  --active-bg: #e9ebee;
+  --active-fg: #17191c;
+  --deep-a: #2a2e33;
+  --deep-b: #1c1f22;
+  --on-deep: #f2f3f5;
+  --on-deep-muted: rgba(242, 243, 245, 0.72);
+  --ok: #4cc38a;
+  --ok-tint: #12301f;
+  --err: #f07167;
+  --err-tint: #3a1a18;
+  --d1: #b98600;
+  --d2: #f2b705;
+  --d3: #f7e09a;
+  --d4: #d27a3a;
+  --d5: #f0a35e;
+  --d6: #8a6a1e;
+  --i1: #e9ebee;
+  --i2: #98a2b3;
+  --i3: #8fa0b5;
+  --i4: #667085;
+  --i5: #4a5462;
+  --i6: #c9ced6;
+  --m1: #3d9a97;
+  --m2: #7cc6c1;
+  --x1: #b48cc4;
+  --x2: #d2b1d0;
+  --c1: #e9ebee;
+  --c2: #98a2b3;
+  --c3: #b98600;
+  --c4: #f2c94c;
+  --c5: #8fa0b5;
+  --c6: #5c6677;
+  --c7: #f2b705;
+  --c8: #f7e09a;
+  --c9: #3d9a97;
+  --c10: #c08457;
+  --c11: #7cc6c1;
+  --c12: #3a4048;
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.45);
+  --scrim: rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}

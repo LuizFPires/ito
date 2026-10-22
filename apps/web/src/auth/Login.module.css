@@ -1,0 +1,45 @@
+.pagina {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--surface-muted);
+}
+.cartao {
+  width: min(400px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  box-shadow: var(--shadow-sm);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.titulo {
+  font-size: 28px;
+}
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--body);
+}
+.input {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--raio-campo);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+}
+.erro {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--raio-campo);
+  background: var(--err-tint);
+  color: var(--err);
+  font-size: 13px;
+}

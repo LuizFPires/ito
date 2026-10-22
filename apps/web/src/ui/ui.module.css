@@ -1,0 +1,166 @@
+/* Componentes base do Canteiro (equivalentes às classes do protótipo ITO 2.0). */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--raio-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+}
+.botao:hover {
+  background: var(--surface-muted);
+}
+.botao[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.primario {
+  border: 0;
+  background: linear-gradient(180deg, var(--amber-hi) 0%, var(--amber) 100%);
+  color: var(--on-amber);
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+}
+.primario:hover {
+  background: var(--amber);
+}
+.escuro {
+  border: 0;
+  background: var(--active-bg);
+  color: var(--active-fg);
+}
+.escuro:hover {
+  background: var(--active-bg);
+  opacity: 0.9;
+}
+.fantasma {
+  border-color: transparent;
+  background: transparent;
+}
+.pequeno {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.chip {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: var(--raio-pill);
+  border: 0;
+  background: transparent;
+  color: var(--body);
+  font-size: 14px;
+}
+.chip:hover {
+  background: var(--surface-2);
+}
+.chip[aria-pressed="true"] {
+  background: var(--active-bg);
+  color: var(--active-fg);
+  font-weight: 500;
+}
+
+.segmento {
+  display: inline-flex;
+  flex-wrap: wrap;
+  padding: 4px;
+  gap: 4px;
+  border-radius: var(--raio-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+.segmento button {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--raio-pill);
+  border: 0;
+  background: transparent;
+  color: var(--body);
+  font-size: 12px;
+}
+.segmento button[aria-pressed="true"] {
+  background: var(--active-bg);
+  color: var(--active-fg);
+  font-weight: 500;
+}
+
+.cartao {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+}
+.cartaoCorpo {
+  padding: 20px 22px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: var(--raio-badge);
+  white-space: nowrap;
+}
+.b-neutro {
+  background: var(--surface-2);
+  color: var(--body);
+}
+.b-ambar {
+  background: var(--amber-tint);
+  color: var(--amber-text);
+}
+.b-escuro {
+  background: var(--active-bg);
+  color: var(--active-fg);
+}
+.b-ok {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.b-erro {
+  background: var(--err-tint);
+  color: var(--err);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 24px;
+  z-index: 50;
+  background: var(--active-bg);
+  color: var(--active-fg);
+  padding: 12px 18px;
+  border-radius: var(--raio-pill);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  max-width: calc(100% - 32px);
+}
+.toast i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--amber);
+  display: inline-block;
+  flex-shrink: 0;
+}

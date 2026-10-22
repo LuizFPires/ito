@@ -8,14 +8,14 @@
 
 ## M0 — Fundação
 **Objetivo:** projeto rodando, com autenticação, design system e esqueleto de navegação.
-- [ ] Repositório, ambientes (dev/homologação/produção), CI com lint e testes
-- [ ] Banco de dados e migrações
-- [ ] Autenticação e perfis (planejamento, engenharia, DP/RH, controladoria, diretoria). Permissões finais a confirmar com a diretoria.
-- [ ] Design system "Canteiro" em tokens:
+- [x] Repositório, ambientes (dev/homologação/produção), CI com lint e testes — homologação e produção com migrações e Auth aplicados; Vercel ligada ao GitHub (`docs/AMBIENTES.md`)
+- [x] Banco de dados e migrações
+- [x] Autenticação e perfis (planejamento, engenharia, DP/RH, controladoria, diretoria). Permissões finais a confirmar com a diretoria.
+- [x] Design system "Canteiro" em tokens:
   - grafite e âmbar; Geist e Geist Mono;
   - pills; modo claro e escuro.
-- [ ] Shell: menu lateral (Análise / Dados / Configuração), busca global ⌘K, aviso de toast
-- [ ] Utilitários de formatação BR (R$ 1.234,56; dd/mm/aaaa; jan/27) com testes
+- [x] Shell: menu lateral (Análise / Dados / Configuração), busca global ⌘K, aviso de toast
+- [x] Utilitários de formatação BR (R$ 1.234,56; dd/mm/aaaa; jan/27) com testes
 
 **Aceite:** login funcionando; as 10 rotas do menu abrem vazias; tokens nos dois modos; testes de formatação passando.
 

@@ -1,0 +1,39 @@
+{
+  "name": "ito",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @ito/web dev",
+    "build": "pnpm --filter @ito/web build",
+    "preview": "pnpm --filter @ito/web preview",
+    "lint": "eslint . && pnpm -r --parallel typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:start": "supabase start -x studio,imgproxy,vector,logflare,edge-runtime,supavisor,postgres-meta,realtime,storage-api",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "gen:types": "supabase gen types typescript --local > apps/web/src/lib/tipos-banco.ts && prettier --write apps/web/src/lib/tipos-banco.ts",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "^24.19.2",
+    "eslint": "10.13.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "supabase": "2.121.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vitest": "5.0.5"
+  }
+}
