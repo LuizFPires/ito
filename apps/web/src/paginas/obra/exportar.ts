@@ -167,12 +167,14 @@ export function rubricasPorMes(
     mes_idx: number;
     matricula: string;
     funcao_id: string;
+    construtora?: string;
     realocada_para: string | null;
   }[],
   rubricas: readonly {
     mes_idx: number;
     matricula: string;
     funcao_id: string;
+    construtora?: string;
     rubrica_codigo: number;
     valor: number | string;
   }[],
@@ -181,11 +183,12 @@ export function rubricasPorMes(
   const realocado = new Set(
     lancamentos
       .filter((l) => l.realocada_para)
-      .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}`),
+      .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}|${l.construtora ?? "classica"}`),
   );
   const porCodigo = new Map<number, number[]>();
   for (const x of rubricas) {
-    if (realocado.has(`${x.mes_idx}|${x.matricula}|${x.funcao_id}`)) continue;
+    if (realocado.has(`${x.mes_idx}|${x.matricula}|${x.funcao_id}|${x.construtora ?? "classica"}`))
+      continue;
     if (!porCodigo.has(x.rubrica_codigo)) porCodigo.set(x.rubrica_codigo, Array(n).fill(0));
     porCodigo.get(x.rubrica_codigo)![x.mes_idx]! += Number(x.valor);
   }

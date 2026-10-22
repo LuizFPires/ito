@@ -19,9 +19,13 @@ import {
 /** Função como está na folha, no formato dos sinônimos (caixa alta, espaços simples). */
 export const textoFuncao = (c: Celula) => lerTexto(c).toUpperCase().replace(/\s+/g, " ");
 
+/** Construtora em que a pessoa estava fichada (decisão M9); sem informação = Clássica. */
+export type Construtora = "classica" | "ampla";
+
 export interface LinhaRubrica {
   comp: Competencia;
   matricula: string;
+  construtora?: Construtora;
   funcao: string;
   codigo: number;
   descricao: string;
@@ -32,6 +36,7 @@ export interface LinhaRubrica {
 export interface LinhaPessoa {
   comp: Competencia;
   matricula: string;
+  construtora?: Construtora;
   funcao: string;
   /** dias com vínculo; null = mês cheio */
   dias: number | null;

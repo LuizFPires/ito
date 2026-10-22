@@ -786,6 +786,7 @@ export type Database = {
       };
       lancamento_rubricas: {
         Row: {
+          construtora: Database["public"]["Enums"]["construtora"];
           funcao_id: string;
           matricula: string;
           mes_idx: number;
@@ -796,6 +797,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          construtora?: Database["public"]["Enums"]["construtora"];
           funcao_id: string;
           matricula: string;
           mes_idx: number;
@@ -805,6 +807,7 @@ export type Database = {
           valor: number;
         };
         Update: {
+          construtora?: Database["public"]["Enums"]["construtora"];
           funcao_id?: string;
           matricula?: string;
           mes_idx?: number;
@@ -815,11 +818,11 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "lancamento_rubricas_obra_id_mes_idx_matricula_funcao_id_fkey";
-            columns: ["obra_id", "mes_idx", "matricula", "funcao_id"];
+            foreignKeyName: "lancamento_rubricas_lancamento_fkey";
+            columns: ["obra_id", "mes_idx", "matricula", "funcao_id", "construtora"];
             isOneToOne: false;
             referencedRelation: "lancamentos";
-            referencedColumns: ["obra_id", "mes_idx", "matricula", "funcao_id"];
+            referencedColumns: ["obra_id", "mes_idx", "matricula", "funcao_id", "construtora"];
           },
           {
             foreignKeyName: "lancamento_rubricas_rubrica_codigo_fkey";
@@ -833,6 +836,7 @@ export type Database = {
       lancamentos: {
         Row: {
           admitido: boolean;
+          construtora: Database["public"]["Enums"]["construtora"];
           desligado: boolean;
           equivalente: number;
           faltas_horas: number;
@@ -850,6 +854,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           admitido?: boolean;
+          construtora?: Database["public"]["Enums"]["construtora"];
           desligado?: boolean;
           equivalente: number;
           faltas_horas?: number;
@@ -866,6 +871,7 @@ export type Database = {
         };
         Update: {
           admitido?: boolean;
+          construtora?: Database["public"]["Enums"]["construtora"];
           desligado?: boolean;
           equivalente?: number;
           faltas_horas?: number;
@@ -1557,6 +1563,7 @@ export type Database = {
         | "compgps"
         | "nao"
         | "info";
+      construtora: "classica" | "ampla";
       grupo_encargo: "soc" | "prov" | "nf";
       grupo_funcao: "direta" | "indireta" | "adm";
       modo_dias: "calendario" | "fixo";
@@ -1693,6 +1700,7 @@ export const Constants = {
         "nao",
         "info",
       ],
+      construtora: ["classica", "ampla"],
       grupo_encargo: ["soc", "prov", "nf"],
       grupo_funcao: ["direta", "indireta", "adm"],
       modo_dias: ["calendario", "fixo"],

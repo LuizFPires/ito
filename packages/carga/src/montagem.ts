@@ -22,7 +22,14 @@ import type {
   TipoHe,
 } from "@ito/motor";
 import { HE_MIX_PADRAO, TIPOS_HE, tabelaDoMes } from "@ito/motor";
-import type { LeituraFolha, LinhaErp, LinhaPonto, LinhaVt, NotaFiscal } from "./leitores";
+import type {
+  LeituraFolha,
+  LinhaErp,
+  LinhaPonto,
+  LinhaVt,
+  NotaFiscal,
+  Construtora,
+} from "./leitores";
 import type { Competencia, ErroLeitura } from "./planilha";
 
 export type TipoRubrica = "provento" | "desconto" | "informativo";
@@ -165,6 +172,7 @@ export interface CargaParaGravar {
 export interface LancamentoCarga {
   mes_idx: number;
   matricula: string;
+  construtora: Construtora;
   funcao_id: string;
   equivalente: number;
   horas_extras: number;
@@ -293,15 +301,23 @@ export function montarCarga(
 
   // lançamentos por (mês, matrícula, função)
   const lanc = new Map<string, LancamentoCarga>();
-  const chave = (i: number, m: string, f: string) => `${i}|${m}|${f}`;
+  // a mesma matrícula pode existir nas duas construtoras (decisão M9)
+  const chave = (i: number, m: string, f: string, c: Construtora = "classica") =>
+    `${i}|${m}|${f}|${c}`;
   const semAbaPessoas = folha.pessoas.length === 0;
-  const obter = (i: number, matricula: string, funcao_id: string) => {
-    const k = chave(i, matricula, funcao_id);
+  const obter = (
+    i: number,
+    matricula: string,
+    funcao_id: string,
+    construtora: Construtora = "classica",
+  ) => {
+    const k = chave(i, matricula, funcao_id, construtora);
     let l = lanc.get(k);
     if (!l) {
       l = {
         mes_idx: i,
         matricula,
+        construtora,
         funcao_id,
         // sem a aba Pessoas, mês cheio; com ela, só quem tem linha em Pessoas tem pessoa-mês
         equivalente: semAbaPessoas ? 1 : 0,
@@ -328,8 +344,8 @@ export function montarCarga(
     const f = mapa.get(p.funcao);
     const i = noPeriodo(p.comp);
     if (!f || i < 0) continue;
-    const k = chave(i, p.matricula, f);
-    const l = obter(i, p.matricula, f);
+    const k = chave(i, p.matricula, f, p.construtora);
+    const l = obter(i, p.matricula, f, p.construtora);
     // dias vazios = mês cheio
     const antes = dias.has(k) ? dias.get(k)! : 0;
     const total = antes === null || p.dias === null ? null : antes + p.dias;
@@ -352,7 +368,7 @@ export function montarCarga(
     const f = mapa.get(r.funcao);
     const i = noPeriodo(r.comp);
     if (!f || i < 0) continue;
-    const l = obter(i, r.matricula, f);
+    const l = obter(i, r.matricula, f, r.construtora);
     // mesma rubrica vinda de dois textos de função mapeados para a mesma função padrão: soma
     const ja = l.rubricas.find((x) => x.codigo === r.codigo);
     if (ja) {
@@ -411,7 +427,8 @@ export function montarCarga(
     (a, b) =>
       a.mes_idx - b.mes_idx ||
       a.funcao_id.localeCompare(b.funcao_id) ||
-      a.matricula.localeCompare(b.matricula),
+      a.matricula.localeCompare(b.matricula) ||
+      a.construtora.localeCompare(b.construtora),
   );
   const daObra = lancamentos.filter((l) => !l.realocada_para);
 
@@ -485,7 +502,7 @@ export function montarCarga(
     { ls: LancamentoCarga[]; destino: string; obraId: string | null }
   >();
   for (const l of lancamentos.filter((x) => x.realocada_para)) {
-    const origem = origemRealocada.get(chave(l.mes_idx, l.matricula, l.funcao_id));
+    const origem = origemRealocada.get(chave(l.mes_idx, l.matricula, l.funcao_id, l.construtora));
     const escolha = origem ? escolhas.realocacao[origem] : undefined;
     const k = `${l.realocada_para}|${l.funcao_id}`;
     if (!grupos.has(k))
@@ -497,7 +514,7 @@ export function montarCarga(
     funcao_id: g.ls[0]!.funcao_id,
     mes_ini: Math.min(...g.ls.map((l) => l.mes_idx)),
     mes_fim: Math.max(...g.ls.map((l) => l.mes_idx)),
-    qtd: new Set(g.ls.map((l) => l.matricula)).size,
+    qtd: new Set(g.ls.map((l) => `${l.matricula}|${l.construtora}`)).size,
     outra_obra: g.destino,
     outra_obra_id: g.obraId,
     saldo_vt: r2(g.ls.reduce((s, l) => s + (l.vt_valor ?? 0), 0)),

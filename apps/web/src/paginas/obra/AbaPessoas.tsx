@@ -40,7 +40,7 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
     const realocado = new Set(
       (q.data?.lancamentos ?? [])
         .filter((l) => l.realocada_para)
-        .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}`),
+        .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}|${l.construtora}`),
     );
     for (const l of q.data?.lancamentos ?? []) {
       if (l.realocada_para) continue;
@@ -68,7 +68,7 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
       const p = por.get(r.matricula);
       if (!p || !noCusto.has(r.rubrica_codigo)) continue;
       // como na Folha: o mês em que trabalhou em outra obra fica fora
-      if (realocado.has(`${r.mes_idx}|${r.matricula}|${r.funcao_id}`)) continue;
+      if (realocado.has(`${r.mes_idx}|${r.matricula}|${r.funcao_id}|${r.construtora}`)) continue;
       const v = Number(r.valor);
       p.remun += desconto.has(r.rubrica_codigo) ? -Math.abs(v) : v;
     }
