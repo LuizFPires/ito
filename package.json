@@ -20,7 +20,8 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "gen:types": "supabase gen types typescript --local > apps/web/src/lib/tipos-banco.ts && prettier --write apps/web/src/lib/tipos-banco.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "migrar": "tsx packages/migracao/src/cli.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

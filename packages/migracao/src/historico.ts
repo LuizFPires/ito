@@ -56,6 +56,8 @@ export interface PlanilhaHistorica {
   /** rubricas do .xlsb sem cadastro no ITO: classificação sugerida pelo nome */
   rubricasNovas: { codigo: number; descricao: string; sinal: "+" | "-" | "" }[];
   avisos: Aviso[];
+  /** pessoa-mês por mês do histograma da própria planilha (aba Resultados do .xlsm), para conferir */
+  histograma?: { comp: Competencia; pm: number }[];
 }
 
 /** Valor de célula (os dois leitores devolvem estes tipos). */

@@ -4,7 +4,7 @@
  * VT…). As colunas mudam de posição entre versões: tudo é achado pelo nome do cabeçalho.
  * A coluna do nome da pessoa nunca é lida.
  */
-import type { Construtora } from "@ito/carga";
+import type { Competencia, Construtora } from "@ito/carga";
 import type {
   Abas,
   Aviso,
@@ -160,7 +160,9 @@ export function lerModeloXlsm(
     const adm = iAdm === null ? null : dataIso(l[iAdm]);
     const dem = iDem === null ? null : dataIso(l[iDem]);
     const realocada = iReal !== null && ["x", "sim", "s"].includes(normal(l[iReal]));
-    const dias = iDias === null ? null : numero(l[iDias]) || null;
+    // dias vazios = não trabalhou na obra no mês (só recebeu algum valor): pessoa-mês zero,
+    // como o histograma da própria planilha (aba Resultados)
+    const dias = iDias === null ? null : numero(l[iDias]);
     linhas.push({
       comp,
       matricula: String(l[iMat]).trim(),
@@ -220,6 +222,22 @@ export function lerModeloXlsm(
       return { comp: { ano: ano!, mes: mes! }, valor: Math.round(valor * 100) / 100 };
     }),
     rubricasNovas: [],
+    histograma: histogramaDaPlanilha(abas.Resultados ?? []),
     avisos,
   };
+}
+
+/** Linha "TOTAL HISTOGRAMA" da aba Resultados: pessoa-mês por mês (cabeçalho "CLASSE / REF"). */
+export function histogramaDaPlanilha(res: Abas[string]): { comp: Competencia; pm: number }[] {
+  const iCab = res.findIndex((l) => normal(l?.[1]) === "classe / ref");
+  const iTot = res.findIndex((l) => normal(l?.[1]) === "total histograma");
+  if (iCab < 0 || iTot < 0) return [];
+  const cab = res[iCab] ?? [];
+  const tot = res[iTot] ?? [];
+  const saida: { comp: Competencia; pm: number }[] = [];
+  for (let c = 3; c < cab.length; c++) {
+    const comp = competenciaDe(cab[c]);
+    if (comp) saida.push({ comp, pm: numero(tot[c]) });
+  }
+  return saida;
 }

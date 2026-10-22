@@ -138,7 +138,12 @@ export function sugestaoDaObra(o: ObraHistorica): {
   observacao: string;
 } {
   const titulo = o.planilhas.map((a) => a.planilha.titulo).find(Boolean) ?? "";
-  const nome = (titulo.replace(/^obra\s+/i, "").trim() || o.pasta).replace(/\s+/g, " ");
+  const nome = (
+    titulo
+      .replace(/^obra\s+/i, "")
+      .replace(SUFIXO, "")
+      .trim() || o.pasta
+  ).replace(/\s+/g, " ");
   const tudo = normal(`${o.pasta} ${nome} ${o.planilhas.map((a) => a.caminho).join(" ")}`);
   const cliente = /mart minas|\bmm\b/.test(tudo)
     ? "Mart Minas"
