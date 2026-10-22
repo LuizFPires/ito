@@ -27,6 +27,9 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
   "/comparar": async () => ({
     Component: (await import("./paginas/comparar/TelaComparar")).TelaComparar,
   }),
+  "/projecoes": async () => ({
+    Component: (await import("./paginas/projecoes/TelaProjecoes")).TelaProjecoes,
+  }),
   "/carga": async () => ({
     Component: (await import("./paginas/carga/TelaCarga")).TelaCarga,
   }),
@@ -59,8 +62,28 @@ const router = createBrowserRouter([
         lazy: async () => ({ Component: (await import("./paginas/obra/TelaObra")).TelaObra }),
       },
       {
+        path: "projecoes/nova",
+        lazy: async () => ({
+          Component: (await import("./paginas/projecoes/Assistente")).TelaNovaProjecao,
+        }),
+      },
+      {
+        path: "projecoes/comparar",
+        lazy: async () => ({
+          Component: (await import("./paginas/projecoes/CompararProjecoes")).CompararProjecoes,
+        }),
+      },
+      {
         path: "projecoes/:id",
-        lazy: async () => ({ Component: (await import("./paginas/telas")).TelaProjecao }),
+        lazy: async () => ({
+          Component: (await import("./paginas/projecoes/TelaProjecao")).TelaProjecao,
+        }),
+      },
+      {
+        path: "projecoes/:id/editar",
+        lazy: async () => ({
+          Component: (await import("./paginas/projecoes/Assistente")).TelaEditarProjecao,
+        }),
       },
       { path: "*", element: <Navigate to="/base" replace /> },
     ],

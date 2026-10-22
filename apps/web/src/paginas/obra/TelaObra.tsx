@@ -236,7 +236,7 @@ export function TelaObra() {
           </Link>
           <Link
             className={`${u.botao} ${u.pequeno} ${u.primario}`}
-            to={`/projecoes?refs=${o.id}`}
+            to={`/projecoes/nova?refs=${o.id}`}
             style={{ textDecoration: "none" }}
           >
             Usar como referência →

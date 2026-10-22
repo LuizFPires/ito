@@ -16,3 +16,19 @@ export function podeEditarCadastros(u: Usuario | null | undefined): boolean {
 export function podeCarregar(u: Usuario | null | undefined): boolean {
   return !!u && (u.admin || u.perfil === "controladoria" || u.perfil === "dp_rh");
 }
+
+/** Espelho de pode_projetar (decisão M7): planejamento, engenharia, controladoria e admin. */
+export function podeProjetar(u: Usuario | null | undefined): boolean {
+  return (
+    !!u &&
+    (u.admin ||
+      u.perfil === "planejamento" ||
+      u.perfil === "engenharia" ||
+      u.perfil === "controladoria")
+  );
+}
+
+/** Espelho de pode_aprovar (decisão M7): controladoria, diretoria e admin. */
+export function podeAprovar(u: Usuario | null | undefined): boolean {
+  return !!u && (u.admin || u.perfil === "controladoria" || u.perfil === "diretoria");
+}

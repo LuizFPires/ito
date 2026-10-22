@@ -173,7 +173,7 @@ export function TelaBase() {
           )}
           <Link
             className={`${u.botao} ${u.pequeno} ${u.primario}`}
-            to="/projecoes"
+            to="/projecoes/nova"
             style={{ textDecoration: "none" }}
           >
             Nova projeção →
@@ -247,7 +247,7 @@ export function TelaBase() {
             <Botao
               pequeno
               variante="primario"
-              onClick={() => navegar(`/projecoes?refs=${sel.join(",")}`)}
+              onClick={() => navegar(`/projecoes/nova?refs=${sel.join(",")}`)}
             >
               Projetar com estas →
             </Botao>

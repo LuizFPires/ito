@@ -144,8 +144,8 @@
 
 ## M7 — Projeções
 **Objetivo:** planejar uma obra nova a partir do histórico, com os preços da cidade.
-- [ ] Lista com busca, situação e seleção para comparar projeções
-- [ ] **Assistente em 4 passos** (PRD §3.4):
+- [x] Lista com busca, situação e seleção para comparar projeções
+- [x] **Assistente em 4 passos** (PRD §3.4):
   - **passo 1:** cidade e resumo de preços;
   - **passo 2:** referências (sugestão das 5 mais parecidas, faixa de área, média ou mediana) ou quantidades manuais;
   - **passo 3:**
@@ -154,16 +154,20 @@
     - **origem por função** e cidade de origem;
     - **reajuste automático ou informado**;
     - licenças e férias, HE por tipo.
-- [ ] **Resultado:**
+- [x] **Resultado:**
   - indicadores e premissas aplicadas;
   - histograma, efetivo e custo;
   - **"Quanto custa trazer gente de fora"**;
   - curva S;
   - projeção × referências.
-- [ ] Ações: situação, duplicar, editar, copiar para Excel; navegação ‹ › e seletor entre projeções
-- [ ] Comparar 2 ou mais projeções lado a lado
+- [x] Ações: situação, duplicar, editar, copiar para Excel; navegação ‹ › e seletor entre projeções
+- [x] Comparar 2 ou mais projeções lado a lado
 
 **Aceite:** os golden tests de reajuste automático e de origem (SPEC §8) passam pela interface; uma projeção completa leva menos de 10 minutos.
+
+> Aceite verificado em 21/10/2026: `e2e/m7-projecoes.spec.ts` faz o golden pela tela (Vespasiano com a CCT de BH: pedreiro R$ 1.400,00 → R$ 1.484,00 em mai/27; VT R$ 11,00 local × R$ 24,80 vindo de BH) e uma projeção completa em segundos; testes unitários em `lib/projecaoDoBanco.test.ts`.
+
+> Decisões (21/10/2026): edição por planejamento, engenharia, controladoria e admin (Aprovada só controladoria, diretoria, admin); copiar para Excel pela área de transferência; 5 mais parecidas por tipologia, área e prazo; grava entradas + resumo (CLAUDE.md, M7).
 
 ---
 

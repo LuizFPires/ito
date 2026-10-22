@@ -185,6 +185,31 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Percentuais com 2 casas (convenção do ITO, como 43,96%), não 1 como no protótipo; cores das obras da paleta de séries do Canteiro.
 - O M6 começou empilhado no M5 (`feat/m6-comparar` a partir de `feat/m5-base-historica`), pela mesma pendência do CI.
 
+### M7 — Projeções (21/10/2026)
+- **Quem edita:** planejamento, engenharia, controladoria e admin criam e editam projeções; DP/RH e diretoria leem. Marcar **Aprovada** só controladoria, diretoria ou admin (regra no banco). (auto — recomendado)
+- **"Copiar para Excel"** copia para a área de transferência em texto tabulado no formato BR (cola direto no Excel); o arquivo .xlsx fica para o M8. (auto — recomendado)
+- **"5 mais parecidas":** mesma tipologia primeiro, depois área e prazo mais próximos (distância em escala logarítmica). (auto — recomendado)
+- **Guarda só as entradas** da projeção; o motor recalcula na tela. Um resumo (total, pico, pessoa-mês) é gravado junto para a lista. (auto — recomendado)
+- **Segurança da aprovação (revisão do banco):** projeção aprovada não é editada nem apagada (só o resumo é recalculado); sair de Aprovada também exige quem aprova; autor, datas e situação inicial vêm do banco; `definir_situacao` trava a linha (sem corrida).
+- **Cidade obrigatória** no passo 1 do assistente (preços vêm dela); o banco aceita projeção sem cidade (tabela da empresa). Quem vem de fora todo dia sai de **BH** por padrão (como o protótipo), trocável no passo 3. (auto — recomendado)
+- **Editar** abre o assistente no passo 3; mudar início ou prazo descarta o reajuste informado que sair do prazo e ajusta as quantidades informadas ao novo prazo. (auto — recomendado)
+- **Resumo da lista** é o do último cálculo; ao abrir a projeção, quem edita regrava o resumo se os preços mudaram. A lista mostra a CCT do resumo quando ela não é a vigente. (auto — recomendado)
+- **Comparar projeções:** até 4, pela seleção na lista (endereço `/projecoes/comparar?ids=`), com os preços vigentes da cidade de cada uma; diferença de custo contra a primeira. (auto — recomendado)
+- **Copiar para Excel** copia a tabela de custo que está na tela (por função ou por componente, competência ou caixa). (auto — recomendado)
+- Revisão do M7 (21/10/2026):
+  - **Resumo de projeção aprovada** só é regravado por quem aprova e edita (controladoria, admin), regra no banco. Nas demais situações, quem projeta grava o resumo (modelo de confiança do M5; a tela sempre recalcula).
+  - Resumo e "Salvar" esperam as referências carregadas de fato (o dado provisório da projeção anterior não entra no cálculo).
+  - Reajuste informado precisa de ao menos 2 meses de prazo; a tela lista todos os reajustes da data-base no prazo (compostos) e avisa que o informado substitui todos.
+- Comparação do M7 com o protótipo (21/10/2026):
+  - **R$ por dia** mostra o pedreiro, com servente e todas as funções na segunda linha (como o protótipo e o M6). (auto — recomendado)
+  - **Trocar a cidade descarta o reajuste informado** (outra CCT, outra data-base), como o protótipo. (auto — recomendado)
+  - **Tipologia em lista fechada** (as 5 do M4); área a partir de 100 m² (como a carga); prazo de 1 a 120 meses (o stepper de 3 a 24 do protótipo era ilustrativo). (auto — recomendado)
+  - Candidatas a referência mostram **PM / 1.000 m²** (como o protótipo), com o R$/m² vigente na segunda linha. (auto — recomendado)
+  - Reajuste informado aceita de −50% a 100% (como a CCT no M2) e começa no 2º mês (o banco exige mês ≥ 1). (auto — recomendado)
+  - "Informar quantidades" parte das quantidades das referências, se houver; Premissas aplicadas, histograma (grupo, empilhadas/agrupadas), efetivo (PM/1.000 m², S/P), origem (alojamento e viagens), comparação (provisões, custo/pessoa·mês, situação) completados como no protótipo.
+  - Ficou de fora: contagem de feriados em dias úteis nas premissas aplicadas (o calendário já entra no custo).
+- O M7 começou empilhado no M6 (`feat/m7-projecoes` a partir de `feat/m6-comparar`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
