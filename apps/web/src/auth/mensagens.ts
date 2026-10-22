@@ -7,7 +7,7 @@ export function mensagemDeErro(codigo: string | undefined, msg: string): string 
   if (codigo === "user_banned")
     return "Seu acesso ao ITO foi desativado. Fale com um administrador.";
   if (codigo === "weak_password")
-    return "Senha fraca: use pelo menos 8 caracteres, misturando letras e números.";
+    return "Senha fraca: use pelo menos 10 caracteres, misturando letras e números.";
   if (codigo === "same_password") return "Escolha uma senha diferente da atual.";
   if (codigo === "over_request_rate_limit" || codigo === "over_email_send_rate_limit")
     return "Muitas tentativas. Espere um minuto e tente de novo.";

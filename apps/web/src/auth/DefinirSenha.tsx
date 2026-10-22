@@ -23,7 +23,7 @@ export function DefinirSenha() {
 
   async function salvar(e: FormEvent) {
     e.preventDefault();
-    if (senha.length < 8) return setErro("Use pelo menos 8 caracteres.");
+    if (senha.length < 10) return setErro("Use pelo menos 10 caracteres.");
     if (senha !== confirma) return setErro("As duas senhas não são iguais. Digite de novo.");
     setEnviando(true);
     setErro(null);

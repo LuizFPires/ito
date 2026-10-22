@@ -1,5 +1,7 @@
 # Ambientes do ITO
 
+Publicação, usuários, backup e restauração: [OPERACAO.md](OPERACAO.md).
+
 | Ambiente | Banco e Auth | Front | Quem usa |
 |---|---|---|---|
 | Desenvolvimento | Supabase local (`pnpm db:start`, portas 548xx) | `pnpm dev` (localhost:5173) | equipe de desenvolvimento, CI |
