@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // migração do histórico (M9): roda com Node na máquina de quem migra; nomes descartados na leitura
+  "compilerOptions": { "types": ["node"] },
+  "include": ["src"]
+}

@@ -246,7 +246,7 @@ async function carregarLancamentos(id: string) {
     todas((de, ate) =>
       supabase
         .from("lancamento_rubricas")
-        .select("mes_idx, matricula, funcao_id, rubrica_codigo, referencia, valor")
+        .select("mes_idx, matricula, funcao_id, construtora, rubrica_codigo, referencia, valor")
         .eq("obra_id", id)
         .order("mes_idx")
         .order("matricula")

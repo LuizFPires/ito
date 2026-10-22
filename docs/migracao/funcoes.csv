@@ -1,0 +1,120 @@
+﻿texto;funcao;origem;revisado;matriculas;obras
+ALMOXARIFADO;almox;sinonimo;;1;lavras
+ALMOXARIFE;almox;sinonimo;;17;araxa comercial_jacui hort_fruti lavras mm_barreiro mm_ibirite montes_claros para_de_minas paracatu superluna_betim supermercados_bh_passos teofilo_otoni uba
+ANALISTA ADMINISTATIVO;admin;sinonimo;;1;comercial_jacui
+ANALISTA DE PLANEJAMENTO;planej;sinonimo;;1;montes_claros
+ANALISTA DE RH;rh;sinonimo;;2;lavras paracatu
+ANALISTA RH;rh;sinonimo;;3;araxa uba
+ARMADOR;arm;sinonimo;;1;waf_contagem
+ASSISTENTE ADMINISTRATIVO;admin;sinonimo;;1;para_de_minas
+ASSISTENTE ADMINISTRATIVO FINANCEIRO;admin;sinonimo;;6;betim_ii hort_fruti mm_ibirite supermercados_bh_gloria supermercados_bh_lagoa_santa supermercados_bh_passos
+ASSISTENTE DE ENGENHARIA;auxeng;sinonimo;;3;superluna_betim uba
+ASSISTENTE DE PESSOAL;rh;sinonimo;;1;para_de_minas
+ASSISTENTE ENGENHARIA;auxeng;sinonimo;;3;araxa lavras para_de_minas
+ASSISTENTE RH;rh;sinonimo;;2;araxa lavras
+AUX DE ALMOXARIFADO;almox;sinonimo;;1;para_de_minas
+AUX DE SERVICOS GERAIS;auxger;sinonimo;;1;para_de_minas
+AUX. ADMINISTRATIVO;admin;sinonimo;;1;para_de_minas
+AUX. SERVIÇOS GERAIS;auxger;sinonimo;;2;para_de_minas
+AUXILIAR ADMINISTRATIVO;admin;sinonimo;;21;araxa betim_ii comercial_jacui hort_fruti lavras mm_barreiro mm_ibirite paracatu superluna_betim supermercados_bh_lagoa_santa supermercados_bh_passos uba
+AUXILIAR ALMOXARIFE;almox;sinonimo;;2;araxa
+AUXILIAR DE ALMOXARIFADO;almox;sinonimo;;2;uba
+AUXILIAR DE ALMOXARIFE;almox;sinonimo;;7;betim_ii comercial_jacui mm_barreiro paracatu supermercados_bh_lagoa_santa teofilo_otoni
+AUXILIAR DE COMPRAS;compr;sinonimo;;2;araxa lavras
+AUXILIAR DE ENGENHARIA;auxeng;sinonimo;;27;araxa betim_ii blue_light comercial_jacui comercial_liu hort_fruti imperio_sarzedo lavras mm_barreiro mm_ibirite para_de_minas supermercados_bh_gloria supermercados_bh_lagoa_santa teofilo_otoni uba
+AUXILIAR DE ENGENHARIA INFRA;auxeng;sinonimo;;1;betim_ii
+AUXILIAR DE SERVIÇOS GERAIS;auxger;sinonimo;;5;araxa lavras paracatu
+AUXILIAR DE TOPOGRAFIA;topog;sinonimo;;2;montes_claros varginha
+AUXILIAR ENGENHARIA;auxeng;sinonimo;;4;varginha waf_contagem
+AUXILIAR SERVIÇOS GERAIS;auxger;sinonimo;;3;lavras uba
+AUXILIAR TEC SEGURANÇA TRABALHO;tecseg;sinonimo;;5;betim_ii edificio_residence_caicaras mm_barreiro superluna_betim supermercados_bh_passos
+CARPINTEIRO;carp;sinonimo;;30;araxa betim_ii hort_fruti lavras mm_ibirite para_de_minas paracatu superluna_betim teofilo_otoni uba varginha waf_contagem
+"CARPINTEIRO ""A'";carp;sinonimo;;1;montes_claros
+CARPINTEIRO 1;carp;sinonimo;;1;uba
+CARPINTEIRO 2;carp;sinonimo;;3;uba
+CARPINTEIRO A;carp;sinonimo;;2;paracatu
+CARPINTEIRO B;carp;sinonimo;;2;paracatu
+CARPINTEIRO DE OBRAS;carp;sinonimo;;2;comercial_liu edificio_residence_caicaras
+CARPINTEIRO I;carp;sinonimo;;1;araxa
+CARPINTEIRO II;carp;sinonimo;;2;araxa
+COMPRADOR;compr;sinonimo;;18;araxa betim_ii hort_fruti mm_barreiro mm_ibirite para_de_minas paracatu supermercados_bh_passos teofilo_otoni uba varginha waf_contagem
+COMPRAS;compr;sinonimo;;1;lavras
+ELETRICISTA;eletr;sinonimo;;25;araxa betim_ii comercial_jacui edificio_residence_caicaras hort_fruti lavras mm_barreiro mm_ibirite montes_claros para_de_minas paracatu superluna_betim supermercados_bh_lagoa_santa supermercados_bh_passos teofilo_otoni uba varginha waf_contagem
+"ELETRICISTA ""B""";eletr;sinonimo;;1;montes_claros
+ENCARREGADO;encar;sinonimo;;9;araxa lavras para_de_minas paracatu teofilo_otoni uba
+"ENCARREGADO ""B""";encar;sinonimo;;3;montes_claros
+ENCARREGADO DE ARMAÇÃO;encar;sinonimo;;3;para_de_minas paracatu
+ENCARREGADO DE OBRAS;encar;sinonimo;;21;betim_ii comercial_liu edificio_residence_caicaras hort_fruti imperio_sarzedo mm_barreiro mm_ibirite superluna_betim supermercados_bh_gloria supermercados_bh_lagoa_santa supermercados_bh_passos
+ENCARREGADO I;encar;sinonimo;;1;para_de_minas
+ENCARREGADO II;encar;sinonimo;;2;para_de_minas
+ENCARREGADO TERRAPLANAGEM;encar;sinonimo;;1;teofilo_otoni
+ENGENHEIRO;eng;sinonimo;;6;montes_claros teofilo_otoni varginha
+ENGENHEIRO 2;eng;sinonimo;;1;mm_barreiro
+ENGENHEIRO TRAINE;eng;sinonimo;;1;hort_fruti
+ESTAGIARIA EM ENGENHARIA ';estag;sinonimo;;1;varginha
+ESTAGIÁRIA EM TEC EDIFICAÇÃO;estag;sinonimo;;1;paracatu
+ESTAGIARIA ENGENHARIA;estag;sinonimo;;1;uba
+ESTAGIÁRIA TEC SEG TRABALHO;estag;sinonimo;;1;paracatu
+ESTAGIÁRIO ENGENHARIA;estag;sinonimo;;1;paracatu
+ESTAGIARIO ENGENHARIA CIVIL;estag;sinonimo;;3;waf_contagem
+ESTAGIARIO TEC SEG TRABALHO;estag;sinonimo;;1;uba
+GERENTE ADM;geradm;sinonimo;;2;para_de_minas paracatu
+GERENTE ADMINISTRATIVA;geradm;sinonimo;;1;montes_claros
+GERENTE ADMINISTRATIVO;geradm;sinonimo;;3;araxa lavras uba
+GERENTE ADMINSITRATIVA;geradm;sinonimo;;1;teofilo_otoni
+GERENTE ADMINSTRATIVO;geradm;sinonimo;;1;varginha
+MEIO OFICIAL;ped;sinonimo;;4;hort_fruti superluna_betim waf_contagem
+MESTRE DE OBRA;mestre;sinonimo;;11;betim_ii comercial_jacui comercial_liu edificio_residence_caicaras galpao_serrano mm_barreiro mm_ibirite superluna_betim supermercados_bh_gloria supermercados_bh_lagoa_santa supermercados_bh_passos
+MESTRE DE OBRAS;mestre;sinonimo;;12;araxa lavras montes_claros para_de_minas paracatu teofilo_otoni uba varginha waf_contagem
+MOTO BOY;motoboy;sinonimo;;6;araxa lavras para_de_minas paracatu uba
+OPERADOR  DE BETONEIRA;opbet;sinonimo;;3;lavras
+OPERADOR DE BETONEIRA;opbet;sinonimo;;17;araxa paracatu uba
+OPERADOR DE BETONEIRA SENIOR;opbet;sinonimo;;2;para_de_minas
+PEDREIRO;ped;sinonimo;;57;araxa betim_ii comercial_jacui comercial_liu hort_fruti lavras mm_barreiro para_de_minas superluna_betim supermercados_bh_gloria supermercados_bh_lagoa_santa teofilo_otoni uba waf_contagem
+"PEDREIRO ""A""";ped;sinonimo;;2;montes_claros varginha
+"PEDREIRO ""B""";ped;sinonimo;;2;montes_claros
+"PEDREIRO ""C""";ped;sinonimo;;1;varginha
+PEDREIRO 1;ped;sinonimo;;5;uba
+PEDREIRO 2;ped;sinonimo;;3;uba
+PEDREIRO A;ped;sinonimo;;8;para_de_minas paracatu
+PEDREIRO B;ped;sinonimo;;13;paracatu
+PEDREIRO I;ped;sinonimo;;5;araxa
+PEDREIRO II;ped;sinonimo;;1;araxa
+PEDREIRO2;ped;sinonimo;;1;uba
+PINTOR;pintor;sinonimo;;1;teofilo_otoni
+PROGRAMAS MEDICOS;outras;sinonimo;;1;waf_contagem
+SEM FUNÇÃO ESPECIFICA;outras;sinonimo;;3;paracatu
+"SERRALHEIRO ""B""";serralh;sinonimo;;1;montes_claros
+SERVENTE;serv;sinonimo;;210;araxa betim_ii comercial_jacui comercial_liu lavras mm_barreiro mm_ibirite montes_claros para_de_minas paracatu superluna_betim supermercados_bh_gloria supermercados_bh_lagoa_santa teofilo_otoni uba waf_contagem
+SUB ENC ALMOXARIFE;almox;sinonimo;;1;para_de_minas
+SUB ENCARREGADO;encar;sinonimo;;3;lavras para_de_minas uba
+SUB ENCARREGADO DE OBRA;encar;sinonimo;;1;araxa
+SUPERVISOR;superv;sinonimo;;2;para_de_minas paracatu
+SUPERVISOR DE OBRA;superv;sinonimo;;2;araxa lavras
+SUPERVISOR DE OBRAS;superv;sinonimo;;1;para_de_minas
+TEC EM EDIFIÇÕES;auxeng;sinonimo;;1;para_de_minas
+TEC SEGURANÇA;tecseg;sinonimo;;2;para_de_minas
+TEC SEGURANÇA DO TRABALHO;tecseg;sinonimo;;2;uba
+TECNICA SEG TRABALHO;tecseg;sinonimo;;1;paracatu
+TECNICO DE EDIFICACOES;auxeng;sinonimo;;1;supermercados_bh_passos
+TECNICO DE SEGURANÇA;tecseg;sinonimo;;1;lavras
+TECNICO DE SEGURANÇA DO TRABALHO;tecseg;sinonimo;;10;betim_ii comercial_jacui edificio_residence_caicaras hort_fruti mm_barreiro mm_ibirite superluna_betim supermercados_bh_gloria supermercados_bh_lagoa_santa
+TECNICO EM EDIFICAÇÃO;auxeng;sinonimo;;2;lavras varginha
+TECNICO EM EDIFICAÇÕES;auxeng;sinonimo;;6;araxa lavras paracatu teofilo_otoni uba
+TECNICO EM SEGURANÇA;tecseg;sinonimo;;2;teofilo_otoni varginha
+TECNICO ENF. DO TRABALHO;tecenf;sinonimo;;1;montes_claros
+TECNICO SEG DO TRABALHO;tecseg;sinonimo;;1;lavras
+TECNICO SEG TRABALHO;tecseg;sinonimo;;1;paracatu
+TECNICO SEGURANÇA;tecseg;sinonimo;;1;araxa
+TECNICO SEGURANÇA DO TRABALHO;tecseg;sinonimo;;1;araxa
+TECNICOM EM SEGURANCA TRABALHO;tecseg;sinonimo;;1;montes_claros
+TOPOGRAFO;topog;sinonimo;;1;varginha
+VIGIA;vigia;sinonimo;;7;araxa
+VIGIA  DIA;vigia;sinonimo;;1;para_de_minas
+VIGIA _NOITE;vigia;sinonimo;;2;para_de_minas
+VIGIA - DIA;vigia;sinonimo;;1;para_de_minas
+VIGIA DIA;vigia;sinonimo;;2;para_de_minas
+VIGIA DIURNO;vigia;sinonimo;;2;paracatu
+VIGIA NOITE;vigia;sinonimo;;3;araxa para_de_minas
+VIGIA NOTURNO;vigia;sinonimo;;4;paracatu
+VIGIA_ DIA;vigia;sinonimo;;2;para_de_minas

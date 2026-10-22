@@ -6,3 +6,6 @@ supabase/.temp
 playwright-report
 test-results
 *.md
+
+# gerados pelo script de migração (M9)
+docs/migracao/

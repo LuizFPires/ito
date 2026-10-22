@@ -228,6 +228,30 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Aceito sem correção: o resumo impresso não usa a tabela da empresa enquanto a CCT carrega (os preços só existem com a CCT da cidade carregada).
 - O M8 começou empilhado no M7 (`feat/m8-exportacoes` a partir de `feat/m7-projecoes`), pela mesma pendência do CI.
 
+### M9 — Migração do histórico (21/10/2026)
+- **Base de dados:** o zip "Histogramas das Obras" (31 planilhas, ~23 obras de 2017 a 2026), entregue pelo usuário. Dois modelos, ambos com uma linha por pessoa e mês: **.xlsm "Histograma de Mão de Obra"** (2017–2020; aba Folha) e **.xlsb** (2023–2026; aba Histograma com uma coluna por código de rubrica). O PLAN previa só o .xlsm.
+- **Ampla e Clássica** são construtoras do mesmo grupo e, numa mesma obra, há gente fichada em cada uma. As planilhas Ampla e Clássica da mesma obra (Super Luna Betim, BH Passos, MM Ibirité, Cananeias) viram **uma obra só**, mas **cada lançamento guarda a construtora** em que a pessoa estava fichada (campo próprio, parte da chave, para matrículas iguais nas duas não colidirem), para o controle ficar apurado. Planilha sem rótulo = Clássica; Barreiro (só Ampla) = obra com todo o efetivo na Ampla. Nenhum dado fica para trás. (usuário)
+- **Duplicatas** (Betim II repetida, Varginha V0/V7, Galpão Serrano normal/SP, Paquetá normal/sem encargos): vale a **versão mais recente**; o relatório lista o que ficou de fora. (usuário)
+- **Destino:** carga local, conferência e depois **homologação** (`ito-homologacao`). Produção só com OK do usuário. (usuário)
+- **Ferramenta:** script local de migração (`packages/migracao`), não uma tela: converte cada planilha para o layout de folha do ITO e grava pelo mesmo caminho da carga (verificações do M4 e `gravar_carga`). Nomes são descartados na leitura; nada com nome sai da máquina (regra 2). (auto — recomendado)
+- **Dados da obra** que a planilha não traz (área, cidade, tipologia) ficam numa tabela versionada (`docs/migracao/obras.csv`, sem dado pessoal); o que faltar vira pendência no relatório. (auto — recomendado)
+- **Funções fora das 14** (engenheiro, gerente administrativo, comprador, RH, moto boy, topografia, pintor, serralheiro, operador de betoneira, supervisor, técnico de enfermagem, serviços gerais, planejamento): **viram funções novas** no grupo certo; variações ("PEDREIRO A", "PEDREIRO 2", "MEIO OFICIAL") vão para a função existente, como sinônimo. A controladoria cadastra o salário das novas (até lá o custo usa o do oficial). (usuário)
+- **Cidades ausentes** (Ubá, Lavras, Pará de Minas, Varginha, Betim, Ibirité, Sarzedo, Lagoa Santa…) são criadas ligadas à CCT da região, com VT e ISS a revisar pela controladoria. (usuário)
+- **Área (m²):** o usuário preenche `docs/migracao/obras.csv`; a migração carrega as obras com área e lista as demais como "aguardando área"; rodar de novo substitui e completa. (usuário; o banco exige área > 0)
+- **Leitura por nome de coluna** no .xlsm (as versões v04–v20 mudam a posição das colunas); linhas sem função e sem salário ("0", "N/A", vazio) são linhas vazias da planilha e ficam de fora; a coluna "Adicionais de MO" do .xlsb traz nomes e **não é lida** (o valor vai só como total no relatório).
+- **.xlsb sem horas:** HE e faltas em horas são estimadas pelo valor ÷ (salário base ÷ 220 × adicional), marcadas como estimadas no relatório. (auto — recomendado)
+- **Obras de 2016 a 2022** entram com a tabela da empresa de 2023 como "época" (marcadas no relatório) até a controladoria cadastrar as data-bases daqueles anos; aí basta trocar a data-base da obra. As projeções não mudam (quantidades do histórico, preços vigentes). (usuário)
+- **Conferência da migração:** proventos lidos × coluna "Proventos" de cada planilha .xlsb e efetivo do ITO × histograma da aba Resultados do .xlsm, por mês, no relatório. No .xlsm, dias de referência vazios = não trabalhou no mês (pessoa-mês zero), como a própria planilha. (auto — recomendado)
+- **Área provisória de 10.000 m² em todas as obras** (usuário): os indicadores por m² (PM/1.000 m², R$/m²) não comparam obras de tamanhos diferentes até as áreas reais entrarem em `docs/migracao/obras.csv` (rodar a carga de novo substitui). Cidades confirmadas pelo usuário: Blue Light, Jacuí, Paquetá e Galpão Dalias em BH; Hort Fruti em Contagem; BH Passos em Passos (cidade nova, CCT Sul de Minas). Matrícula normalizada na leitura ("1152 A" → "1152A").
+- Revisão do M9 (21/10/2026), carga refeita no local e na homologação:
+  - **Colunas de rubrica do .xlsb param no primeiro título de total** (Proventos, Descontos, ∑ Custo, FGTS, Provisões, INSS empregado/empregador, Pagamento salarial…), mesmo nas planilhas sem a coluna "Proventos"; antes, totais e encargos entravam como provento. As colunas fixas (matrícula, função, competência, salário base) são conferidas pelo cabeçalho e a planilha fora do layout é recusada.
+  - **Mesma rubrica só com nome igual** (sem acento, ordinal e pontuação) ou diferente só por um percentual no fim; prefixo solto não vale ("13 SALARIO INTEGRAL" não é a 8550 de rescisão). "Dias faltas" é quantidade (informativo).
+  - Rubricas que a própria migração criou (código ≥ 9500) e saíram da tabela são apagadas na carga, se não tiverem lançamento.
+  - Aba Pessoas e VT separados por construtora (a mesma matrícula na Clássica e na Ampla são duas pessoas).
+  - A carga só substitui obra carregada pelo mesmo usuário; carga de outra pessoa pede `--substituir`.
+  - Em `funcoes.csv` e `rubricas.csv`, só a linha com **revisado = sim** (marcada pelo DP/RH) manda sobre as regras; o resto é sugestão regerada a cada execução.
+- O M9 começou empilhado no M8 (`feat/m9-migracao` a partir de `feat/m8-exportacoes`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

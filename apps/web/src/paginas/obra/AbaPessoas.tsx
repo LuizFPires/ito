@@ -13,6 +13,7 @@ import s from "./obra.module.css";
 
 interface Pessoa {
   matricula: string;
+  construtora: string;
   funcao: string;
   ini: number;
   fim: number;
@@ -40,12 +41,16 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
     const realocado = new Set(
       (q.data?.lancamentos ?? [])
         .filter((l) => l.realocada_para)
-        .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}`),
+        .map((l) => `${l.mes_idx}|${l.matricula}|${l.funcao_id}|${l.construtora}`),
     );
+    // a mesma matrícula na Clássica e na Ampla são pessoas diferentes (decisão M9)
+    const chave = (x: { matricula: string; construtora: string }) =>
+      `${x.matricula}|${x.construtora}`;
     for (const l of q.data?.lancamentos ?? []) {
       if (l.realocada_para) continue;
-      const p = por.get(l.matricula) ?? {
+      const p = por.get(chave(l)) ?? {
         matricula: l.matricula,
+        construtora: l.construtora,
         funcao: l.funcao_id,
         ini: l.mes_idx,
         fim: l.mes_idx,
@@ -62,13 +67,13 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
       if (Number(l.equivalente) > 0) p.meses += 1;
       p.he += Number(l.horas_extras);
       p.desligado ||= l.desligado;
-      por.set(l.matricula, p);
+      por.set(chave(l), p);
     }
     for (const r of q.data?.rubricas ?? []) {
-      const p = por.get(r.matricula);
+      const p = por.get(chave(r));
       if (!p || !noCusto.has(r.rubrica_codigo)) continue;
       // como na Folha: o mês em que trabalhou em outra obra fica fora
-      if (realocado.has(`${r.mes_idx}|${r.matricula}|${r.funcao_id}`)) continue;
+      if (realocado.has(`${r.mes_idx}|${r.matricula}|${r.funcao_id}|${r.construtora}`)) continue;
       const v = Number(r.valor);
       p.remun += desconto.has(r.rubrica_codigo) ? -Math.abs(v) : v;
     }
@@ -145,8 +150,10 @@ export function AbaPessoas({ dados }: { dados: DadosAba }) {
           </thead>
           <tbody>
             {pg.itens.map((p) => (
-              <tr key={p.matricula}>
-                <td className="mono">{p.matricula}</td>
+              <tr key={`${p.matricula}|${p.construtora}`}>
+                <td className="mono">
+                  {p.matricula} {p.construtora === "ampla" && <Badge>Ampla</Badge>}
+                </td>
                 <td>
                   <span className={s.amostra} style={{ background: fun(p.funcao).cor }} />
                   {fun(p.funcao).nome}

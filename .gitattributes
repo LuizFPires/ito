@@ -2,3 +2,5 @@
 *.zip binary
 *.png binary
 *.woff2 binary
+# tabelas da migração (M9): abertas e salvas no Excel, com CRLF e BOM
+docs/migracao/*.csv -text
