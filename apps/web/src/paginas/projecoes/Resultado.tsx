@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router";
 import { mesAno, moeda, numero, percentual } from "@ito/formato";
 import type { CustoMes, GrupoFuncao, Soma } from "@ito/motor";
 import { anoMes, indicadores, PREMISSAS_PADRAO, somar, tabelaDoMes } from "@ito/motor";
@@ -16,7 +17,12 @@ import { useToast } from "../../ui/toast";
 import { COMPONENTES, NOME_GRUPO_F, notaVisao, ORDEM_GRUPOS, soma } from "../obra/comum";
 import o from "../obra/obra.module.css";
 import { useInfoFuncoes } from "./funcoes";
-import { manualValido, rotulosMeses, textoTabulado } from "./projecoes";
+import { baixarXlsx, nomeArquivo } from "../../lib/planilha";
+import { BotaoCopiar } from "../../ui/BotaoCopiar";
+import u from "../../ui/ui.module.css";
+import { tabelaCustoComponente, tabelaCustoFuncao } from "../obra/exportar";
+import { tabelasDaProjecao, titulosProjecao } from "./exportar";
+import { manualValido, rotulosMeses } from "./projecoes";
 import s from "./projecoes.module.css";
 
 const NOME_CENARIO = {
@@ -40,6 +46,8 @@ export function Resultado({
   cct,
   origem,
   detalhe,
+  situacao,
+  imprimir,
   onAlterarPremissas,
 }: {
   e: Entradas;
@@ -50,6 +58,9 @@ export function Resultado({
   cct: string | null;
   origem: string | null;
   detalhe?: boolean;
+  situacao?: string;
+  /** endereço da página de impressão (PDF para a diretoria) */
+  imprimir?: string;
   onAlterarPremissas?: () => void;
 }) {
   const avisar = useToast();
@@ -59,6 +70,7 @@ export function Resultado({
   const [porComp, setPorComp] = useState(false);
   const [grupo, setGrupo] = useState<"todas" | GrupoFuncao>("todas");
   const [agrupadas, setAgrupadas] = useState(false);
+  const [gerando, setGerando] = useState(false);
   const { fun, ordenarFuncoes } = useInfoFuncoes(contexto.ctx);
   const r = calc.r;
   const ctx = contexto.ctx;
@@ -144,22 +156,43 @@ export function Resultado({
     return mesAno(m.ano, m.mes);
   };
 
-  function copiar() {
-    const linhas: (string | number)[][] = [
-      [porComp ? "Componente" : "Função", ...rotulos, "Total"],
-      ...(porComp
-        ? COMPONENTES.filter((c) => !(caixa && c.k === "prov")).map((c) => [
-            c.n,
-            ...M.map((m) => m[c.k]),
-            soma(M.map((m) => m[c.k])),
-          ])
-        : ids.map((k) => [fun(k).nome, ...R.porFuncao[k]!.map(V), soma(R.porFuncao[k]!.map(V))])),
-      ["Total do mês", ...M.map(V), soma(M.map(V))],
-    ];
-    navigator.clipboard.writeText(textoTabulado(linhas)).then(
-      () => avisar("Tabela copiada. Cole no Excel."),
-      () => avisar("Não foi possível copiar. Permita o acesso à área de transferência."),
-    );
+  const tituloCusto = () => [
+    ...titulosProjecao({ e, cidade, vigente: vig }),
+    caixa ? "Visão caixa" : "Visão competência (com provisões)",
+  ];
+  const funExp = (k: string) => ({ ...fun(k), conta: "" });
+  async function exportar() {
+    setGerando(true);
+    try {
+      await baixarXlsx(
+        nomeArquivo(["ITO", "Projeção", e.nome || "sem nome"]),
+        tabelasDaProjecao({
+          e,
+          calc,
+          ids,
+          fun,
+          cidade,
+          cct,
+          origem,
+          vigente: vig,
+          situacao,
+          caixa,
+          cenarios: cen,
+          referencias: refs.map(({ b, r: x }) => ({
+            nome: b.obra.nome,
+            area: Number(b.obra.area_m2),
+            meses: b.obra.meses,
+            pico: x.pico,
+            pessoaMes: x.pessoa_mes,
+            custo: x.custo_atual,
+          })),
+        }),
+      );
+    } catch {
+      avisar("Não foi possível gerar o arquivo. Atualize a página e tente de novo.");
+    } finally {
+      setGerando(false);
+    }
   }
 
   return (
@@ -201,11 +234,27 @@ export function Resultado({
       <Cartao aria-label="Premissas aplicadas">
         <div className={f.barra}>
           <span className="rotulo">Premissas aplicadas</span>
-          {onAlterarPremissas && (
-            <Botao pequeno onClick={onAlterarPremissas}>
-              Alterar premissas
-            </Botao>
-          )}
+          <span className={f.linha}>
+            {detalhe && (
+              <Botao pequeno disabled={gerando} onClick={exportar}>
+                {gerando ? "Gerando…" : "Exportar .xlsx"}
+              </Botao>
+            )}
+            {imprimir && (
+              <Link
+                className={`${u.botao} ${u.pequeno}`}
+                to={imprimir}
+                style={{ textDecoration: "none" }}
+              >
+                Resumo para a diretoria (PDF)
+              </Link>
+            )}
+            {onAlterarPremissas && (
+              <Botao pequeno onClick={onAlterarPremissas}>
+                Alterar premissas
+              </Botao>
+            )}
+          </span>
         </div>
         <div className={s.meta} style={{ padding: "0 22px 18px" }}>
           <span>HE {numero(r.aplicadas.heMedia, 1)} h/pessoa·mês</span>
@@ -431,9 +480,13 @@ export function Resultado({
               onChange={(v) => setCaixa(v === "caixa")}
             />
             {detalhe && (
-              <Botao pequeno onClick={copiar}>
-                Copiar para Excel
-              </Botao>
+              <BotaoCopiar
+                tabela={() =>
+                  porComp
+                    ? tabelaCustoComponente(R, ids, rotulos, V, caixa, tituloCusto())
+                    : tabelaCustoFuncao(R, ids, funExp, rotulos, V, tituloCusto())
+                }
+              />
             )}
           </span>
         </div>
