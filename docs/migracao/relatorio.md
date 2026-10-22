@@ -6,7 +6,7 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Planilhas usadas: 27; deixadas de lado: 4
 - Funções novas usadas: nenhuma
 - Cidades novas: nenhuma
-- Rubricas novas: 38 (classificação sugerida em rubricas.csv, para o DP/RH revisar)
+- Rubricas novas: 97 (classificação sugerida em rubricas.csv, para o DP/RH revisar)
 
 ## MART MINAS ARAXÁ (`araxa`)
 
