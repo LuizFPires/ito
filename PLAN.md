@@ -185,11 +185,13 @@
 ---
 
 ## M9 — Migração do histórico
-- [ ] Importador das planilhas .xlsm "Histograma de Mão de Obra", nas versões MM Ubá v10 (folha por funcionário) e AF v07 (histograma por função)
-- [ ] Migração de todas as obras históricas disponíveis, com relatório de pendências por obra
-- [ ] Vínculo de cada obra histórica à cidade e à CCT
+- [x] Importador das planilhas .xlsm "Histograma de Mão de Obra", nas versões MM Ubá v10 (folha por funcionário) e AF v07 (histograma por função)
+- [x] Migração de todas as obras históricas disponíveis, com relatório de pendências por obra
+- [x] Vínculo de cada obra histórica à cidade e à CCT
 
 **Aceite:** todas as planilhas disponíveis estão na base; as divergências estão listadas e justificadas.
+
+> Aceite (22/10/2026): as 23 obras do zip "Histogramas das Obras" (31 planilhas; 4 versões antigas deixadas de lado) estão na base local e na homologação — 716 pessoas, 3.172 lançamentos, 2.640,4 pessoa-mês. Divergências listadas em `docs/migracao/relatorio.md`: proventos × planilha (.xlsb), efetivo × histograma da planilha (.xlsm), conferência rubricas × custo do ITO, estimativas (HE e fração do mês no .xlsb) e pendências (áreas provisórias de 10.000 m², funções e rubricas a revisar, data-bases 2016–2022). Ferramenta: `pnpm migrar preparar|carregar` (`packages/migracao`).
 
 > Decisões (21/10/2026): base = zip "Histogramas das Obras" (.xlsm 2017–2020 e .xlsb 2023–2026); Ampla e Clássica numa obra só, com a construtora de cada pessoa guardada; versão mais recente nas duplicatas; script local de migração pelo caminho da carga; destino local → homologação (CLAUDE.md, M9).
 
