@@ -7,9 +7,12 @@
 // (SUPABASE_DB_PASSWORD_HOMOLOGACAO / SUPABASE_DB_PASSWORD_PRODUCAO). O dump traz valores por
 // matrícula (sem nomes): guarde a pasta em local com acesso restrito.
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, relative, resolve } from "node:path";
+
+// o backup traz contas (hash de senha) e valores por matrícula: só o dono lê, desde a criação
+process.umask(0o077);
 
 const REPO = resolve(import.meta.dirname, "..");
 const PROJETOS = { homologacao: "rtciuljdjdvocxitaepz", producao: "pntkdmzbuqvhypebbhhn" };
@@ -40,7 +43,8 @@ if (!relative(REPO, pasta).startsWith("..")) {
   console.error("A pasta do backup fica fora do repositório (os dados não vão para o git).");
   process.exit(1);
 }
-mkdirSync(pasta, { recursive: true });
+mkdirSync(pasta, { recursive: true, mode: 0o700 });
+chmodSync(pasta, 0o700);
 
 // a senha vai para o CLI pela variável de ambiente, não pela linha de comando
 let senha = "";
@@ -62,13 +66,18 @@ const dump = (arquivo, extra = "") => {
       env: senha ? { ...process.env, SUPABASE_DB_PASSWORD: senha } : process.env,
     },
   );
+  chmodSync(join(pasta, arquivo), 0o600);
   return statSync(join(pasta, arquivo)).size;
 };
 
 const tamanhos = {
   "esquema.sql": dump("esquema.sql"),
-  // dados de public (o ITO) e de auth (contas: sem elas a tabela usuarios não volta)
-  "dados.sql": dump("dados.sql", "--data-only --use-copy --schema public,auth"),
+  // dados de public (o ITO) e de auth (contas: sem elas a tabela usuarios não volta); sessões
+  // e tokens de renovação ficam de fora (quem restaura entra de novo)
+  "dados.sql": dump(
+    "dados.sql",
+    "--data-only --use-copy --schema public,auth -x auth.sessions,auth.refresh_tokens",
+  ),
 };
 writeFileSync(
   join(pasta, "LEIA-ME.txt"),
