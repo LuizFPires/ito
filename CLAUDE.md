@@ -235,6 +235,11 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Destino:** carga local, conferência e depois **homologação** (`ito-homologacao`). Produção só com OK do usuário. (usuário)
 - **Ferramenta:** script local de migração (`packages/migracao`), não uma tela: converte cada planilha para o layout de folha do ITO e grava pelo mesmo caminho da carga (verificações do M4 e `gravar_carga`). Nomes são descartados na leitura; nada com nome sai da máquina (regra 2). (auto — recomendado)
 - **Dados da obra** que a planilha não traz (área, cidade, tipologia) ficam numa tabela versionada (`docs/migracao/obras.csv`, sem dado pessoal); o que faltar vira pendência no relatório. (auto — recomendado)
+- **Funções fora das 14** (engenheiro, gerente administrativo, comprador, RH, moto boy, topografia, pintor, serralheiro, operador de betoneira, supervisor, técnico de enfermagem, serviços gerais, planejamento): **viram funções novas** no grupo certo; variações ("PEDREIRO A", "PEDREIRO 2", "MEIO OFICIAL") vão para a função existente, como sinônimo. A controladoria cadastra o salário das novas (até lá o custo usa o do oficial). (usuário)
+- **Cidades ausentes** (Ubá, Lavras, Pará de Minas, Varginha, Betim, Ibirité, Sarzedo, Lagoa Santa…) são criadas ligadas à CCT da região, com VT e ISS a revisar pela controladoria. (usuário)
+- **Área (m²):** o usuário preenche `docs/migracao/obras.csv`; a migração carrega as obras com área e lista as demais como "aguardando área"; rodar de novo substitui e completa. (usuário; o banco exige área > 0)
+- **Leitura por nome de coluna** no .xlsm (as versões v04–v20 mudam a posição das colunas); linhas sem função e sem salário ("0", "N/A", vazio) são linhas vazias da planilha e ficam de fora; a coluna "Adicionais de MO" do .xlsb traz nomes e **não é lida** (o valor vai só como total no relatório).
+- **.xlsb sem horas:** HE e faltas em horas são estimadas pelo valor ÷ (salário base ÷ 220 × adicional), marcadas como estimadas no relatório. (auto — recomendado)
 - O M9 começou empilhado no M8 (`feat/m9-migracao` a partir de `feat/m8-exportacoes`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)
