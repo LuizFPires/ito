@@ -71,3 +71,21 @@ describe("copiar para Excel (texto tabulado BR)", () => {
     );
   });
 });
+
+describe("injeção de fórmula no texto colado", () => {
+  it("texto que começa com = + - @ ganha apóstrofo; números não", async () => {
+    const { semFormula, textoDaTabela } = await import("./planilha");
+    expect(semFormula('=HYPERLINK("x")')).toBe('\'=HYPERLINK("x")');
+    expect(semFormula("@SOMA")).toBe("'@SOMA");
+    expect(semFormula("Obra -1")).toBe("Obra -1");
+    const t = textoDaTabela({
+      aba: "x",
+      colunas: [
+        { titulo: "Nome", formato: "texto" },
+        { titulo: "Valor", formato: "moeda" },
+      ],
+      linhas: [["+cmd", -38.5]],
+    });
+    expect(t).toBe("Nome\tValor\r\n'+cmd\t-38,50");
+  });
+});

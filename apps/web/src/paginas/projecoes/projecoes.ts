@@ -6,6 +6,7 @@ import type { InicioObra } from "@ito/motor";
 import { anoMes } from "@ito/motor";
 import type { ItemProjecao } from "../../dados/projecoes";
 import { contemTermos, ordenar } from "../../lib/lista";
+import { semFormula } from "../../lib/planilha";
 import type { Ordem } from "../../lib/lista";
 import type { Situacao } from "../../lib/projecaoDoBanco";
 
@@ -85,8 +86,7 @@ export function rotulosMeses(inicio: InicioObra, prazo: number, relativo = false
  * Excel em português lê como número. Tabulação e quebra de linha no texto viram espaço.
  */
 export function textoTabulado(linhas: readonly (readonly (string | number)[])[]): string {
-  const cel = (v: string | number) =>
-    typeof v === "number" ? numero(v, 2) : v.replace(/[\t\r\n]+/g, " ");
+  const cel = (v: string | number) => (typeof v === "number" ? numero(v, 2) : semFormula(v));
   return linhas.map((l) => l.map(cel).join("\t")).join("\r\n");
 }
 

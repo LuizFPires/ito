@@ -101,6 +101,15 @@ export async function baixarXlsx(arquivo: string, tabelas: readonly Tabela[]): P
 }
 
 /**
+ * Texto colado no Excel que começa com = + - @ vira fórmula (injeção de fórmula, OWASP): um
+ * apóstrofo na frente faz o Excel tratá-lo como texto. Números formatados não passam por aqui.
+ */
+export const semFormula = (s: string) => {
+  const limpo = s.replace(/[\t\r\n]+/g, " ");
+  return /^[=+\-@]/.test(limpo) ? `'${limpo}` : limpo;
+};
+
+/**
  * Mesma tabela como texto tabulado para a área de transferência (colar no Excel): números no
  * formato BR (1.234,56), que o Excel em português lê como número; quebras viram espaço.
  */
@@ -121,9 +130,9 @@ export function textoDaTabela(t: Tabela): string {
           : f === "pct"
             ? percentual(v, casas.pct)
             : numero(v, casas[f])
-        : v.replace(/[\t\r\n]+/g, " ");
+        : semFormula(v);
   return [
-    t.colunas.map((c) => c.titulo).join("\t"),
+    t.colunas.map((c) => semFormula(c.titulo)).join("\t"),
     ...t.linhas.map((l) => t.colunas.map((c, j) => cel(l[j], c.formato)).join("\t")),
   ].join("\r\n");
 }
