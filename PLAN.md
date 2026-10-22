@@ -114,16 +114,20 @@
 
 ## M5 — Base histórica e detalhe da obra
 **Objetivo:** consulta completa do histórico.
-- [ ] **Base histórica:**
+- [x] **Base histórica:**
   - grupos, busca, indicadores;
   - tabela compacta (PRD §3.1), ordenação, seleção para comparar ou projetar.
-- [ ] **Obra, 10 abas** (PRD §3.2):
+- [x] **Obra, 10 abas** (PRD §3.2):
   - visão, efetivo (com o painel de matrículas), custos (por função e por componente), horas extras (leitura + por tipo);
   - folha + conferência, pessoas, apropriação, indicadores, MDO realocada, premissas.
-- [ ] Alternâncias época/atualizado, competência/caixa, grupos de função, eixo por data ou relativo, barras empilhadas ou agrupadas
-- [ ] Edição de premissas e ausências com recálculo imediato
+- [x] Alternâncias época/atualizado, competência/caixa, grupos de função, eixo por data ou relativo, barras empilhadas ou agrupadas
+- [x] Edição de premissas e ausências com recálculo imediato
 
 **Aceite:** os números de todas as abas batem com o motor (testes de snapshot); a tabela da base fica sem rolagem lateral em 1.280 px; 1.000 obras de teste carregam em menos de 2 s, com paginação ou virtualização.
+
+> ✅ 21/10/2026: snapshot dos números do motor nas abas (`obraDoBanco.test.ts`) e ida e volta carga → banco → motor no centavo; base sem rolagem lateral em 1.280 px; mais de 1.000 obras carregam em ~1,1 s (e2e `m5-base`).
+>
+> Decisões (21/10/2026): edição por quem carrega; abas por matrícula só para quem carrega; resumo da obra em cache no banco; edição grava ao sair do campo (CLAUDE.md, M5).
 
 ---
 

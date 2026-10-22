@@ -21,6 +21,9 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
   "/parametros": async () => ({
     Component: (await import("./paginas/Parametros")).TelaParametros,
   }),
+  "/base": async () => ({
+    Component: (await import("./paginas/base/TelaBase")).TelaBase,
+  }),
   "/carga": async () => ({
     Component: (await import("./paginas/carga/TelaCarga")).TelaCarga,
   }),
@@ -50,7 +53,7 @@ const router = createBrowserRouter([
       })),
       {
         path: "obras/:id",
-        lazy: async () => ({ Component: (await import("./paginas/telas")).TelaObra }),
+        lazy: async () => ({ Component: (await import("./paginas/obra/TelaObra")).TelaObra }),
       },
       {
         path: "projecoes/:id",

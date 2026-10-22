@@ -1009,6 +1009,63 @@ export type Database = {
           },
         ];
       };
+      obra_resumo: {
+        Row: {
+          atualizado_em: string;
+          contexto: string;
+          custo_atual: number;
+          custo_epoca: number;
+          he_por_pessoa: number;
+          histograma: number[];
+          indireta_pct: number;
+          obra_id: string;
+          pessoa_mes: number;
+          pico: number;
+          revisao: number;
+          versao: number;
+          vigente: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          atualizado_em?: string;
+          contexto?: string;
+          custo_atual?: number;
+          custo_epoca?: number;
+          he_por_pessoa?: number;
+          histograma?: number[];
+          indireta_pct?: number;
+          obra_id: string;
+          pessoa_mes?: number;
+          pico?: number;
+          revisao?: number;
+          versao?: number;
+          vigente: number;
+        };
+        Update: {
+          atualizado_em?: string;
+          contexto?: string;
+          custo_atual?: number;
+          custo_epoca?: number;
+          he_por_pessoa?: number;
+          histograma?: number[];
+          indireta_pct?: number;
+          obra_id?: string;
+          pessoa_mes?: number;
+          pico?: number;
+          revisao?: number;
+          versao?: number;
+          vigente?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "obra_resumo_obra_id_fkey";
+            columns: ["obra_id"];
+            isOneToOne: true;
+            referencedRelation: "obras";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       obra_trocas_tabela: {
         Row: {
           data_base: number;
@@ -1070,6 +1127,7 @@ export type Database = {
           meses: number;
           nome: string;
           provisionar: boolean;
+          revisao: number;
           risco_pct: number;
           rotatividade_pct: number;
           tipologia: string;
@@ -1100,6 +1158,7 @@ export type Database = {
           meses: number;
           nome: string;
           provisionar?: boolean;
+          revisao?: number;
           risco_pct?: number;
           rotatividade_pct?: number;
           tipologia?: string;
@@ -1129,6 +1188,7 @@ export type Database = {
           meses?: number;
           nome?: string;
           provisionar?: boolean;
+          revisao?: number;
           risco_pct?: number;
           rotatividade_pct?: number;
           tipologia?: string;
@@ -1356,6 +1416,7 @@ export type Database = {
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
       gravar_carga: { Args: { p: Json }; Returns: string };
+      gravar_resumos: { Args: { p: Json }; Returns: number };
       meu_perfil: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];

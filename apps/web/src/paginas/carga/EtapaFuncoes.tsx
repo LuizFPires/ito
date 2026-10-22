@@ -10,21 +10,10 @@ import { useToast } from "../../ui/toast";
 import { CampoBusca, Interruptor, Paginacao, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import type { PropsEtapa } from "./Assistente";
+import { nomeDe } from "./estado";
 
 const POR_PAGINA = 15;
 
-/**
- * Nome da função criada a partir do texto da folha, como no protótipo: até 3 palavras, sem
- * " de obra" no fim ("TECNICO DE SEGURANÇA DO TRABALHO" → "Tecnico de segurança").
- */
-export const nomeDe = (t: string) => {
-  const w = t.trim().split(/\s+/);
-  return w
-    .slice(0, w.length > 2 ? 3 : w.length)
-    .map((x, i) => (i ? x.toLowerCase() : x.charAt(0) + x.slice(1).toLowerCase()))
-    .join(" ")
-    .replace(/ de obras?$/, "");
-};
 /** Rótulo do botão: só a primeira palavra ("Criar “Tecnico”"). */
 const primeira = (t: string) => {
   const w = t.trim().split(/\s+/)[0] ?? "";

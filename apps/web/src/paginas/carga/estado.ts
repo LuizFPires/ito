@@ -133,3 +133,16 @@ export function preparar(r: RascunhoCarga, ctx: ContextoCarga): Preparada | null
   );
   return { montagem, verificacao };
 }
+
+/**
+ * Nome da função criada a partir do texto da folha, como no protótipo: até 3 palavras, sem
+ * " de obra" no fim ("TECNICO DE SEGURANÇA DO TRABALHO" → "Tecnico de segurança").
+ */
+export const nomeDe = (t: string) => {
+  const w = t.trim().split(/\s+/);
+  return w
+    .slice(0, w.length > 2 ? 3 : w.length)
+    .map((x, i) => (i ? x.toLowerCase() : x.charAt(0) + x.slice(1).toLowerCase()))
+    .join(" ")
+    .replace(/ de obras?$/, "");
+};

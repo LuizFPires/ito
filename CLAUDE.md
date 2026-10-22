@@ -154,6 +154,26 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Risco do aceite:** com folha real, a conferência rubricas × custo compara a folha com o custo modelado pelo motor na tabela da época; pode não fechar no centavo. Avaliar quando chegarem as amostras.
 - O M4 começou empilhado no M3 (`feat/m4-carga` a partir de `feat/m3-motor`), pela mesma pendência do CI.
 
+### M5 — Base histórica e detalhe da obra (21/10/2026)
+- **Edição de premissas e ausências** da obra: quem carrega (DP/RH, controladoria, admin); os demais perfis só leem (regra no banco). (auto — recomendado)
+- **Abas por matrícula** (painel de matrículas do Efetivo, Pessoas e valores por matrícula da Folha): quem não carrega vê só os agregados, com aviso (coerente com a privacidade do M4). (auto — recomendado)
+- **Resumo da obra em cache no banco** (pico, pessoa-mês, HE/pessoa, custo época e atualizado, histograma), calculado pelo motor ao gravar ou editar a obra e recalculado quando a tabela vigente muda; a lista de 1.000 obras lê só o resumo. (auto — recomendado)
+- **Edição grava ao sair do campo** ("Salvo"), como no M1, com recálculo imediato na tela. (auto — recomendado)
+- Tabelas **mês a mês** do detalhe da obra (24+ colunas) rolam dentro do próprio cartão, com a primeira coluna fixa; a página e as tabelas principais (base, médias por função) não rolam de lado (regra 8). (auto — recomendado)
+- Apropriação × ERP no detalhe usa os valores gravados na carga (caixa do ITO × ERP, M4); a tabela por conta mostra a competência da época, como no protótipo. MDO realocada e justificativas ficam como a carga gravou (só leitura no M5). (auto — recomendado)
+- Revisão do M5 (21/10/2026):
+  - **Resumo em cache** guarda a impressão digital dos parâmetros (tabelas, funções, benefícios, calendário) e a revisão da obra: editar um salário ou encargo deixa o resumo velho, e o banco só grava o resumo calculado sobre a revisão atual. Quem só lê recalcula na tela só a página que está vendo. (auto — recomendado)
+  - Troca de tabela editada na obra precisa cair no período; funções transferidas precisam existir; resumo sem números negativos.
+  - Aceito sem correção: quem carrega ou a controladoria pode gravar um resumo com números quaisquer (modelo de confiança interno; o detalhe da obra sempre recalcula pelo motor).
+- Comparação com o protótipo (21/10/2026):
+  - **Por matrícula** (painel de matrículas e aba Pessoas): mostra o que a folha traz (remuneração nas rubricas que entram no custo, HE, faltas), sem recalcular encargos, provisões e benefícios pessoa a pessoa. (auto — recomendado)
+  - **Seleção da base** fica na tela; guardá-la para o "Comparar com…" juntar obras fica para o M6. "Nova projeção →" já leva a Projeções (M7). (auto — recomendado)
+  - Base abre em **Todas** (o protótipo abria em Mart Minas por ser o exemplo); Comparar aceita até 4 obras; competência/caixa no topo das abas. (auto — recomendado)
+  - Absenteísmo médio ponderado pelo efetivo (como o protótipo e a projeção); preferências de eixo, barras e caixa lembradas no navegador.
+  - Convenção de tela aceita (regra 8): colunas juntas com segunda linha em `sub` em Folha, Pessoas, Apropriação, Realocada e Médias por função; data de feriado digitada (dd/mm/aaaa); KPI de custo em âmbar claro (o "deep" escuro do protótipo fica para o design system).
+  - Mantido diferente: MDO realocada e justificativas do ERP só leitura no M5 (vêm da carga); a troca de tabela edita a tabela, e o mês se troca removendo e incluindo.
+- O M5 começou empilhado no M4 (`feat/m5-base-historica` a partir de `feat/m4-carga`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

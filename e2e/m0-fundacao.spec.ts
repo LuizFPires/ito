@@ -21,7 +21,7 @@ const ROTAS: [string, string, string][] = [
   ["/parametros", "Parâmetros", "Parâmetros"],
   ["/funcoes", "Funções padrão", "Funções padrão"],
   ["/rubricas", "Rubricas da folha", "Rubricas da folha"],
-  ["/obras/exemplo", "Obra", "Base histórica"],
+  ["/obras/exemplo", "Obra não encontrada", "Base histórica"],
   ["/projecoes/exemplo", "Projeção", "Projeções"],
 ];
 
@@ -64,8 +64,18 @@ test("as 10 rotas abrem vazias, com o item do menu marcado e sem rolagem lateral
   for (const [rota, titulo, item] of ROTAS) {
     await page.goto(rota);
     await expect(page.getByRole("heading", { level: 1, name: titulo, exact: true })).toBeVisible();
-    // Telas que já ganharam conteúdo (M1, M2, M4) não mostram o aviso de "chega no Mx".
-    if (!["/funcoes", "/rubricas", "/parametros", "/cidades", "/carga"].includes(rota)) {
+    // Telas que já ganharam conteúdo (M1, M2, M4, M5) não mostram o aviso de "chega no Mx".
+    if (
+      ![
+        "/funcoes",
+        "/rubricas",
+        "/parametros",
+        "/cidades",
+        "/carga",
+        "/base",
+        "/obras/exemplo",
+      ].includes(rota)
+    ) {
       await expect(page.getByText(/Esta tela chega no M\d+\./)).toBeVisible();
     }
     await expect(menu.getByRole("link", { name: item, exact: true })).toHaveAttribute(

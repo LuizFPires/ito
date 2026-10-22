@@ -67,7 +67,8 @@
 .chip:hover {
   background: var(--surface-2);
 }
-.chip[aria-pressed="true"] {
+.chip[aria-pressed="true"],
+.chip[aria-selected="true"] {
   background: var(--active-bg);
   color: var(--active-fg);
   font-weight: 500;
