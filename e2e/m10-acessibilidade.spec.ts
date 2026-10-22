@@ -87,6 +87,8 @@ const ROTAS = () => [
 
 for (const tema of ["claro", "escuro"] as const) {
   test(`telas sem violação séria de acessibilidade — modo ${tema}`, async ({ page }) => {
+    // varre 13 telas e 2 estados abertos num teste só: os 30 s padrão ficam no limite no CI
+    test.setTimeout(120_000);
     await page.addInitScript((t) => localStorage.setItem("ito.tema", t), tema);
     const achados: string[] = [];
     await page.goto("/entrar");
