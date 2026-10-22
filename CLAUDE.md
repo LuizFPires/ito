@@ -228,6 +228,15 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Aceito sem correção: o resumo impresso não usa a tabela da empresa enquanto a CCT carrega (os preços só existem com a CCT da cidade carregada).
 - O M8 começou empilhado no M7 (`feat/m8-exportacoes` a partir de `feat/m7-projecoes`), pela mesma pendência do CI.
 
+### M9 — Migração do histórico (21/10/2026)
+- **Base de dados:** o zip "Histogramas das Obras" (31 planilhas, ~23 obras de 2017 a 2026), entregue pelo usuário. Dois modelos, ambos com uma linha por pessoa e mês: **.xlsm "Histograma de Mão de Obra"** (2017–2020; aba Folha) e **.xlsb** (2023–2026; aba Histograma com uma coluna por código de rubrica). O PLAN previa só o .xlsm.
+- **Ampla e Clássica** são construtoras do mesmo grupo: obras da Ampla entram como obras da Clássica, e as planilhas Ampla e Clássica da mesma obra viram **uma obra só**, com matrícula prefixada pela empresa para não colidir. Nenhum dado fica para trás. (usuário)
+- **Duplicatas** (Betim II repetida, Varginha V0/V7, Galpão Serrano normal/SP, Paquetá normal/sem encargos): vale a **versão mais recente**; o relatório lista o que ficou de fora. (usuário)
+- **Destino:** carga local, conferência e depois **homologação** (`ito-homologacao`). Produção só com OK do usuário. (usuário)
+- **Ferramenta:** script local de migração (`packages/migracao`), não uma tela: converte cada planilha para o layout de folha do ITO e grava pelo mesmo caminho da carga (verificações do M4 e `gravar_carga`). Nomes são descartados na leitura; nada com nome sai da máquina (regra 2). (auto — recomendado)
+- **Dados da obra** que a planilha não traz (área, cidade, tipologia) ficam numa tabela versionada (`docs/migracao/obras.csv`, sem dado pessoal); o que faltar vira pendência no relatório. (auto — recomendado)
+- O M9 começou empilhado no M8 (`feat/m9-migracao` a partir de `feat/m8-exportacoes`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
