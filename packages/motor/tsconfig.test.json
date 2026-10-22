@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // testes e harness do protótipo leem arquivos: tipos do Node só aqui
+  "compilerOptions": { "types": ["node"] },
+  "include": ["src"]
+}

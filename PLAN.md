@@ -64,9 +64,9 @@
 
 ## M3 — Motor de cálculo
 **Objetivo:** biblioteca pura, sem interface, que implementa o SPEC §2 a §6 com cobertura de testes.
-- [ ] Calendário mensal (DSR%, dias trabalhados), modo calendário e modo fixo
-- [ ] Parâmetros por mês: trocas de tabela na obra; cidade + CCT + reajuste na projeção
-- [ ] `custo(o, f, i, p)` completo:
+- [x] Calendário mensal (DSR%, dias trabalhados), modo calendário e modo fixo
+- [x] Parâmetros por mês: trocas de tabela na obra; cidade + CCT + reajuste na projeção
+- [x] `custo(o, f, i, p)` completo:
   - ausências e faltas com DSR;
   - adicionais, inclusive gratificação fixa;
   - HE por tipo e DSR;
@@ -75,12 +75,15 @@
   - benefícios por origem;
   - exames por tipo, rescisão, ferramentas;
   - estágio, salário-família e férias pagas.
-- [ ] Agregações por obra: meses, funções, grupos, totais. Caixa com adiantamento.
-- [ ] Admissões e desligamentos para projeções (§4.6)
-- [ ] Projeção de quantidades (§5) e cenários de origem (§5.1)
-- [ ] Gerador e conferência de rubricas (§6.1, §7)
+- [x] Agregações por obra: meses, funções, grupos, totais. Caixa com adiantamento.
+- [x] Admissões e desligamentos para projeções (§4.6)
+- [x] Projeção de quantidades (§5) e cenários de origem (§5.1)
+- [x] Gerador e conferência de rubricas (§6.1, §7)
 
 **Aceite:** todos os golden tests (SPEC §8) passam; recálculo de uma projeção de 24 meses × 15 funções em menos de 300 ms.
+
+> ✅ 21/10/2026: golden do SPEC §8 reunidos em `packages/motor/src/aceite.test.ts`; projeção 24 × 15 recalcula em ~10 ms. Validação diferencial: custo, obra, projeção, cenários e rubricas iguais ao motor do protótipo, até o centavo, em todas as obras e projeções de exemplo.
+
 
 ---
 
