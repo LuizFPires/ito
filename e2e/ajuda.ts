@@ -6,6 +6,9 @@ export const SENHA = "ito-dev-2026";
 
 /** Entra com um usuário do seed e espera o shell carregar. */
 export async function entrar(page: Page, email = "planejamento@ito.local") {
+  // começa de uma página nova: depois de "Sair", /entrar guarda a tela de onde a pessoa saiu e,
+  // recarregado no mesmo endereço, levaria de volta para ela em vez da base
+  await page.goto("about:blank");
   await page.goto("/entrar");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha").fill(SENHA);
