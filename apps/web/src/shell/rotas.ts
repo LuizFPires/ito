@@ -1,6 +1,6 @@
 /** Menu do ITO (PRD §3): Análise / Dados / Configuração, e Administração (M10). */
 import type { Usuario } from "../lib/supabase";
-import { podeAuditar } from "../lib/permissoes";
+import { podeAuditar, podeGerirUsuarios } from "../lib/permissoes";
 
 export type Icone =
   "base" | "comp" | "proj" | "carga" | "cid" | "param" | "func" | "rub" | "audit" | "users";
@@ -95,6 +95,16 @@ export const MENU: readonly Destino[] = [
       "Quem alterou parâmetros, CCTs, cidades, funções, rubricas, obras, projeções e usuários, com a versão anterior.",
     milestone: "M10",
     visivel: podeAuditar,
+  },
+  {
+    caminho: "/usuarios",
+    nome: "Usuários",
+    icone: "users",
+    grupo: "Administração",
+    resumo:
+      "Convidar pessoas, mudar perfil e admin, desativar e reativar, e o que cada perfil pode fazer no ITO.",
+    milestone: "M10",
+    visivel: podeGerirUsuarios,
   },
 ];
 

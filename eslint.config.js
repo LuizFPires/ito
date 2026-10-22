@@ -18,6 +18,11 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Edge Functions (Deno): só o global Deno além do padrão web
+    files: ["supabase/functions/**/*.ts"],
+    languageOptions: { globals: { ...globals.browser, Deno: "readonly" } },
+  },
+  {
     languageOptions: { globals: { ...globals.node } },
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],

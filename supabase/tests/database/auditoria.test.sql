@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(12);
 
 -- controladoria (admin do seed) muda um parâmetro: fica a versão anterior e a nova
 set local role authenticated;
@@ -46,6 +46,14 @@ select is((select count(*)::integer from public.auditoria where ref = 'aud' and 
   'edição de ausências depois da carga é auditada');
 select is((select registro from public.auditoria where ref = 'aud' and tabela = 'competencias'),
   '{"obra_id": "aud", "mes_idx": 0}'::jsonb, 'chave do registro');
+
+-- alteração de usuário: a diretoria não lê (segue a RLS de usuarios); o admin lê
+reset role;
+update public.usuarios set nome = 'Planejamento 2' where email = 'planejamento@ito.local';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}', true);
+select is((select count(*)::integer from public.auditoria where modulo = 'usuarios'), 0,
+  'diretoria não lê a auditoria de usuários');
 
 select * from finish();
 rollback;

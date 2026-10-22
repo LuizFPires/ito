@@ -202,7 +202,7 @@
 - [ ] Performance com 1.000 obras, 100 CCTs e 500 cidades
 - [ ] Acessibilidade (navegação por teclado, contraste nos dois modos)
 - [ ] Backup e restauração; documentação de operação
-- [ ] **Tela de usuários** (só admin), sem precisar do painel do Supabase nem de SQL:
+- [x] **Tela de usuários** (só admin), sem precisar do painel do Supabase nem de SQL:
   - lista com busca, perfil, admin, situação (ativo ou desativado) e último acesso;
   - convidar por e-mail já com perfil e admin (Edge Function com a chave de serviço; ela nunca vai para o front);
   - trocar perfil e admin, desativar e reativar (sem apagar: a autoria do que a pessoa gravou fica);

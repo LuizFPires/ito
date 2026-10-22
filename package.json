@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:start": "supabase start -x studio,imgproxy,vector,logflare,edge-runtime,supavisor,postgres-meta,realtime,storage-api",
+    "db:start": "supabase start -x studio,imgproxy,vector,logflare,supavisor,postgres-meta,realtime,storage-api",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",

@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { Login } from "./auth/Login";
 import { Protegida } from "./auth/Protegida";
 import { SessaoProvider } from "./auth/sessao";
+import { veioDoConvite } from "./lib/supabase";
 import { MENU } from "./shell/rotas";
 import { ToastProvider } from "./ui/toast";
 
@@ -33,6 +34,9 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
   "/auditoria": async () => ({
     Component: (await import("./paginas/Auditoria")).TelaAuditoria,
   }),
+  "/usuarios": async () => ({
+    Component: (await import("./paginas/Usuarios")).TelaUsuarios,
+  }),
   "/carga": async () => ({
     Component: (await import("./paginas/carga/TelaCarga")).TelaCarga,
   }),
@@ -41,6 +45,12 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
 // O shell e as telas carregam sob demanda: a tela de login fica leve.
 const router = createBrowserRouter([
   { path: "/entrar", element: <Login /> },
+  // link do convite (M10): a sessão vem no endereço; a pessoa define a senha
+  {
+    path: "/definir-senha",
+    hydrateFallbackElement: null,
+    lazy: async () => ({ Component: (await import("./auth/DefinirSenha")).DefinirSenha }),
+  },
   // resumo para imprimir (PDF): fora do shell, sem menu
   {
     path: "/projecoes/:id/imprimir",
@@ -65,7 +75,10 @@ const router = createBrowserRouter([
       </Protegida>
     ),
     children: [
-      { index: true, element: <Navigate to="/base" replace /> },
+      {
+        index: true,
+        element: <Navigate to={veioDoConvite ? "/definir-senha" : "/base"} replace />,
+      },
       ...MENU.map((d) => ({
         path: d.caminho.slice(1),
         lazy:

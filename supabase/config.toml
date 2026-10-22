@@ -161,7 +161,7 @@ site_url = "http://localhost:5173"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://127.0.0.1:5173", "http://localhost:4173"]
+additional_redirect_urls = ["http://127.0.0.1:5173", "http://localhost:4173", "http://localhost:5173/definir-senha", "http://127.0.0.1:5173/definir-senha", "http://localhost:4173/definir-senha"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -246,9 +246,10 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# M10: convite em português (na nuvem, o mesmo texto vai em Authentication → Email Templates)
+[auth.email.template.invite]
+subject = "Convite para o ITO"
+content_path = "./supabase/templates/convite.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
@@ -470,3 +471,7 @@ max_client_conn = 200
 [remotes.producao.storage.analytics]
 enabled = true
 max_namespaces = 10
+
+# M10: gestão de usuários (convite, desativar, reativar); confere o JWT e se quem chama é admin
+[functions.usuarios]
+verify_jwt = true

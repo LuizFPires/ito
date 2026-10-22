@@ -58,6 +58,11 @@ export function Shell() {
             <span className={s.espaco} />
             <MenuUsuario />
           </header>
+          {usuario && !usuario.ativo && (
+            <p className={s.alerta} role="alert">
+              Seu acesso ao ITO foi desativado. Fale com um administrador.
+            </p>
+          )}
           {erroUsuario && (
             <p className={s.alerta} role="alert">
               Seu cadastro no ITO está incompleto. Peça a um administrador para conferir o seu

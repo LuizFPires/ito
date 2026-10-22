@@ -13,12 +13,15 @@ describe("menu", () => {
       "Funções padrão",
       "Rubricas da folha",
       "Auditoria",
+      "Usuários",
     ]);
   });
 
   it("auditoria só para admin, controladoria e diretoria", () => {
     const u = (perfil: string, admin = false) =>
-      ({ id: "x", email: "x", nome: "x", perfil, admin }) as Parameters<typeof menuDe>[0];
+      ({ id: "x", email: "x", nome: "x", perfil, admin, ativo: true }) as Parameters<
+        typeof menuDe
+      >[0];
     const tem = (x: Parameters<typeof menuDe>[0]) =>
       menuDe(x).some((d) => d.caminho === "/auditoria");
     expect(tem(u("engenharia"))).toBe(false);
@@ -26,6 +29,11 @@ describe("menu", () => {
     expect(tem(u("diretoria"))).toBe(true);
     expect(tem(u("controladoria"))).toBe(true);
     expect(buscarDestinos("auditoria", u("dp_rh"))).toEqual([]);
+    const usuarios = (x: Parameters<typeof menuDe>[0]) =>
+      menuDe(x).some((d) => d.caminho === "/usuarios");
+    expect(usuarios(u("controladoria"))).toBe(false);
+    expect(usuarios(u("engenharia", true))).toBe(true);
+    expect(tem({ ...u("diretoria"), ativo: false } as Parameters<typeof menuDe>[0])).toBe(false);
   });
 
   it("não usa a palavra praça", () => {

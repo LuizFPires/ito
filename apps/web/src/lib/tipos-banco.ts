@@ -1511,6 +1511,7 @@ export type Database = {
       usuarios: {
         Row: {
           admin: boolean;
+          ativo: boolean;
           atualizado_em: string;
           criado_em: string;
           email: string;
@@ -1521,6 +1522,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           admin?: boolean;
+          ativo?: boolean;
           atualizado_em?: string;
           criado_em?: string;
           email: string;
@@ -1530,6 +1532,7 @@ export type Database = {
         };
         Update: {
           admin?: boolean;
+          ativo?: boolean;
           atualizado_em?: string;
           criado_em?: string;
           email?: string;
@@ -1583,9 +1586,37 @@ export type Database = {
       gravar_carga: { Args: { p: Json }; Returns: string };
       gravar_carga_dados: { Args: { p: Json }; Returns: string };
       gravar_resumos: { Args: { p: Json }; Returns: number };
+      listar_usuarios: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          admin: boolean;
+          ativo: boolean;
+          convite_pendente: boolean;
+          criado_em: string;
+          email: string;
+          id: string;
+          nome: string;
+          perfil: Database["public"]["Enums"]["perfil"];
+          ultimo_acesso: string;
+        }[];
+      };
       meu_perfil: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];
+      };
+      permissoes: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          admin: boolean;
+          aprova: boolean;
+          edita: boolean;
+          le: boolean;
+          limitacao: string;
+          modulo: string;
+          ordem: number;
+          perfil: string;
+          so_totais: boolean;
+        }[];
       };
       pode_aprovar: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_auditar: { Args: Record<PropertyKey, never>; Returns: boolean };
@@ -1593,6 +1624,10 @@ export type Database = {
       pode_editar_cadastros: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_projetar: { Args: Record<PropertyKey, never>; Returns: boolean };
+      regra: {
+        Args: { acao: string; adm: boolean; p: Database["public"]["Enums"]["perfil"] };
+        Returns: boolean;
+      };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {

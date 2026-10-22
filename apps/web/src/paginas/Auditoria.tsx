@@ -148,6 +148,7 @@ export function TelaAuditoria() {
   const { usuario } = useSessao();
   const pode = podeAuditar(usuario);
   const [modulo, setModulo] = useState("");
+  const modulos = Object.entries(MODULOS).filter(([k]) => k !== "usuarios" || usuario?.admin);
   const [pessoa, setPessoa] = useState("");
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
@@ -187,7 +188,7 @@ export function TelaAuditoria() {
             onChange={(e) => filtrar(() => setModulo(e.target.value))}
           >
             <option value="">Todos os módulos</option>
-            {Object.entries(MODULOS).map(([k, n]) => (
+            {modulos.map(([k, n]) => (
               <option key={k} value={k}>
                 {n}
               </option>
