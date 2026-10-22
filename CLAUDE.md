@@ -213,7 +213,7 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 ### M8 — Exportações e relatórios (21/10/2026)
 - **.xlsx com números de verdade** e formato contábil brasileiro nas células (R$ com 2 casas, pessoa-mês com 1 casa, percentual); os códigos de formato do arquivo são neutros e o Excel em português mostra 1.234,56 sem reformatar. Gerado no navegador (`write-excel-file`, já usado na carga). (auto — recomendado)
 - **O que exporta:** da obra, efetivo, custo por função e por componente, rubricas e apropriação; da projeção, um arquivo com premissas, efetivo, custo por função, por componente e "trazer gente de fora". (auto — recomendado)
-- **Rubricas exportadas agregadas** por rubrica e mês, sem matrícula, para qualquer perfil (privacidade do M4). (auto — recomendado)
+- **Rubricas exportadas agregadas** por rubrica e mês, sem matrícula, e só para quem carrega (DP/RH, controladoria, admin), porque a folha por rubrica já é restrita a eles na tela (M4/M5). Os demais exportam sem a aba Rubricas. (auto — recomendado)
 - **Copiar para Excel** nas tabelas mês a mês principais da obra, com o mesmo texto tabulado BR do M7. (auto — recomendado)
 - **PDF da projeção** = página de impressão (`/projecoes/:id/imprimir`) com folha de estilo de impressão; o navegador salva em PDF. Sem biblioteca nova; fontes Geist e formato BR iguais aos da tela. (auto — recomendado)
 - O M8 começou empilhado no M7 (`feat/m8-exportacoes` a partir de `feat/m7-projecoes`), pela mesma pendência do CI.

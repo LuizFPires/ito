@@ -178,7 +178,7 @@
 
 **Aceite:** os arquivos abrem no Excel com ponto no milhar e vírgula no decimal, sem reformatar.
 
-> Decisões (21/10/2026): .xlsx com números e formato contábil BR gerado no navegador; rubricas agregadas sem matrícula; copiar para Excel nas tabelas mês a mês da obra; PDF da projeção por página de impressão (CLAUDE.md, M8).
+> Decisões (21/10/2026): .xlsx com números e formato contábil BR gerado no navegador; rubricas agregadas sem matrícula, só para quem carrega; copiar para Excel nas tabelas mês a mês da obra; PDF da projeção por página de impressão (CLAUDE.md, M8).
 
 ---
 
