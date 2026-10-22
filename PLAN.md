@@ -209,6 +209,8 @@
   - o admin não remove o próprio acesso de admin nem desativa a si mesmo;
   - **tabela de permissões por perfil** na própria tela: para cada módulo (base histórica, folha por matrícula, carga, cidades e CCTs, parâmetros, funções, rubricas, projeções, aprovação, exportações, usuários), o que cada perfil lê, edita ou aprova e as limitações. A tabela sai das mesmas regras do banco (funções `pode_*`), com teste que falha se as duas divergirem.
 
+Ordem dos itens (um commit cada): 1. auditoria (banco + tela + histórico nos detalhes); 2. tela de usuários (Edge Function, permissões); 3. performance (gerador sintético, metas em teste, paginação no servidor onde faltar); 4. acessibilidade (axe nas rotas, teclado, contraste); 5. backup, restauração e `docs/OPERACAO.md`. Decisões no CLAUDE.md (M10).
+
 **Aceite:** carga de teste dentro das metas do PRD §5; nenhuma pendência crítica de acessibilidade; um admin convida, muda o perfil e desativa um usuário pela tela, e a tabela de permissões confere com o banco.
 
 ---
