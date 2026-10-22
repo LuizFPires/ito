@@ -1,5 +1,8 @@
 packages:
   - apps/*
   - packages/*
+allowBuilds:
+  # o tsx (migração, M9) funciona com o binário do pacote da plataforma, sem script de instalação
+  esbuild: false
 minimumReleaseAgeExclude:
   - vite@8.3.5
