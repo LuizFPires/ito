@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { MESES, moeda, numero, parseNumero, percentual } from "@ito/formato";
 import {
   nomeCidade,
@@ -234,9 +234,9 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
         {comparando && paraComparar.length >= 2 ? (
           <CompararCcts ccts={paraComparar} onVoltar={() => setComparando(false)} />
         ) : atual ? (
-          <>
+          // a chave fica no grupo: editor e histórico trocam juntos ao mudar de convenção
+          <Fragment key={atual.id}>
             <EditorCct
-              key={atual.id}
               cct={atual}
               pode={pode}
               cidadesDaCct={cidadesDe[atual.id] ?? []}
@@ -250,8 +250,8 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
                 setSel(null);
               }}
             />
-            <HistoricoAlteracoes key={atual.id} modulo="ccts" refId={atual.id} />
-          </>
+            <HistoricoAlteracoes modulo="ccts" refId={atual.id} />
+          </Fragment>
         ) : (
           <Cartao className={f.painel} style={{ position: "static" }}>
             <p className="sub" style={{ margin: 0 }}>
