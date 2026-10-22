@@ -115,10 +115,12 @@
   padding: 3px 4px;
   border-bottom: 1px solid var(--line);
   text-align: right;
+  white-space: nowrap;
 }
 .tabela th:first-child,
 .tabela td:first-child {
   text-align: left;
+  white-space: normal;
 }
 .tabela th {
   font-weight: 500;
