@@ -10,5 +10,11 @@ export default defineConfig({
     name: "web",
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
+    // testes unitários não falam com o banco: valores fixos, sem depender do .env.local
+    // (no CI ele só é criado depois, para o build e o e2e)
+    env: {
+      VITE_SUPABASE_URL: "http://127.0.0.1:54321",
+      VITE_SUPABASE_PUBLISHABLE_KEY: "chave-de-teste",
+    },
   },
 });
