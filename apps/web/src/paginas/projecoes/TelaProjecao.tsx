@@ -30,6 +30,7 @@ import { Pagina } from "../Pagina";
 import { manualValido, SITUACOES } from "./projecoes";
 import { Resultado } from "./Resultado";
 import s from "./projecoes.module.css";
+import { HistoricoAlteracoes } from "../Auditoria";
 
 const mesmoResumo = (a: ResumoProjecao, b: ResumoProjecao) =>
   a.total === b.total &&
@@ -267,6 +268,7 @@ export function TelaProjecao() {
           }
         />
       )}
+      <HistoricoAlteracoes modulo="projecoes" refId={p.id} />
     </Pagina>
   );
 }

@@ -30,6 +30,9 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
   "/projecoes": async () => ({
     Component: (await import("./paginas/projecoes/TelaProjecoes")).TelaProjecoes,
   }),
+  "/auditoria": async () => ({
+    Component: (await import("./paginas/Auditoria")).TelaAuditoria,
+  }),
   "/carga": async () => ({
     Component: (await import("./paginas/carga/TelaCarga")).TelaCarga,
   }),

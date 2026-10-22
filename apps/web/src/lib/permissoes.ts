@@ -32,3 +32,13 @@ export function podeProjetar(u: Usuario | null | undefined): boolean {
 export function podeAprovar(u: Usuario | null | undefined): boolean {
   return !!u && (u.admin || u.perfil === "controladoria" || u.perfil === "diretoria");
 }
+
+/** Espelho de pode_auditar (decisão M10): admin, controladoria e diretoria leem a auditoria. */
+export function podeAuditar(u: Usuario | null | undefined): boolean {
+  return !!u && (u.admin || u.perfil === "controladoria" || u.perfil === "diretoria");
+}
+
+/** Espelho de sou_admin: só admin gere usuários (M10). */
+export function podeGerirUsuarios(u: Usuario | null | undefined): boolean {
+  return !!u && u.admin;
+}

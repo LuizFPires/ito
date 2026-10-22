@@ -198,7 +198,7 @@
 ---
 
 ## M10 — Endurecimento
-- [ ] Auditoria (quem alterou parâmetros, CCTs, premissas e projeções; versão anterior)
+- [x] Auditoria (quem alterou parâmetros, CCTs, premissas e projeções; versão anterior)
 - [ ] Performance com 1.000 obras, 100 CCTs e 500 cidades
 - [ ] Acessibilidade (navegação por teclado, contraste nos dois modos)
 - [ ] Backup e restauração; documentação de operação

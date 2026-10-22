@@ -23,6 +23,49 @@ export type Database = {
   };
   public: {
     Tables: {
+      auditoria: {
+        Row: {
+          antes: Json | null;
+          depois: Json | null;
+          em: string;
+          id: number;
+          modulo: string;
+          operacao: string;
+          ref: string | null;
+          registro: NonNullable<Json>;
+          tabela: string;
+          usuario_email: string | null;
+          usuario_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          antes?: Json | null;
+          depois?: Json | null;
+          em?: string;
+          id?: never;
+          modulo: string;
+          operacao: string;
+          ref?: string | null;
+          registro: NonNullable<Json>;
+          tabela: string;
+          usuario_email?: string | null;
+          usuario_id?: string | null;
+        };
+        Update: {
+          antes?: Json | null;
+          depois?: Json | null;
+          em?: string;
+          id?: never;
+          modulo?: string;
+          operacao?: string;
+          ref?: string | null;
+          registro?: NonNullable<Json>;
+          tabela?: string;
+          usuario_email?: string | null;
+          usuario_id?: string | null;
+        };
+        Relationships: [];
+      };
       beneficios: {
         Row: {
           conta_pc: string;
@@ -1538,12 +1581,14 @@ export type Database = {
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
       gravar_carga: { Args: { p: Json }; Returns: string };
+      gravar_carga_dados: { Args: { p: Json }; Returns: string };
       gravar_resumos: { Args: { p: Json }; Returns: number };
       meu_perfil: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];
       };
       pode_aprovar: { Args: Record<PropertyKey, never>; Returns: boolean };
+      pode_auditar: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_carregar: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_cadastros: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };

@@ -28,6 +28,7 @@ import { AbaVisao } from "./AbaVisao";
 import { BotaoExportarObra } from "./BotaoExportarObra";
 import type { Aba, DadosAba, FuncaoInfo, Vista } from "./comum";
 import { ABAS, ORDEM_GRUPOS, rotulosDe } from "./comum";
+import { HistoricoAlteracoes } from "../Auditoria";
 import s from "./obra.module.css";
 
 /** Abas que alternam época × atualizado (como no protótipo); as demais ficam na época. */
@@ -285,6 +286,7 @@ export function TelaObra() {
         {aba === "realoc" && <AbaRealocada dados={dados} />}
         {aba === "prem" && <AbaPremissas dados={dados} />}
       </div>
+      <HistoricoAlteracoes modulo="obras" refId={o.id} />
     </Pagina>
   );
 }

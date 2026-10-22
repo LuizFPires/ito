@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { IconeBusca } from "./Icone";
 import { useFuncoes, useRubricas } from "../dados/cadastros";
 import { contemTermos } from "../lib/lista";
+import { useSessao } from "../auth/sessao";
 import { buscarDestinos } from "./rotas";
 import s from "./Shell.module.css";
 
@@ -20,6 +21,7 @@ const ehMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigat
 /** Busca global (PRD §3), aberta com Ctrl+K / ⌘K. Acha telas, funções e rubricas;
  * obras e projeções entram como fontes nos milestones delas. */
 export function BuscaGlobal() {
+  const { usuario } = useSessao();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const [aberta, setAberta] = useState(false);
@@ -43,7 +45,7 @@ export function BuscaGlobal() {
   const { data: funcoes } = useFuncoes(mostrar);
   const { data: rubricas } = useRubricas(mostrar);
   const achados: Achado[] = [
-    ...buscarDestinos(q).map((d) => ({
+    ...buscarDestinos(q, usuario).map((d) => ({
       chave: d.caminho,
       titulo: d.nome,
       sub: `Tela · ${d.grupo}`,

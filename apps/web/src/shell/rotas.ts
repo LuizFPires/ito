@@ -1,16 +1,21 @@
-/** Menu do ITO (PRD §3): Análise / Dados / Configuração. */
+/** Menu do ITO (PRD §3): Análise / Dados / Configuração, e Administração (M10). */
+import type { Usuario } from "../lib/supabase";
+import { podeAuditar } from "../lib/permissoes";
 
-export type Icone = "base" | "comp" | "proj" | "carga" | "cid" | "param" | "func" | "rub";
+export type Icone =
+  "base" | "comp" | "proj" | "carga" | "cid" | "param" | "func" | "rub" | "audit" | "users";
 
 export interface Destino {
   caminho: string;
   nome: string;
   icone: Icone;
-  grupo: "Análise" | "Dados" | "Configuração";
+  grupo: "Análise" | "Dados" | "Configuração" | "Administração";
   /** Uma linha sobre a tela (PRD), usada no cabeçalho e na busca. */
   resumo: string;
   /** Milestone em que a tela ganha conteúdo (PLAN). */
   milestone: string;
+  /** Só aparece para quem pode usar a tela (a RLS continua mandando). */
+  visivel?: (u: Usuario | null | undefined) => boolean;
 }
 
 export const MENU: readonly Destino[] = [
@@ -81,9 +86,24 @@ export const MENU: readonly Destino[] = [
       "Dicionário das verbas da folha: o código de cada rubrica, se é provento, desconto ou informativa, como entra no custo e se compõe a base das provisões.",
     milestone: "M1",
   },
+  {
+    caminho: "/auditoria",
+    nome: "Auditoria",
+    icone: "audit",
+    grupo: "Administração",
+    resumo:
+      "Quem alterou parâmetros, CCTs, cidades, funções, rubricas, obras, projeções e usuários, com a versão anterior.",
+    milestone: "M10",
+    visivel: podeAuditar,
+  },
 ];
 
-export const GRUPOS = ["Análise", "Dados", "Configuração"] as const;
+export const GRUPOS = ["Análise", "Dados", "Configuração", "Administração"] as const;
+
+/** Itens do menu que a pessoa vê. */
+export function menuDe(u: Usuario | null | undefined): Destino[] {
+  return MENU.filter((d) => !d.visivel || d.visivel(u));
+}
 
 /** Rotas de detalhe ficam marcadas no item do menu a que pertencem. */
 export function itemAtivo(caminho: string): string | undefined {
@@ -99,10 +119,10 @@ export function normalizar(t: string): string {
     .toLowerCase();
 }
 
-export function buscarDestinos(q: string): Destino[] {
+export function buscarDestinos(q: string, u?: Usuario | null): Destino[] {
   const termos = normalizar(q).split(/\s+/).filter(Boolean);
   if (!termos.length) return [];
-  return MENU.filter((d) => {
+  return menuDe(u).filter((d) => {
     const alvo = normalizar(`${d.nome} ${d.grupo} ${d.resumo}`);
     return termos.every((t) => alvo.includes(t));
   });

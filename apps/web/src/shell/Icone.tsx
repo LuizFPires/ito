@@ -39,6 +39,18 @@ const DESENHOS: Record<Nome, ReactNode> = {
       <path d="M5 5.5h6M5 8h6M5 10.5h3.5" />
     </>
   ),
+  audit: (
+    <>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.5V8l2.5 1.5" />
+    </>
+  ),
+  users: (
+    <>
+      <circle cx="8" cy="5.5" r="2.5" />
+      <path d="M3 14c.6-2.8 2.6-4.3 5-4.3s4.4 1.5 5 4.3" />
+    </>
+  ),
 };
 
 export function Icone({ nome }: { nome: Nome }) {
