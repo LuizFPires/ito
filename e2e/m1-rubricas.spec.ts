@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { entrar, semRolagemLateral } from "./ajuda";
+import { apiAdmin, entrar, semRolagemLateral } from "./ajuda";
+
+// a rubrica criada no teste nunca é usada: some ao fim (não acumula no banco local)
+test.afterAll(async () => {
+  const api = await apiAdmin();
+  await api.apagar(`rubricas?nome=eq.${encodeURIComponent("ADICIONAL TESTE E2E")}`);
+});
 
 test("dicionário com indicadores, filtro e sem rolagem lateral", async ({ page }) => {
   await entrar(page, "dprh@ito.local");
