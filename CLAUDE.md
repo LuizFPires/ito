@@ -174,6 +174,17 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Mantido diferente: MDO realocada e justificativas do ERP só leitura no M5 (vêm da carga); a troca de tabela edita a tabela, e o mês se troca removendo e incluindo.
 - O M5 começou empilhado no M4 (`feat/m5-base-historica` a partir de `feat/m4-carga`), pela mesma pendência do CI.
 
+### M6 — Comparar obras (21/10/2026)
+- **Seleção compartilhada** entre a base e a comparação, guardada na sessão do navegador (por aba); "Comparar com…" na obra junta a obra às já selecionadas. (auto — recomendado)
+- **Eixo** em mês relativo (M1, M2…) por padrão, como no PRD, com a opção "% do prazo" do protótipo; curvas de efetivo por 1.000 m² e curva S de custo, a valores vigentes. (auto — recomendado)
+- **Escolha das obras** com busca (até 4), não uma lista de botões de todas as obras (regra 7). (auto — recomendado)
+- Revisão e comparação do M6 (21/10/2026):
+  - **Histograma** (barras agrupadas por obra) quando o eixo é o mês relativo e a curva é o efetivo, como pede o PRD; em % do prazo e na curva S, linhas como no protótipo. (auto — recomendado)
+  - "Comparar com…" põe a obra na frente da seleção (a comparação mostra as 4 primeiras obras que existem); a base aceita mais de 4 selecionadas e a comparação avisa. A seleção é limpa ao sair. (auto — recomendado)
+  - Linha "R$ por dia · todas as funções" além do pedreiro; seção "Mix de funções" e "Projetar com estas →" como no protótipo; escolha de obra só confirmada (lista ou Enter), com cliente e início para diferenciar nomes iguais. (auto — recomendado)
+  - Percentuais com 2 casas (convenção do ITO, como 43,96%), não 1 como no protótipo; cores das obras da paleta de séries do Canteiro.
+- O M6 começou empilhado no M5 (`feat/m6-comparar` a partir de `feat/m5-base-historica`), pela mesma pendência do CI.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

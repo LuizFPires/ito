@@ -1,0 +1,41 @@
+.escolhidas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.cor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.nome {
+  color: var(--ink);
+  text-decoration: none;
+}
+.nome:hover {
+  text-decoration: underline;
+}
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+}
+.mix {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+}
+.mix > :last-child {
+  grid-column: 2;
+}
+.mixNome {
+  font-size: 13px;
+  color: var(--ink);
+}

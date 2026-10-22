@@ -105,10 +105,17 @@ export function BarrasMensais({
   );
 }
 
-export function Legenda({ series }: { series: readonly Pick<Serie, "id" | "nome" | "cor">[] }) {
+/** Legenda; `pilha` (padrão) lista de cima para baixo, na ordem das barras empilhadas. */
+export function Legenda({
+  series,
+  ordem = "pilha",
+}: {
+  series: readonly Pick<Serie, "id" | "nome" | "cor">[];
+  ordem?: "pilha" | "natural";
+}) {
   return (
     <div className={s.legenda}>
-      {[...series].reverse().map((x) => (
+      {(ordem === "pilha" ? [...series].reverse() : series).map((x) => (
         <span key={x.id}>
           <i style={{ background: x.cor }} />
           {x.nome}

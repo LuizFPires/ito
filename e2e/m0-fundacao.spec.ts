@@ -64,7 +64,7 @@ test("as 10 rotas abrem vazias, com o item do menu marcado e sem rolagem lateral
   for (const [rota, titulo, item] of ROTAS) {
     await page.goto(rota);
     await expect(page.getByRole("heading", { level: 1, name: titulo, exact: true })).toBeVisible();
-    // Telas que já ganharam conteúdo (M1, M2, M4, M5) não mostram o aviso de "chega no Mx".
+    // Telas que já ganharam conteúdo (M1, M2, M4, M5, M6) não mostram o aviso de "chega no Mx".
     if (
       ![
         "/funcoes",
@@ -73,6 +73,7 @@ test("as 10 rotas abrem vazias, com o item do menu marcado e sem rolagem lateral
         "/cidades",
         "/carga",
         "/base",
+        "/comparar",
         "/obras/exemplo",
       ].includes(rota)
     ) {
