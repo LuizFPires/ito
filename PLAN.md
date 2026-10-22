@@ -202,8 +202,14 @@
 - [ ] Performance com 1.000 obras, 100 CCTs e 500 cidades
 - [ ] Acessibilidade (navegação por teclado, contraste nos dois modos)
 - [ ] Backup e restauração; documentação de operação
+- [ ] **Tela de usuários** (só admin), sem precisar do painel do Supabase nem de SQL:
+  - lista com busca, perfil, admin, situação (ativo ou desativado) e último acesso;
+  - convidar por e-mail já com perfil e admin (Edge Function com a chave de serviço; ela nunca vai para o front);
+  - trocar perfil e admin, desativar e reativar (sem apagar: a autoria do que a pessoa gravou fica);
+  - o admin não remove o próprio acesso de admin nem desativa a si mesmo;
+  - **tabela de permissões por perfil** na própria tela: para cada módulo (base histórica, folha por matrícula, carga, cidades e CCTs, parâmetros, funções, rubricas, projeções, aprovação, exportações, usuários), o que cada perfil lê, edita ou aprova e as limitações. A tabela sai das mesmas regras do banco (funções `pode_*`), com teste que falha se as duas divergirem.
 
-**Aceite:** carga de teste dentro das metas do PRD §5; nenhuma pendência crítica de acessibilidade.
+**Aceite:** carga de teste dentro das metas do PRD §5; nenhuma pendência crítica de acessibilidade; um admin convida, muda o perfil e desativa um usuário pela tela, e a tabela de permissões confere com o banco.
 
 ---
 
