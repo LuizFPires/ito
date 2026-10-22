@@ -1563,6 +1563,7 @@ export type Database = {
     };
     Functions: {
       ajustar_cct: { Args: { p_cct: string; p_pct: number }; Returns: number };
+      autor_atual: { Args: Record<PropertyKey, never>; Returns: string };
       criar_cct: { Args: { p_id: string; p_nome: string }; Returns: string };
       criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
       criar_funcao: {
@@ -1580,9 +1581,11 @@ export type Database = {
         Returns: undefined;
       };
       duplicar_cct: { Args: { p_id: string; p_nome: string; p_origem: string }; Returns: string };
+      encerrar_sessoes: { Args: { p_id: string }; Returns: number };
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
+      gerir_usuario: { Args: { p_autor: string; p_id: string; p_patch: Json }; Returns: number };
       gravar_carga: { Args: { p: Json }; Returns: string };
       gravar_carga_dados: { Args: { p: Json }; Returns: string };
       gravar_resumos: { Args: { p: Json }; Returns: number };
@@ -1629,6 +1632,7 @@ export type Database = {
         Returns: boolean;
       };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      sou_ativo: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
       componente_rubrica:
