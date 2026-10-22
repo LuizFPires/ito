@@ -20,6 +20,8 @@ export interface LinhaHistorico {
   construtora: Construtora;
   /** função como está na planilha */
   funcao: string;
+  /** classe da planilha (só no .xlsm): ajuda quando o texto da função não diz nada */
+  classe?: string;
   /** dias de vínculo no mês; null = mês cheio */
   dias: number | null;
   admitido: boolean;

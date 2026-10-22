@@ -71,6 +71,7 @@ export function lerModeloXlsm(
   if (iMat === null || iFun === null || iComp === null)
     throw new Error(`${arquivo}: aba Folha sem matrícula, função ou competência no cabeçalho.`);
   const iReal = c("mdo realocada");
+  const iClasse = c("classe");
   const iAdm = c("data de admissao");
   const iDem = c("data de demissao");
   const iLic = c("dias de licenca");
@@ -165,6 +166,12 @@ export function lerModeloXlsm(
       matricula: String(l[iMat]).trim(),
       construtora,
       funcao: funcao.toUpperCase(),
+      classe:
+        iClasse === null
+          ? undefined
+          : String(l[iClasse] ?? "")
+              .trim()
+              .toUpperCase(),
       dias,
       admitido: mesmoMes(adm, comp.ano, comp.mes),
       desligado: mesmoMes(dem, comp.ano, comp.mes),
