@@ -2,15 +2,15 @@
 
 Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e totais.
 
-- Obras: 23 (0 carregadas nesta execução)
+- Obras: 23 (23 carregadas nesta execução)
 - Planilhas usadas: 27; deixadas de lado: 4
 - Funções novas usadas: nenhuma
 - Cidades novas: nenhuma
-- Rubricas novas: 86 (classificação sugerida em rubricas.csv, para o DP/RH revisar)
+- Rubricas novas: 38 (classificação sugerida em rubricas.csv, para o DP/RH revisar)
 
 ## MART MINAS ARAXÁ (`araxa`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jun/17 · 7 meses · construtoras: classica
 - Planilhas: `ARAXÁ/Histograma de Mão de Obra - MM Araxá v04.xlsm`
 - 85 matrículas · 309 lançamentos · 242,9 pessoa-mês
@@ -18,12 +18,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Funções: ALMOXARIFE → Almoxarife; ANALISTA RH → Analista de RH; ASSISTENTE ENGENHARIA → Auxiliar de engenharia; ASSISTENTE RH → Analista de RH; AUXILIAR ADMINISTRATIVO → Analista administrativo; AUXILIAR ALMOXARIFE → Almoxarife; AUXILIAR DE COMPRAS → Comprador; AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; AUXILIAR DE SERVIÇOS GERAIS → Auxiliar de serviços gerais; CARPINTEIRO → Carpinteiro; CARPINTEIRO I → Carpinteiro; CARPINTEIRO II → Carpinteiro; COMPRADOR → Comprador; ELETRICISTA → Eletricista; ENCARREGADO → Encarregado; GERENTE ADMINISTRATIVO → Gerente administrativo; MESTRE DE OBRAS → Mestre de obras; MOTO BOY → Moto boy; OPERADOR DE BETONEIRA → Operador de betoneira; PEDREIRO → Pedreiro; PEDREIRO I → Pedreiro; PEDREIRO II → Pedreiro; SERVENTE → Servente; SUB ENCARREGADO DE OBRA → Encarregado; SUPERVISOR DE OBRA → Supervisor de obra; TECNICO EM EDIFICAÇÕES → Auxiliar de engenharia; TECNICO SEGURANÇA → Técnico de segurança; TECNICO SEGURANÇA DO TRABALHO → Técnico de segurança; VIGIA → Vigia; VIGIA NOITE → Vigia
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ 213 lançamentos sem vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 6 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 65.091,61 em 7 meses
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2017: época na de 2023
 
 ## MART MINAS BETIM II (`betim_ii`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jul/23 · 11 meses · construtoras: classica
 - Planilhas: `BETIM II/Histograma MM BETIM II v05.02..xlsb`
 - Deixada de lado: `BETIM II/Histograma MM BETIM II v05.02.xlsb` (versão anterior de BETIM II/Histograma MM BETIM II v05.02..xlsb (dados até 05/2024))
@@ -34,57 +33,47 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Histograma MM BETIM II v05.02..xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (130 lançamentos de HE)
 - Histograma MM BETIM II v05.02..xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 - Histograma MM BETIM II v05.02..xlsb: proventos de 2023-7: lidos R$ 48.883,50 × planilha R$ 48.957,50
-- Pendência: aguardando área (m²) em obras.csv
 
 ## BLUE LIGHT (`blue_light`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: set/24 · 12 meses · construtoras: classica
 - Planilhas: `BLUE LIGHT /Histograma Blue 2025.xlsb`
 - 2 matrículas · 8 lançamentos · 7,5 pessoa-mês
 - Funções: AUXILIAR DE ENGENHARIA → Auxiliar de engenharia
 - Verificações da carga: ⚠️ Total de proventos não bate com o resumo da folha; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 7 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 6.774,23 em 12 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 6.764,47 em 12 meses
 - Histograma Blue 2025.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (3 lançamentos de HE)
 - Histograma Blue 2025.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
-- Pendência: sem cidade (obra entra com a tabela da empresa)
-- Observação: cidade a confirmar
 
 ## JACUÍ (`comercial_jacui`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jul/24 · 13 meses · construtoras: classica
 - Planilhas: `COMERCIAL JACUI/Histograma Netos Empr -Jacuí .xlsb`
 - 15 matrículas · 88 lançamentos · 70,3 pessoa-mês
 - Funções: ALMOXARIFE → Almoxarife; ANALISTA ADMINISTATIVO → Analista administrativo; AUXILIAR ADMINISTRATIVO → Analista administrativo; AUXILIAR DE ALMOXARIFE → Almoxarife; AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; ELETRICISTA → Eletricista; MESTRE DE OBRA → Mestre de obras; PEDREIRO → Pedreiro; SERVENTE → Servente; TECNICO DE SEGURANÇA DO TRABALHO → Técnico de segurança
 - Verificações da carga: ⚠️ Total de proventos não bate com o resumo da folha; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 13 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 73.639,70 em 13 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 73.605,86 em 13 meses
 - Histograma Netos Empr -Jacuí .xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (58 lançamentos de HE)
 - Histograma Netos Empr -Jacuí .xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
-- Pendência: sem cidade (obra entra com a tabela da empresa)
-- Observação: cidade a confirmar
 
 ## PAQUETÁ (`comercial_liu`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: set/24 · 24 meses · construtoras: classica
 - Planilhas: `COMERCIAL LIU/Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb`
 - Deixada de lado: `COMERCIAL LIU/Histograma PAQUETA WENCESLAU.xlsb` (versão anterior de COMERCIAL LIU/Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb (dados até 07/2026))
 - 6 matrículas · 56 lançamentos · 51,3 pessoa-mês
 - Funções: AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; CARPINTEIRO DE OBRAS → Carpinteiro; ENCARREGADO DE OBRAS → Encarregado; MESTRE DE OBRA → Mestre de obras; PEDREIRO → Pedreiro; SERVENTE → Servente
 - Verificações da carga: ⚠️ Total de proventos não bate com o resumo da folha; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 24 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 65.534,28 em 24 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 65.438,60 em 24 meses
 - Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (48 lançamentos de HE)
 - Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
-- Pendência: sem cidade (obra entra com a tabela da empresa)
-- Observação: cidade a confirmar
 
 ## EDIFICIO CANANÉIAS (`edificio_residence_caicaras`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jun/26 · 4 meses · construtoras: classica + ampla
 - Planilhas: `EDIFICIO RESIDENCE CAIÇARAS/Histograma Edificio Cananeias.xlsb`, `EDIFICIO RESIDENCE CAIÇARAS/Histograma Edificio Cananeias AMPLA.xlsb`
 - 6 matrículas · 14 lançamentos · 11,8 pessoa-mês
@@ -95,27 +84,23 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Histograma Edificio Cananeias.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 - Histograma Edificio Cananeias AMPLA.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (1 lançamentos de HE)
 - Histograma Edificio Cananeias AMPLA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
 
 ## GALPÃO DALIAS (`galpao_serrano`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jul/26 · 4 meses · construtoras: classica
 - Planilhas: `GALPÃO SERRANO/Histograma Galpão Serrano.xlsb`
 - Deixada de lado: `GALPÃO SERRANO/Histograma Galpão Serrano SP.xlsb` (versão anterior de GALPÃO SERRANO/Histograma Galpão Serrano.xlsb (dados até 09/2026))
 - 1 matrículas · 4 lançamentos · 4,0 pessoa-mês
 - Funções: MESTRE DE OBRA → Mestre de obras
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 4 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 3.094,45 em 4 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 3.078,05 em 4 meses
 - Histograma Galpão Serrano.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (3 lançamentos de HE)
 - Histograma Galpão Serrano.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
-- Pendência: sem cidade (obra entra com a tabela da empresa)
-- Observação: cidade a confirmar
 
 ## HORT FRUTI (`hort_fruti`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: fev/25 · 7 meses · construtoras: classica
 - Planilhas: `HORT FRUTI /Histograma HORT FRUTI MC.xlsb`
 - 19 matrículas · 65 lançamentos · 59,5 pessoa-mês
@@ -124,13 +109,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Conferência rubricas × custo do ITO: diferença total R$ 113.219,16 em 7 meses
 - Histograma HORT FRUTI MC.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (41 lançamentos de HE)
 - Histograma HORT FRUTI MC.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
-- Pendência: sem cidade (obra entra com a tabela da empresa)
-- Observação: cidade a confirmar
 
 ## IMPERIO (`imperio_sarzedo`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: abr/24 · 2 meses · construtoras: classica
 - Planilhas: `IMPERIO SARZEDO/Histograma IMPERIO.xlsb`
 - 2 matrículas · 4 lançamentos · 4,0 pessoa-mês
@@ -139,11 +121,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Conferência rubricas × custo do ITO: diferença total R$ 512,56 em 2 meses
 - Histograma IMPERIO.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (4 lançamentos de HE)
 - Histograma IMPERIO.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
 
 ## MART MINAS LAVRAS (`lavras`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: set/17 · 5 meses · construtoras: classica
 - Planilhas: `LAVRAS/Histograma de Mão de Obra - MM Lavras v04.xlsm`
 - 70 matrículas · 150 lançamentos · 96,5 pessoa-mês
@@ -152,12 +133,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ 110 lançamentos sem vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 5 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 53.571,93 em 5 meses
 - Histograma de Mão de Obra - MM Lavras v04.xlsm: 3 linhas sem função e sem salário (vazias)
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2017: época na de 2023
 
 ## MM BARREIRO (`mm_barreiro`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jul/25 · 8 meses · construtoras: ampla
 - Planilhas: `MM BARREIRO - AMPLA/Histograma Barreiro AMPLA.xlsb`
 - 19 matrículas · 82 lançamentos · 72,3 pessoa-mês
@@ -166,11 +146,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Conferência rubricas × custo do ITO: diferença total R$ 89.636,76 em 8 meses
 - Histograma Barreiro AMPLA.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (70 lançamentos de HE)
 - Histograma Barreiro AMPLA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
 
 ## MM IBIRITÉ (`mm_ibirite`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jul/25 · 12 meses · construtoras: classica + ampla
 - Planilhas: `MM IBIRITE - CLASSICA/Histograma Ibirité CLÁSSICA.xlsb`, `MM IBIRITE - AMPLA/Histograma Ibirité.xlsb`
 - 19 matrículas · 119 lançamentos · 109,4 pessoa-mês
@@ -182,11 +161,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Histograma Ibirité.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (79 lançamentos de HE)
 - Histograma Ibirité.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 - Histograma Ibirité.xlsb: aba Adicionais (fora da folha): R$ 6.479,00 não importados
-- Pendência: aguardando área (m²) em obras.csv
 
 ## VILLEFORT MONTES CLAROS (`montes_claros`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jun/19 · 6 meses · construtoras: classica
 - Planilhas: `MONTES CLAROS/Histograma de Mão de ObraV07 - Villefort Montes Claros.xlsm`
 - 40 matrículas · 148 lançamentos · 129,8 pessoa-mês
@@ -195,12 +173,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ 137 lançamentos sem vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 6 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 40.720,19 em 6 meses
 - Histograma de Mão de ObraV07 - Villefort Montes Claros.xlsm: 4 linhas sem função e sem salário (vazias)
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2019: época na de 2023
 
 ## MART MINAS PARÁ DE MINAS (`para_de_minas`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: nov/16 · 8 meses · construtoras: classica
 - Planilhas: `PARÁ DE MINAS/Histograma de Mão de Obra - MM Pará de Minas v20 - FINAL !!.xlsm`
 - 110 matrículas · 596 lançamentos · 488,4 pessoa-mês
@@ -209,12 +186,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ 383 lançamentos sem vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 8 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 183.453,74 em 8 meses
 - Histograma de Mão de Obra - MM Pará de Minas v20 - FINAL !!.xlsm: 1 linhas sem função e sem salário (vazias)
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2016: época na de 2023
 
 ## MART MINAS PARACATU (`paracatu`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: mai/16 · 8 meses · construtoras: classica
 - Planilhas: `PARACATU/Histograma de Mão de Obra - MM Paracatu VERSÃO FINAL com GRRF REV02.xlsm`
 - 96 matrículas · 448 lançamentos · 365,3 pessoa-mês
@@ -224,12 +200,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Conferência rubricas × custo do ITO: diferença total R$ 91.799,71 em 8 meses
 - Histograma de Mão de Obra - MM Paracatu VERSÃO FINAL com GRRF REV02.xlsm: versão sem a coluna de dias de férias
 - Histograma de Mão de Obra - MM Paracatu VERSÃO FINAL com GRRF REV02.xlsm: versão sem a coluna de MDO realocada
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2016: época na de 2023
 
 ## LNX SUPER LUNA (`superluna_betim`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: set/25 · 13 meses · construtoras: classica + ampla
 - Planilhas: `SUPERLUNA BETIM/Histograma Super Luna CLÁSSICA..xlsb`, `SUPERLUNA BETIM/Histograma Super Luna AMPLA.xlsb`
 - 22 matrículas · 62 lançamentos · 58,3 pessoa-mês
@@ -241,11 +216,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Histograma Super Luna CLÁSSICA..xlsb: aba Adicionais (fora da folha): R$ 1.428,58 não importados
 - Histograma Super Luna AMPLA.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (13 lançamentos de HE)
 - Histograma Super Luna AMPLA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
 
 ## BH GLÓRIA (`supermercados_bh_gloria`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: mai/25 · 14 meses · construtoras: classica
 - Planilhas: `SUPERMERCADOS BH GLÓRIA/Histograma BH GLORIA.xlsb`
 - 10 matrículas · 37 lançamentos · 32,7 pessoa-mês
@@ -254,11 +228,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Conferência rubricas × custo do ITO: diferença total R$ 734.137,86 em 14 meses
 - Histograma BH GLORIA.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (28 lançamentos de HE)
 - Histograma BH GLORIA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
 
 ## BH SUPERMERCADOS-LAGOA SANTA (`supermercados_bh_lagoa_santa`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: jun/24 · 11 meses · construtoras: classica
 - Planilhas: `SUPERMERCADOS BH LAGOA SANTA/Histograma LAGOA SANTABH.xlsb`
 - 17 matrículas · 79 lançamentos · 65,2 pessoa-mês
@@ -267,11 +240,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Conferência rubricas × custo do ITO: diferença total R$ 107.324,18 em 11 meses
 - Histograma LAGOA SANTABH.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (59 lançamentos de HE)
 - Histograma LAGOA SANTABH.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
 
 ## BH PASSOS (`supermercados_bh_passos`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: abr/26 · 7 meses · construtoras: classica + ampla
 - Planilhas: `SUPERMERCADOS BH PASSOS/Histograma BH Passos CLASSICA.xlsb`, `SUPERMERCADOS BH PASSOS/Histograma BH -AMPLA.xlsb`
 - 11 matrículas · 44 lançamentos · 41,6 pessoa-mês
@@ -282,13 +254,10 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Histograma BH Passos CLASSICA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 - Histograma BH -AMPLA.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (2 lançamentos de HE)
 - Histograma BH -AMPLA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
-- Pendência: aguardando área (m²) em obras.csv
-- Pendência: sem cidade (obra entra com a tabela da empresa)
-- Observação: cidade a confirmar
 
 ## MART MINAS TEOFILO OTONI (`teofilo_otoni`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: abr/18 · 5 meses · construtoras: classica
 - Planilhas: `TEÓFILO OTONI/Histograma de Mão de Obra - MM T.O v7.xlsm`
 - 29 matrículas · 115 lançamentos · 96,3 pessoa-mês
@@ -296,12 +265,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Funções: ALMOXARIFE → Almoxarife; AUXILIAR DE ALMOXARIFE → Almoxarife; AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; CARPINTEIRO → Carpinteiro; COMPRADOR → Comprador; ELETRICISTA → Eletricista; ENCARREGADO → Encarregado; ENCARREGADO TERRAPLANAGEM → Encarregado; ENGENHEIRO → Engenheiro; GERENTE ADMINSITRATIVA → Gerente administrativo; MESTRE DE OBRAS → Mestre de obras; PEDREIRO → Pedreiro; PINTOR → Pintor; SERVENTE → Servente; TECNICO EM EDIFICAÇÕES → Auxiliar de engenharia; TECNICO EM SEGURANÇA → Técnico de segurança
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 5 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 65.975,74 em 5 meses
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2018: época na de 2023
 
 ## MART MINAS UBÁ (`uba`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: fev/17 · 8 meses · construtoras: classica
 - Planilhas: `UBÁ/Histograma de Mão de Obra - MM Ubá v10.xlsm`
 - 78 matrículas · 365 lançamentos · 306,5 pessoa-mês
@@ -310,12 +278,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ 337 lançamentos sem vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 8 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 144.762,30 em 8 meses
 - Histograma de Mão de Obra - MM Ubá v10.xlsm: 24 linhas sem função e sem salário (vazias)
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2017: época na de 2023
 
 ## MART MINAS VARGINHA (`varginha`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: nov/18 · 7 meses · construtoras: classica
 - Planilhas: `VARGINHA/Histograma de Mão de Obra - MM Varginha V7.xlsm`
 - Deixada de lado: `VARGINHA/Histograma de Mão de Obra - MM Varginha V0.xlsm` (planilha sem lançamentos)
@@ -324,12 +291,11 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Funções: AUXILIAR DE TOPOGRAFIA → Topografia; AUXILIAR ENGENHARIA → Auxiliar de engenharia; CARPINTEIRO → Carpinteiro; COMPRADOR → Comprador; ELETRICISTA → Eletricista; ENGENHEIRO → Engenheiro; ESTAGIARIA EM ENGENHARIA ' → Estagiário; GERENTE ADMINSTRATIVO → Gerente administrativo; MESTRE DE OBRAS → Mestre de obras; PEDREIRO "A" → Pedreiro; PEDREIRO "C" → Pedreiro; TECNICO EM EDIFICAÇÃO → Auxiliar de engenharia; TECNICO EM SEGURANÇA → Técnico de segurança; TOPOGRAFO → Topografia
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 7 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 118.553,74 em 7 meses
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2018: época na de 2023
 
 ## WAF CONTAGEM (`waf_contagem`)
 
-- Situação: **pendente**
+- Situação: **carregada**
 - Período: fev/19 · 10 meses · construtoras: classica
 - Planilhas: `WAF CONTAGEM/Histograma de Mão de Obra v06 - WAF Contagem (2).xlsm`
 - 22 matrículas · 116 lançamentos · 107,1 pessoa-mês
@@ -338,5 +304,4 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Verificações da carga: ℹ️ Sem cartão de ponto; ℹ️ 40 lançamentos sem vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 10 meses
 - Conferência rubricas × custo do ITO: diferença total R$ 31.999,32 em 10 meses
 - Histograma de Mão de Obra v06 - WAF Contagem (2).xlsm: 10 linhas sem função e sem salário (vazias)
-- Pendência: aguardando área (m²) em obras.csv
 - Observação: sem tabela da empresa de 2019: época na de 2023

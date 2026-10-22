@@ -13,7 +13,15 @@ import type {
   PlanilhaHistorica,
   RubricaLida,
 } from "./historico";
-import { coluna, competenciaDe, dataIso, indiceColunas, normal, numero } from "./historico";
+import {
+  coluna,
+  competenciaDe,
+  dataIso,
+  indiceColunas,
+  matriculaValida,
+  normal,
+  numero,
+} from "./historico";
 
 /** Rubricas que a migração cria para colunas sem código equivalente na folha. */
 export const RUBRICAS_MIGRACAO = {
@@ -165,7 +173,7 @@ export function lerModeloXlsm(
     const dias = iDias === null ? null : numero(l[iDias]);
     linhas.push({
       comp,
-      matricula: String(l[iMat]).trim(),
+      matricula: matriculaValida(l[iMat]),
       construtora,
       funcao: funcao.toUpperCase(),
       classe:

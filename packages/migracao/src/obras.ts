@@ -110,6 +110,7 @@ export const CIDADES_NOVAS: Readonly<Record<string, { nome: string; uf: string; 
   ibirite: { nome: "Ibirité", uf: "MG", cct: "bh" },
   sarzedo: { nome: "Sarzedo", uf: "MG", cct: "bh" },
   lagoa_santa: { nome: "Lagoa Santa", uf: "MG", cct: "bh" },
+  passos: { nome: "Passos", uf: "MG", cct: "sul" },
 };
 
 /** Palavra no nome da obra → cidade (código do ITO ou das novas). */

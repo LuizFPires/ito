@@ -1,24 +1,24 @@
 ﻿id;nome;cliente;tipologia;cidade;area_m2;data_base;inicio;meses;construtoras;arquivos;observacao
-araxa;MART MINAS ARAXÁ;Mart Minas;Supermercado atacarejo;araxa;;2023;jun/17;7;classica;ARAXÁ/Histograma de Mão de Obra - MM Araxá v04.xlsm;sem tabela da empresa de 2017: época na de 2023
-betim_ii;MART MINAS BETIM II;Mart Minas;Supermercado atacarejo;betim;;2023;jul/23;11;classica;BETIM II/Histograma MM BETIM II v05.02..xlsb;
-blue_light;BLUE LIGHT;;Comercial;;;2024;set/24;12;classica;BLUE LIGHT /Histograma Blue 2025.xlsb;cidade a confirmar
-comercial_jacui;JACUÍ;;Comercial;;;2024;jul/24;13;classica;COMERCIAL JACUI/Histograma Netos Empr -Jacuí .xlsb;cidade a confirmar
-comercial_liu;PAQUETÁ;;Comercial;;;2024;set/24;24;classica;COMERCIAL LIU/Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb;cidade a confirmar
-edificio_residence_caicaras;EDIFICIO CANANÉIAS;;Residencial;bh;;2026;jun/26;4;classica + ampla;EDIFICIO RESIDENCE CAIÇARAS/Histograma Edificio Cananeias.xlsb | EDIFICIO RESIDENCE CAIÇARAS/Histograma Edificio Cananeias AMPLA.xlsb;
-galpao_serrano;GALPÃO DALIAS;;Galpão logístico;;;2026;jul/26;4;classica;GALPÃO SERRANO/Histograma Galpão Serrano.xlsb;cidade a confirmar
-hort_fruti;HORT FRUTI;;Supermercado atacarejo;;;2025;fev/25;7;classica;HORT FRUTI /Histograma HORT FRUTI MC.xlsb;cidade a confirmar
-imperio_sarzedo;IMPERIO;;Comercial;sarzedo;;2024;abr/24;2;classica;IMPERIO SARZEDO/Histograma IMPERIO.xlsb;
-lavras;MART MINAS LAVRAS;Mart Minas;Supermercado atacarejo;lavras;;2023;set/17;5;classica;LAVRAS/Histograma de Mão de Obra - MM Lavras v04.xlsm;sem tabela da empresa de 2017: época na de 2023
-mm_barreiro;MM BARREIRO;Mart Minas;Supermercado atacarejo;bh;;2025;jul/25;8;ampla;MM BARREIRO - AMPLA/Histograma Barreiro AMPLA.xlsb;
-mm_ibirite;MM IBIRITÉ;Mart Minas;Supermercado atacarejo;ibirite;;2025;jul/25;12;classica + ampla;MM IBIRITE - CLASSICA/Histograma Ibirité CLÁSSICA.xlsb | MM IBIRITE - AMPLA/Histograma Ibirité.xlsb;
-montes_claros;VILLEFORT MONTES CLAROS;Villefort;Supermercado atacarejo;cnorte;;2023;jun/19;6;classica;MONTES CLAROS/Histograma de Mão de ObraV07 - Villefort Montes Claros.xlsm;sem tabela da empresa de 2019: época na de 2023
-para_de_minas;MART MINAS PARÁ DE MINAS;Mart Minas;Supermercado atacarejo;para_de_minas;;2023;nov/16;8;classica;PARÁ DE MINAS/Histograma de Mão de Obra - MM Pará de Minas v20 - FINAL !!.xlsm;sem tabela da empresa de 2016: época na de 2023
-paracatu;MART MINAS PARACATU;Mart Minas;Supermercado atacarejo;paracatu;;2023;mai/16;8;classica;PARACATU/Histograma de Mão de Obra - MM Paracatu VERSÃO FINAL com GRRF REV02.xlsm;sem tabela da empresa de 2016: época na de 2023
-superluna_betim;LNX SUPER LUNA;Super Luna;Supermercado atacarejo;betim;;2025;set/25;13;classica + ampla;SUPERLUNA BETIM/Histograma Super Luna CLÁSSICA..xlsb | SUPERLUNA BETIM/Histograma Super Luna AMPLA.xlsb;
-supermercados_bh_gloria;BH GLÓRIA;Supermercados BH;Supermercado atacarejo;bh;;2025;mai/25;14;classica;SUPERMERCADOS BH GLÓRIA/Histograma BH GLORIA.xlsb;
-supermercados_bh_lagoa_santa;BH SUPERMERCADOS-LAGOA SANTA;Supermercados BH;Supermercado atacarejo;lagoa_santa;;2024;jun/24;11;classica;SUPERMERCADOS BH LAGOA SANTA/Histograma LAGOA SANTABH.xlsb;
-supermercados_bh_passos;BH PASSOS;Supermercados BH;Supermercado atacarejo;;;2026;abr/26;7;classica + ampla;SUPERMERCADOS BH PASSOS/Histograma BH Passos CLASSICA.xlsb | SUPERMERCADOS BH PASSOS/Histograma BH -AMPLA.xlsb;cidade a confirmar
-teofilo_otoni;MART MINAS TEOFILO OTONI;Mart Minas;Supermercado atacarejo;cmucuri;;2023;abr/18;5;classica;TEÓFILO OTONI/Histograma de Mão de Obra - MM T.O v7.xlsm;sem tabela da empresa de 2018: época na de 2023
-uba;MART MINAS UBÁ;Mart Minas;Supermercado atacarejo;uba;;2023;fev/17;8;classica;UBÁ/Histograma de Mão de Obra - MM Ubá v10.xlsm;sem tabela da empresa de 2017: época na de 2023
-varginha;MART MINAS VARGINHA;Mart Minas;Supermercado atacarejo;varginha;;2023;nov/18;7;classica;VARGINHA/Histograma de Mão de Obra - MM Varginha V7.xlsm;sem tabela da empresa de 2018: época na de 2023
-waf_contagem;WAF CONTAGEM;WAF;Supermercado atacarejo;contagem;;2023;fev/19;10;classica;WAF CONTAGEM/Histograma de Mão de Obra v06 - WAF Contagem (2).xlsm;sem tabela da empresa de 2019: época na de 2023
+araxa;MART MINAS ARAXÁ;Mart Minas;Supermercado atacarejo;araxa;10000;2023;jun/17;7;classica;ARAXÁ/Histograma de Mão de Obra - MM Araxá v04.xlsm;sem tabela da empresa de 2017: época na de 2023
+betim_ii;MART MINAS BETIM II;Mart Minas;Supermercado atacarejo;betim;10000;2023;jul/23;11;classica;BETIM II/Histograma MM BETIM II v05.02..xlsb;
+blue_light;BLUE LIGHT;;Comercial;bh;10000;2024;set/24;12;classica;BLUE LIGHT /Histograma Blue 2025.xlsb;
+comercial_jacui;JACUÍ;;Comercial;bh;10000;2024;jul/24;13;classica;COMERCIAL JACUI/Histograma Netos Empr -Jacuí .xlsb;
+comercial_liu;PAQUETÁ;;Comercial;bh;10000;2024;set/24;24;classica;COMERCIAL LIU/Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb;
+edificio_residence_caicaras;EDIFICIO CANANÉIAS;;Residencial;bh;10000;2026;jun/26;4;classica + ampla;EDIFICIO RESIDENCE CAIÇARAS/Histograma Edificio Cananeias.xlsb | EDIFICIO RESIDENCE CAIÇARAS/Histograma Edificio Cananeias AMPLA.xlsb;
+galpao_serrano;GALPÃO DALIAS;;Galpão logístico;bh;10000;2026;jul/26;4;classica;GALPÃO SERRANO/Histograma Galpão Serrano.xlsb;
+hort_fruti;HORT FRUTI;;Supermercado atacarejo;contagem;10000;2025;fev/25;7;classica;HORT FRUTI /Histograma HORT FRUTI MC.xlsb;
+imperio_sarzedo;IMPERIO;;Comercial;sarzedo;10000;2024;abr/24;2;classica;IMPERIO SARZEDO/Histograma IMPERIO.xlsb;
+lavras;MART MINAS LAVRAS;Mart Minas;Supermercado atacarejo;lavras;10000;2023;set/17;5;classica;LAVRAS/Histograma de Mão de Obra - MM Lavras v04.xlsm;sem tabela da empresa de 2017: época na de 2023
+mm_barreiro;MM BARREIRO;Mart Minas;Supermercado atacarejo;bh;10000;2025;jul/25;8;ampla;MM BARREIRO - AMPLA/Histograma Barreiro AMPLA.xlsb;
+mm_ibirite;MM IBIRITÉ;Mart Minas;Supermercado atacarejo;ibirite;10000;2025;jul/25;12;classica + ampla;MM IBIRITE - CLASSICA/Histograma Ibirité CLÁSSICA.xlsb | MM IBIRITE - AMPLA/Histograma Ibirité.xlsb;
+montes_claros;VILLEFORT MONTES CLAROS;Villefort;Supermercado atacarejo;cnorte;10000;2023;jun/19;6;classica;MONTES CLAROS/Histograma de Mão de ObraV07 - Villefort Montes Claros.xlsm;sem tabela da empresa de 2019: época na de 2023
+para_de_minas;MART MINAS PARÁ DE MINAS;Mart Minas;Supermercado atacarejo;para_de_minas;10000;2023;nov/16;8;classica;PARÁ DE MINAS/Histograma de Mão de Obra - MM Pará de Minas v20 - FINAL !!.xlsm;sem tabela da empresa de 2016: época na de 2023
+paracatu;MART MINAS PARACATU;Mart Minas;Supermercado atacarejo;paracatu;10000;2023;mai/16;8;classica;PARACATU/Histograma de Mão de Obra - MM Paracatu VERSÃO FINAL com GRRF REV02.xlsm;sem tabela da empresa de 2016: época na de 2023
+superluna_betim;LNX SUPER LUNA;Super Luna;Supermercado atacarejo;betim;10000;2025;set/25;13;classica + ampla;SUPERLUNA BETIM/Histograma Super Luna CLÁSSICA..xlsb | SUPERLUNA BETIM/Histograma Super Luna AMPLA.xlsb;
+supermercados_bh_gloria;BH GLÓRIA;Supermercados BH;Supermercado atacarejo;bh;10000;2025;mai/25;14;classica;SUPERMERCADOS BH GLÓRIA/Histograma BH GLORIA.xlsb;
+supermercados_bh_lagoa_santa;BH SUPERMERCADOS-LAGOA SANTA;Supermercados BH;Supermercado atacarejo;lagoa_santa;10000;2024;jun/24;11;classica;SUPERMERCADOS BH LAGOA SANTA/Histograma LAGOA SANTABH.xlsb;
+supermercados_bh_passos;BH PASSOS;Supermercados BH;Supermercado atacarejo;passos;10000;2026;abr/26;7;classica + ampla;SUPERMERCADOS BH PASSOS/Histograma BH Passos CLASSICA.xlsb | SUPERMERCADOS BH PASSOS/Histograma BH -AMPLA.xlsb;
+teofilo_otoni;MART MINAS TEOFILO OTONI;Mart Minas;Supermercado atacarejo;cmucuri;10000;2023;abr/18;5;classica;TEÓFILO OTONI/Histograma de Mão de Obra - MM T.O v7.xlsm;sem tabela da empresa de 2018: época na de 2023
+uba;MART MINAS UBÁ;Mart Minas;Supermercado atacarejo;uba;10000;2023;fev/17;8;classica;UBÁ/Histograma de Mão de Obra - MM Ubá v10.xlsm;sem tabela da empresa de 2017: época na de 2023
+varginha;MART MINAS VARGINHA;Mart Minas;Supermercado atacarejo;varginha;10000;2023;nov/18;7;classica;VARGINHA/Histograma de Mão de Obra - MM Varginha V7.xlsm;sem tabela da empresa de 2018: época na de 2023
+waf_contagem;WAF CONTAGEM;WAF;Supermercado atacarejo;contagem;10000;2023;fev/19;10;classica;WAF CONTAGEM/Histograma de Mão de Obra v06 - WAF Contagem (2).xlsm;sem tabela da empresa de 2019: época na de 2023

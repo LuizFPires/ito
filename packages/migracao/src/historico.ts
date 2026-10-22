@@ -73,6 +73,12 @@ export const normal = (v: Celula) =>
     .replace(/\s+/g, " ")
     .trim();
 
+/** Matrícula como o banco aceita: letras, números e . / - ("1152 A" → "1152A"). */
+export const matriculaValida = (v: Celula) =>
+  String(v ?? "")
+    .replace(/[^0-9A-Za-z./-]/g, "")
+    .slice(0, 20);
+
 export const numero = (v: Celula): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
 
 /** Data do Excel (serial ou Date) → competência. */

@@ -242,6 +242,7 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **.xlsb sem horas:** HE e faltas em horas são estimadas pelo valor ÷ (salário base ÷ 220 × adicional), marcadas como estimadas no relatório. (auto — recomendado)
 - **Obras de 2016 a 2022** entram com a tabela da empresa de 2023 como "época" (marcadas no relatório) até a controladoria cadastrar as data-bases daqueles anos; aí basta trocar a data-base da obra. As projeções não mudam (quantidades do histórico, preços vigentes). (usuário)
 - **Conferência da migração:** proventos lidos × coluna "Proventos" de cada planilha .xlsb e efetivo do ITO × histograma da aba Resultados do .xlsm, por mês, no relatório. No .xlsm, dias de referência vazios = não trabalhou no mês (pessoa-mês zero), como a própria planilha. (auto — recomendado)
+- **Área provisória de 10.000 m² em todas as obras** (usuário): os indicadores por m² (PM/1.000 m², R$/m²) não comparam obras de tamanhos diferentes até as áreas reais entrarem em `docs/migracao/obras.csv` (rodar a carga de novo substitui). Cidades confirmadas pelo usuário: Blue Light, Jacuí, Paquetá e Galpão Dalias em BH; Hort Fruti em Contagem; BH Passos em Passos (cidade nova, CCT Sul de Minas). Matrícula normalizada na leitura ("1152 A" → "1152A").
 - O M9 começou empilhado no M8 (`feat/m9-migracao` a partir de `feat/m8-exportacoes`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)
