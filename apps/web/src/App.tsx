@@ -38,6 +38,21 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
 // O shell e as telas carregam sob demanda: a tela de login fica leve.
 const router = createBrowserRouter([
   { path: "/entrar", element: <Login /> },
+  // resumo para imprimir (PDF): fora do shell, sem menu
+  {
+    path: "/projecoes/:id/imprimir",
+    hydrateFallbackElement: null,
+    lazy: async () => {
+      const { ImprimirProjecao } = await import("./paginas/projecoes/ImprimirProjecao");
+      return {
+        element: (
+          <Protegida>
+            <ImprimirProjecao />
+          </Protegida>
+        ),
+      };
+    },
+  },
   {
     path: "/",
     hydrateFallbackElement: null,

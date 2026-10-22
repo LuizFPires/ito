@@ -1,0 +1,161 @@
+/* Resumo da projeção para imprimir (A4 retrato). Na tela, uma folha centralizada. */
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+.pagina {
+  max-width: 190mm;
+  margin: 0 auto;
+  padding: 24px 0 48px;
+  color: var(--ink);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.aviso {
+  padding: 24px;
+}
+.acoes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cabeca h1 {
+  margin: 6px 0 2px;
+  font-size: 22px;
+}
+.cabeca p {
+  margin: 0;
+  color: var(--body);
+}
+.sub {
+  font-size: 11px;
+  color: var(--muted) !important;
+  margin-top: 4px !important;
+}
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.i {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--amber);
+  color: var(--on-amber);
+  font-weight: 700;
+}
+.ito {
+  font-family: var(--mono);
+  letter-spacing: 0.3em;
+  font-size: 12px;
+}
+.tipo {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.kpis div {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kpis span {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kpis strong {
+  font-size: 16px;
+}
+.kpis small {
+  color: var(--body);
+  font-size: 10px;
+}
+.bloco h2 {
+  margin: 0 0 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+.duas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.tabela th,
+.tabela td {
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+.tabela th:first-child,
+.tabela td:first-child {
+  text-align: left;
+}
+.tabela th {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 10px;
+}
+.total td {
+  font-weight: 600;
+}
+.grupo td {
+  color: var(--muted);
+}
+.lista {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.rodape {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+@media print {
+  .acoes {
+    display: none;
+  }
+  .pagina {
+    max-width: none;
+    padding: 0;
+  }
+  .bloco,
+  .kpis div,
+  .tabela tr {
+    break-inside: avoid;
+  }
+}
