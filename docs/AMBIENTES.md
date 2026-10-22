@@ -1,5 +1,7 @@
 # Ambientes do ITO
 
+Publicação, usuários, backup e restauração: [OPERACAO.md](OPERACAO.md).
+
 | Ambiente | Banco e Auth | Front | Quem usa |
 |---|---|---|---|
 | Desenvolvimento | Supabase local (`pnpm db:start`, portas 548xx) | `pnpm dev` (localhost:5173) | equipe de desenvolvimento, CI |
@@ -57,3 +59,4 @@ A chave publicável sai de `pnpm exec supabase projects api-keys --project-ref <
 - Migrações do M1 ao M9 aplicadas em `ito-homologacao` **antes do merge** dos PRs #2 a #9 (autorizado pelo usuário, para carregar o histórico). Ao fazer os merges, o `db push` não terá o que aplicar até a próxima migração nova.
 - Histórico migrado (M9): 23 obras, 716 pessoas, 3.172 lançamentos, 2.640,4 pessoa-mês, com `pnpm migrar carregar <pasta> --url https://rtciuljdjdvocxitaepz.supabase.co --chave <publicável>` e o usuário `migracao@ito-homologacao.local` (controladoria + admin), **bloqueado** depois da carga (senha em `.env.supabase.local`). Para rodar de novo (áreas reais, revisão de funções e rubricas), desbloqueie pelo painel (Authentication → Users) e bloqueie ao terminar. Carga refeita em 21/10/2026 com as correções da revisão do M9 (totais da planilha fora das rubricas, 13º e faltas DSR nas rubricas certas); mesmos totais de efetivo.
 - Área provisória de 10.000 m² em todas as obras (ver `docs/migracao/obras.csv`).
+- M10 publicado em 22/10/2026 (autorizado pelo usuário): migrações de auditoria, usuários, desativar na hora e revisão; Edge Function `usuarios` (testada com login de admin); modelos de e-mail de convite e de troca de senha em português (`config push`). Em homologação, as pessoas continuam sendo criadas pelo painel (o link do e-mail aponta para o domínio de produção); perfil, admin e desativar funcionam pela tela.

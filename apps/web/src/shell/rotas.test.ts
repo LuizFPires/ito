@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buscarDestinos, itemAtivo, MENU } from "./rotas";
+import { buscarDestinos, itemAtivo, MENU, menuDe } from "./rotas";
 
 describe("menu", () => {
-  it("tem os 8 itens do PRD em 3 grupos", () => {
+  it("tem os 8 itens do PRD em 3 grupos e a administração (M10)", () => {
     expect(MENU.map((d) => d.nome)).toEqual([
       "Base histórica",
       "Comparar obras",
@@ -12,7 +12,28 @@ describe("menu", () => {
       "Parâmetros",
       "Funções padrão",
       "Rubricas da folha",
+      "Auditoria",
+      "Usuários",
     ]);
+  });
+
+  it("auditoria só para admin, controladoria e diretoria", () => {
+    const u = (perfil: string, admin = false) =>
+      ({ id: "x", email: "x", nome: "x", perfil, admin, ativo: true }) as Parameters<
+        typeof menuDe
+      >[0];
+    const tem = (x: Parameters<typeof menuDe>[0]) =>
+      menuDe(x).some((d) => d.caminho === "/auditoria");
+    expect(tem(u("engenharia"))).toBe(false);
+    expect(tem(u("engenharia", true))).toBe(true);
+    expect(tem(u("diretoria"))).toBe(true);
+    expect(tem(u("controladoria"))).toBe(true);
+    expect(buscarDestinos("auditoria", u("dp_rh"))).toEqual([]);
+    const usuarios = (x: Parameters<typeof menuDe>[0]) =>
+      menuDe(x).some((d) => d.caminho === "/usuarios");
+    expect(usuarios(u("controladoria"))).toBe(false);
+    expect(usuarios(u("engenharia", true))).toBe(true);
+    expect(tem({ ...u("diretoria"), ativo: false } as Parameters<typeof menuDe>[0])).toBe(false);
   });
 
   it("não usa a palavra praça", () => {

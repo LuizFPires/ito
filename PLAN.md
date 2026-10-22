@@ -198,16 +198,18 @@
 ---
 
 ## M10 — Endurecimento
-- [ ] Auditoria (quem alterou parâmetros, CCTs, premissas e projeções; versão anterior)
-- [ ] Performance com 1.000 obras, 100 CCTs e 500 cidades
-- [ ] Acessibilidade (navegação por teclado, contraste nos dois modos)
-- [ ] Backup e restauração; documentação de operação
-- [ ] **Tela de usuários** (só admin), sem precisar do painel do Supabase nem de SQL:
+- [x] Auditoria (quem alterou parâmetros, CCTs, premissas e projeções; versão anterior)
+- [x] Performance com 1.000 obras, 100 CCTs e 500 cidades. Medido em 22/10/2026 no Supabase local (`pnpm desempenho gerar`, depois `ITO_DESEMPENHO=1 pnpm e2e e2e/m10-desempenho.spec.ts`): base com 1.000 obras abre em 1,1 s, filtra em 0,1 s e pagina em 0,3 s; detalhe de obra 1,1 s; 100 CCTs 1,3 s; 500 cidades 0,1 s; projeção de 36 meses com 5 referências e 20 funções recalcula em 53 ms (meta 300 ms, teste `desempenho.test.ts`)
+- [x] Acessibilidade (navegação por teclado, contraste nos dois modos): axe (WCAG 2.1 A/AA) nas 12 telas e no login, claro e escuro, sem violação séria ou crítica; busca Ctrl+K, foco visível e abas por setas testados (`e2e/m10-acessibilidade.spec.ts`)
+- [x] Backup e restauração; documentação de operação (`pnpm db:backup`, `pnpm db:restaurar`, ensaio local em 22/10/2026; [docs/OPERACAO.md](docs/OPERACAO.md))
+- [x] **Tela de usuários** (só admin), sem precisar do painel do Supabase nem de SQL:
   - lista com busca, perfil, admin, situação (ativo ou desativado) e último acesso;
   - convidar por e-mail já com perfil e admin (Edge Function com a chave de serviço; ela nunca vai para o front);
   - trocar perfil e admin, desativar e reativar (sem apagar: a autoria do que a pessoa gravou fica);
   - o admin não remove o próprio acesso de admin nem desativa a si mesmo;
   - **tabela de permissões por perfil** na própria tela: para cada módulo (base histórica, folha por matrícula, carga, cidades e CCTs, parâmetros, funções, rubricas, projeções, aprovação, exportações, usuários), o que cada perfil lê, edita ou aprova e as limitações. A tabela sai das mesmas regras do banco (funções `pode_*`), com teste que falha se as duas divergirem.
+
+Ordem dos itens (um commit cada): 1. auditoria (banco + tela + histórico nos detalhes); 2. tela de usuários (Edge Function, permissões); 3. performance (gerador sintético, metas em teste, paginação no servidor onde faltar); 4. acessibilidade (axe nas rotas, teclado, contraste); 5. backup, restauração e `docs/OPERACAO.md`. Decisões no CLAUDE.md (M10).
 
 **Aceite:** carga de teste dentro das metas do PRD §5; nenhuma pendência crítica de acessibilidade; um admin convida, muda o perfil e desativa um usuário pela tela, e a tabela de permissões confere com o banco.
 

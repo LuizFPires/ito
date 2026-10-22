@@ -15,6 +15,7 @@ export function Login() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   const de = (local.state as { de?: unknown } | null)?.de;
   // Só caminhos internos ("/x", nunca "//host").
@@ -35,6 +36,23 @@ export function Login() {
     });
     setEnviando(false);
     if (error) setErro(mensagemDeErro(error.code, error.message));
+  }
+
+  async function esqueci() {
+    if (!email.trim()) {
+      setErro("Informe o e-mail para receber o link de nova senha.");
+      return;
+    }
+    setErro(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/definir-senha`,
+    });
+    if (error) setErro(mensagemDeErro(error.code, error.message));
+    // mesma resposta para e-mail cadastrado ou não (não revela quem tem conta)
+    else
+      setAviso(
+        "Se o e-mail tiver acesso ao ITO, chega um link para definir a senha (vale por 1 hora).",
+      );
   }
 
   return (
@@ -73,6 +91,14 @@ export function Login() {
         )}
         <Botao variante="primario" type="submit" disabled={enviando}>
           {enviando ? "Entrando…" : "Entrar"}
+        </Botao>
+        {aviso && (
+          <p className="sub" role="status">
+            {aviso}
+          </p>
+        )}
+        <Botao variante="fantasma" pequeno onClick={() => void esqueci()}>
+          Esqueci a senha
         </Botao>
         <p className="sub">O acesso é por convite. Sem conta? Fale com a controladoria.</p>
       </form>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { MESES, moeda, numero, parseNumero, percentual } from "@ito/formato";
 import {
   nomeCidade,
@@ -38,6 +38,7 @@ import {
 } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import s from "./cidades.module.css";
+import { HistoricoAlteracoes } from "../Auditoria";
 import { CompararCcts } from "./CompararCcts";
 
 const POR_PAGINA = 10;
@@ -233,21 +234,24 @@ export function AbaConvencoes({ pode }: { pode: boolean }) {
         {comparando && paraComparar.length >= 2 ? (
           <CompararCcts ccts={paraComparar} onVoltar={() => setComparando(false)} />
         ) : atual ? (
-          <EditorCct
-            key={atual.id}
-            cct={atual}
-            pode={pode}
-            cidadesDaCct={cidadesDe[atual.id] ?? []}
-            onDuplicada={(id, nome) => {
-              setQ(nome);
-              setPagina(1);
-              setSel(id);
-            }}
-            onExcluida={() => {
-              setMarcadas((m) => m.filter((x) => x !== atual.id));
-              setSel(null);
-            }}
-          />
+          // a chave fica no grupo: editor e histórico trocam juntos ao mudar de convenção
+          <Fragment key={atual.id}>
+            <EditorCct
+              cct={atual}
+              pode={pode}
+              cidadesDaCct={cidadesDe[atual.id] ?? []}
+              onDuplicada={(id, nome) => {
+                setQ(nome);
+                setPagina(1);
+                setSel(id);
+              }}
+              onExcluida={() => {
+                setMarcadas((m) => m.filter((x) => x !== atual.id));
+                setSel(null);
+              }}
+            />
+            <HistoricoAlteracoes modulo="ccts" refId={atual.id} />
+          </Fragment>
         ) : (
           <Cartao className={f.painel} style={{ position: "static" }}>
             <p className="sub" style={{ margin: 0 }}>

@@ -15,15 +15,19 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:start": "supabase start -x studio,imgproxy,vector,logflare,edge-runtime,supavisor,postgres-meta,realtime,storage-api",
+    "db:start": "supabase start -x studio,imgproxy,vector,logflare,supavisor,postgres-meta,realtime,storage-api",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
+    "db:backup": "node scripts/backup.mjs",
+    "db:restaurar": "node scripts/restaurar.mjs",
     "gen:types": "supabase gen types typescript --local > apps/web/src/lib/tipos-banco.ts && prettier --write apps/web/src/lib/tipos-banco.ts",
     "e2e": "playwright test",
-    "migrar": "tsx packages/migracao/src/cli.ts"
+    "migrar": "tsx packages/migracao/src/cli.ts",
+    "desempenho": "tsx packages/migracao/src/desempenho.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
     "@types/node": "^24.19.2",

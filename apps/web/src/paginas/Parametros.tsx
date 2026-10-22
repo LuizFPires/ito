@@ -47,6 +47,7 @@ import {
 } from "../ui/formulario";
 import f from "../ui/formulario.module.css";
 import { Pagina } from "./Pagina";
+import { HistoricoAlteracoes } from "./Auditoria";
 
 type Aba = "sal" | "enc" | "ben" | "he" | "adic" | "cal" | "datas";
 const ABAS: { valor: Aba; texto: string }[] = [
@@ -156,6 +157,7 @@ export function TelaParametros() {
       {aba === "cal" && <AbaCalendario pode={pode} anoInicial={vigente} />}
       {aba === "datas" && <AbaDatasBase datas={datas ?? []} vigente={vigente} pode={pode} />}
 
+      <HistoricoAlteracoes modulo="parametros" />
       <Cartao className={f.painel} style={{ position: "static" }}>
         <span className="rotulo">O que é histórico e o que é atualizado</span>
         <p className="sub" style={{ margin: 0, maxWidth: "80ch" }}>

@@ -10,6 +10,13 @@ if (!url || !chave) {
   );
 }
 
+/**
+ * Chegou pelo link do convite (ou de troca de senha): lido antes de o cliente consumir o
+ * endereço, para a pessoa ir definir a senha mesmo que o link caia na página inicial.
+ */
+export const veioDoConvite =
+  typeof window !== "undefined" && /type=(invite|recovery)/.test(window.location.hash);
+
 export const supabase = createClient<Database>(url, chave, {
   auth: { persistSession: true, autoRefreshToken: true },
 });

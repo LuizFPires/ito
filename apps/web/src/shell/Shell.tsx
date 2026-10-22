@@ -6,7 +6,7 @@ import { BuscaGlobal } from "./BuscaGlobal";
 import { Icone } from "./Icone";
 import { Marca } from "./Marca";
 import { MenuUsuario } from "./MenuUsuario";
-import { GRUPOS, itemAtivo, MENU } from "./rotas";
+import { GRUPOS, itemAtivo, menuDe } from "./rotas";
 import s from "./Shell.module.css";
 
 const AMBIENTES: Record<string, string> = {
@@ -19,27 +19,30 @@ const AMBIENTE = (import.meta.env.VITE_AMBIENTE as string | undefined) ?? "desen
 export function Shell() {
   const { pathname } = useLocation();
   const ativo = itemAtivo(pathname);
-  const { erroUsuario } = useSessao();
+  const { erroUsuario, usuario } = useSessao();
+  const menu = menuDe(usuario);
 
   return (
     <div className={s.app}>
       <div className={s.shell}>
         <nav className={s.lateral} aria-label="Menu">
           <Marca />
-          {GRUPOS.map((g) => (
+          {GRUPOS.filter((g) => menu.some((d) => d.grupo === g)).map((g) => (
             <Fragment key={g}>
               <div className={s.grupo}>{g}</div>
-              {MENU.filter((d) => d.grupo === g).map((d) => (
-                <Link
-                  key={d.caminho}
-                  to={d.caminho}
-                  className={s.item}
-                  aria-current={ativo === d.caminho ? "page" : undefined}
-                >
-                  <Icone nome={d.icone} />
-                  {d.nome}
-                </Link>
-              ))}
+              {menu
+                .filter((d) => d.grupo === g)
+                .map((d) => (
+                  <Link
+                    key={d.caminho}
+                    to={d.caminho}
+                    className={s.item}
+                    aria-current={ativo === d.caminho ? "page" : undefined}
+                  >
+                    <Icone nome={d.icone} />
+                    {d.nome}
+                  </Link>
+                ))}
             </Fragment>
           ))}
           <div className={s.rodape}>
@@ -55,6 +58,11 @@ export function Shell() {
             <span className={s.espaco} />
             <MenuUsuario />
           </header>
+          {usuario && !usuario.ativo && (
+            <p className={s.alerta} role="alert">
+              Seu acesso ao ITO foi desativado. Fale com um administrador.
+            </p>
+          )}
           {erroUsuario && (
             <p className={s.alerta} role="alert">
               Seu cadastro no ITO está incompleto. Peça a um administrador para conferir o seu
