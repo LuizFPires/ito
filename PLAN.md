@@ -23,22 +23,24 @@
 
 ## M1 — Cadastros base
 **Objetivo:** tudo o que a carga e o motor precisam para classificar e calcular.
-- [ ] **Funções padrão:**
+- [x] **Funções padrão:**
   - grupo, conta, escala com área, vínculo (CLT ou estágio);
   - exames (adm, per, dem), periculosidade, insalubridade, horas noturnas, ferramentas;
   - sinônimos; criar função.
-- [ ] **Rubricas:** dicionário com tipo, componente e base de provisões; criar rubrica
-- [ ] **Parâmetros (tabela da empresa):**
+- [x] **Rubricas:** dicionário com tipo, componente e base de provisões; criar rubrica
+- [x] **Parâmetros (tabela da empresa):**
   - abas: salários, encargos (itens editáveis por data-base), benefícios, HE/VT/rescisões, adicionais e verbas, datas-base;
   - criar data-base com reajuste; escolher a vigente.
-- [ ] **Calendário:**
+- [x] **Calendário:**
   - feriados nacionais e móveis (Páscoa);
   - Carnaval e Corpus Christi opcionais;
   - feriados da empresa;
   - tabela de dias e DSR por mês.
-- [ ] Carga inicial: 13 funções, rubricas de referência (SPEC §7) e tabelas 2023 a 2026
+- [x] Carga inicial: 13 funções (+ Estagiário), rubricas de referência (SPEC §7) e tabelas 2023 a 2026
 
 **Aceite:** os golden tests de encargos (43,96% / 22,64% / 6,65%) e de calendário (SPEC §8) passam; todas as listas têm busca.
+
+> ✅ 21/10/2026: golden de encargos e calendário no motor (`packages/motor`), no banco (pgTAP) e pela interface (e2e `m1-parametros`); Funções e Rubricas com busca, filtros, ordenação e paginação.
 
 ---
 

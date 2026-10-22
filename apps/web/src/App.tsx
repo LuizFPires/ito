@@ -11,6 +11,15 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
 });
 
+// Telas que já têm conteúdo; as demais mostram "chega no Mx".
+const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>> = {
+  "/funcoes": async () => ({ Component: (await import("./paginas/Funcoes")).TelaFuncoes }),
+  "/rubricas": async () => ({ Component: (await import("./paginas/Rubricas")).TelaRubricas }),
+  "/parametros": async () => ({
+    Component: (await import("./paginas/Parametros")).TelaParametros,
+  }),
+};
+
 // O shell e as telas carregam sob demanda: a tela de login fica leve.
 const router = createBrowserRouter([
   { path: "/entrar", element: <Login /> },
@@ -26,10 +35,12 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/base" replace /> },
       ...MENU.map((d) => ({
         path: d.caminho.slice(1),
-        lazy: async () => {
-          const { TelaDoMenu } = await import("./paginas/telas");
-          return { element: <TelaDoMenu caminho={d.caminho} /> };
-        },
+        lazy:
+          TELAS[d.caminho] ??
+          (async () => {
+            const { TelaDoMenu } = await import("./paginas/telas");
+            return { element: <TelaDoMenu caminho={d.caminho} /> };
+          }),
       })),
       {
         path: "obras/:id",

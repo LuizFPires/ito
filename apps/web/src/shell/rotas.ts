@@ -59,7 +59,8 @@ export const MENU: readonly Destino[] = [
     nome: "Parâmetros",
     icone: "param",
     grupo: "Configuração",
-    resumo: "Tabela da empresa por data-base: encargos, HE, benefícios e calendário.",
+    resumo:
+      "Tabela da empresa por data-base: salários, encargos, benefícios, HE, VT, rescisões, adicionais e calendário.",
     milestone: "M1",
   },
   {
@@ -67,7 +68,8 @@ export const MENU: readonly Destino[] = [
     nome: "Funções padrão",
     icone: "func",
     grupo: "Configuração",
-    resumo: "Grupo, conta, escala, exames, adicionais, ferramentas e sinônimos de cada função.",
+    resumo:
+      "As funções em que o ITO organiza o histograma: grupo, conta do plano de contas, exames por tipo, adicionais legais e ferramentas. Os sinônimos ligam cada folha à função certa.",
     milestone: "M1",
   },
   {
@@ -75,7 +77,8 @@ export const MENU: readonly Destino[] = [
     nome: "Rubricas da folha",
     icone: "rub",
     grupo: "Configuração",
-    resumo: "Dicionário de rubricas: tipo, como entra no custo e base de provisões.",
+    resumo:
+      "Dicionário das verbas da folha: o código de cada rubrica, se é provento, desconto ou informativa, como entra no custo e se compõe a base das provisões.",
     milestone: "M1",
   },
 ];

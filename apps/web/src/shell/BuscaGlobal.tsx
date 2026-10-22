@@ -2,13 +2,23 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useNavigate } from "react-router";
 import { IconeBusca } from "./Icone";
+import { useFuncoes, useRubricas } from "../dados/cadastros";
+import { contemTermos } from "../lib/lista";
 import { buscarDestinos } from "./rotas";
 import s from "./Shell.module.css";
 
+interface Achado {
+  chave: string;
+  titulo: string;
+  sub: string;
+  caminho: string;
+  estado?: Record<string, string>;
+}
+
 const ehMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
 
-/** Busca global (PRD §3), aberta com Ctrl+K / ⌘K. No M0 acha as telas; obras, projeções,
- * funções e rubricas entram como fontes nos milestones de cada cadastro. */
+/** Busca global (PRD §3), aberta com Ctrl+K / ⌘K. Acha telas, funções e rubricas;
+ * obras e projeções entram como fontes nos milestones delas. */
 export function BuscaGlobal() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
@@ -29,11 +39,38 @@ export function BuscaGlobal() {
     return () => window.removeEventListener("keydown", atalho);
   }, []);
 
-  const achados = buscarDestinos(q).slice(0, 8);
   const mostrar = aberta && q.trim() !== "";
+  const { data: funcoes } = useFuncoes(mostrar);
+  const { data: rubricas } = useRubricas(mostrar);
+  const achados: Achado[] = [
+    ...buscarDestinos(q).map((d) => ({
+      chave: d.caminho,
+      titulo: d.nome,
+      sub: `Tela · ${d.grupo}`,
+      caminho: d.caminho,
+    })),
+    ...(funcoes ?? [])
+      .filter((x) => x.ativo && contemTermos(`${x.nome} ${x.conta_pc} ${x.sinonimos.join(" ")}`, q))
+      .map((x) => ({
+        chave: `f:${x.id}`,
+        titulo: x.nome,
+        sub: `Função padrão · ${x.conta_pc}`,
+        caminho: "/funcoes",
+        estado: { sel: x.id },
+      })),
+    ...(rubricas ?? [])
+      .filter((r) => r.ativo && contemTermos(`${r.codigo} ${r.nome}`, q))
+      .map((r) => ({
+        chave: `r:${r.codigo}`,
+        titulo: `${r.codigo} · ${r.nome}`,
+        sub: "Rubrica da folha",
+        caminho: "/rubricas",
+        estado: { q: `${r.codigo} ${r.nome}` },
+      })),
+  ].slice(0, 8);
 
-  function ir(caminho: string) {
-    navegar(caminho);
+  function ir({ caminho, estado }: Achado) {
+    navegar(caminho, { state: estado });
     setQ("");
     setAberta(false);
     input.current?.blur();
@@ -48,7 +85,7 @@ export function BuscaGlobal() {
       setSel((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter" && achados[sel]) {
       e.preventDefault();
-      ir(achados[sel].caminho);
+      ir(achados[sel]);
     } else if (e.key === "Escape") {
       setQ("");
       setAberta(false);
@@ -87,19 +124,19 @@ export function BuscaGlobal() {
         <ul className={s.resultados} role="listbox" id={idLista}>
           {achados.map((d, i) => (
             <li
-              key={d.caminho}
+              key={d.chave}
               id={`${idLista}-${i}`}
               role="option"
               aria-selected={i === sel}
               className={s.resultado}
               onMouseDown={(e) => {
                 e.preventDefault();
-                ir(d.caminho);
+                ir(d);
               }}
               onMouseEnter={() => setSel(i)}
             >
-              <span>{d.nome}</span>
-              <span className="sub">Tela · {d.grupo}</span>
+              <span>{d.titulo}</span>
+              <span className="sub">{d.sub}</span>
             </li>
           ))}
         </ul>

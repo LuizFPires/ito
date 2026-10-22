@@ -36,6 +36,8 @@ Cidade        { id, nome/UF, cct_id, tarifa_local, conducoes_por_trajeto, iss_pc
                 passagem_de: { cidade_id: R$ por trajeto } }
 ```
 
+> **Implementação (M1):** tabelas `funcoes` (+ `fator_he`, `ativo`), `funcao_sinonimos`, `rubricas` (+ `ativo`), `beneficios`, `datas_base` com filhas `data_base_salarios`, `data_base_beneficios` e `data_base_encargos`, `parametros` (linha única) e `feriados_empresa`. Percentuais de 0 a 100. Calendário e taxas de encargos: `packages/motor` (`calendario.ts`, `encargos.ts`).
+
 ### 1.2 Base histórica (por obra)
 
 ```

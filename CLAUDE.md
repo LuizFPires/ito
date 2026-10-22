@@ -73,6 +73,28 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Região dos projetos Supabase: `sa-east-1` (São Paulo). (auto — recomendado)
 - Tokens do Canteiro = os do protótipo ITO 2.0, exceto `--ok` (#18784e) e `--err` (#b83427) no modo claro, escurecidos para passar contraste AA sobre o próprio fundo; teste em `apps/web/src/estilo/tokens.test.ts`. (auto — recomendado)
 
+### M1 — Cadastros base (21/10/2026)
+- Edição: **controladoria** edita tudo (parâmetros, encargos, calendário, funções, rubricas); **DP/RH** edita funções e rubricas; **admin** edita tudo; os demais perfis só leem. Regra no banco (RLS), não só na tela.
+- Carga inicial com os **valores do protótipo ITO 2.0**: encargos reais (AF v07); salários e benefícios ilustrativos, marcados "a revisar pela controladoria". Os golden tests dependem deles.
+- Função ou rubrica fora de uso é **inativada** (some das listas e da carga, fica no histórico). Apagar só o que nunca foi usado.
+- Nova data-base = **cópia da vigente + reajuste %** em salários e benefícios (encargos e regras iguais). Só vira vigente quando alguém escolher.
+- Carga de **14 funções**: as 13 do SPEC §4.3 + Estagiário (vínculo estágio). (auto — recomendado)
+- Calendário e encargos são calculados no motor (`packages/motor`) já no M1; banco e telas só guardam e mostram. (auto — recomendado)
+- Revisão do M1 — aceito sem correção, com motivo:
+  - DP/RH edita valores das funções que mudam o custo (exames, adicionais, ferramentas, fator de HE). É o que a decisão de edição do M1 permite; **confirmar com a diretoria**.
+  - Funções e rubricas sem uso podem ser apagadas pela API. Quando o histórico (M3/M4) referenciar funções e rubricas, essas FKs serão `on delete restrict`.
+  - A incidência dos encargos usa os itens de id `ferias`, `terco` e `dec`. A interface não cria nem renomeia itens de encargo; se um dia criar, a regra de incidência vira um campo do item.
+  - O motor recebe feriados municipais com data completa; a cidade guarda dd-mm recorrente (SPEC §1.1). A conversão entra no M2.
+  - A lista de datas-base não tem busca: é uma linha por ano e fica curta.
+- Comparação com o protótipo (21/10/2026):
+  - **Data-base editável = a vigente e as "a revisar".** Revisada e fora de vigência fica travada no banco (gatilho `travar_data_base_revisada`) para não mudar o custo "época". Para mudar valores, crie outra data-base ou torne aquela a vigente.
+  - **Nova data-base copia sempre da vigente** (sem "Copiar de"); reajuste arredondado **em centavos** (o protótipo arredondava salário a R$ 10 e benefício a R$ 1; mantido centavos por decisão).
+  - **Função nova nasce como no protótipo:** salário do oficial (pedreiro) nas data-bases editáveis, conta 04.03.99, exames 150/105/150, escala ligada se direta, cor própria. As data-bases travadas não recebem salário (a função não existia nelas).
+  - Tornar vigente uma data-base "a revisar" pede confirmação.
+  - Convenções de tela aceitas: KPI "Rubricas ativas" (conta só ativas, por causa da inativação); aviso genérico "Salvo" em toda gravação; rótulos curtos de "Entra no custo como" com a explicação embaixo do nome; "Quem recebe o quê" com os adicionais legais numa coluna (regra 8).
+  - Ficam para quando houver histórico: coluna "Obras" em Funções (M4) e os KPIs "Base histórica a valores vigentes" e "Custo de 1 oficial·mês" em Parâmetros (M3/M4).
+- O M1 começou empilhado na branch do M0 (`feat/m1-cadastros` a partir de `feat/m0-fundacao`) porque o CI do GitHub está bloqueado por cobrança; o PR do M1 aponta para a `main` depois do merge do M0.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
