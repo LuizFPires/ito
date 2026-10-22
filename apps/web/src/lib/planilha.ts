@@ -3,7 +3,7 @@
  * Os códigos de formato do arquivo são neutros (vírgula = milhar, ponto = decimal no código); o
  * Excel em português mostra 1.234,56 sem reformatar (aceite do M8). Gerado no navegador.
  */
-import { numero, percentual } from "@ito/formato";
+import { arredondar, numero, percentual } from "@ito/formato";
 import type { SheetData } from "write-excel-file/browser";
 
 export type Formato = "moeda" | "pm" | "inteiro" | "decimal" | "pct" | "texto";
@@ -54,7 +54,13 @@ function celula(v: Valor, formato: Formato, negrito: boolean) {
     if (!Number.isFinite(v)) return null;
     if (formato === "texto") return { value: String(v), type: String, fontWeight };
     return {
-      value: formato === "pct" ? v / 100 : v,
+      // arredondamento só na exportação (convenção): R$ em centavos, % com 4 casas
+      value:
+        formato === "pct"
+          ? arredondar(v, 4) / 100
+          : formato === "moeda" || formato === "decimal"
+            ? arredondar(v, 2)
+            : v,
       type: Number,
       format: FORMATOS[formato],
       fontWeight,
