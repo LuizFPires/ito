@@ -8,14 +8,72 @@ select '00000000-0000-0000-0000-000000000000', gen_random_uuid(), 'authenticated
        jsonb_build_object('perfil', coalesce(p, 'engenharia'), 'admin', p is null), '{}'
 from unnest(array['planejamento', 'engenharia', 'dp_rh', 'controladoria', 'diretoria', null]) p;
 
+-- uma obra com lançamento e uma projeção para as operações reais (como admin do seed)
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select public.gravar_carga($j${"obra": {"id": "perm_obra", "nome": "Obra Permissões", "area_m2": 1000,
+  "inicio": "2025-03-01", "meses": 1, "data_base": 2025}, "competencias": [{"mes_idx": 0}],
+  "lancamentos": [{"mes_idx": 0, "matricula": "101", "funcao_id": "ped", "equivalente": 1,
+  "rubricas": [{"codigo": 1, "referencia": 220, "valor": 1650}]}]}$j$::jsonb);
+insert into public.projecoes (id, nome, inicio, prazo_meses, area_m2)
+  values ('00000000-0000-4000-8000-0000000000bb', 'Projeção Permissões', '2027-01-01', 3, 1000);
+
+-- faz a operação de verdade, com a RLS e as funções do banco, e desfaz em seguida
+create function public.teste_consegue(op text) returns boolean language plpgsql as $$
+declare
+  n integer := 1;
+begin
+  begin
+    case op
+      when 'premissas' then
+        update public.obras set risco_pct = risco_pct where id = 'perm_obra';
+        get diagnostics n = row_count;
+      when 'folha' then
+        select count(*) into n from public.lancamentos where obra_id = 'perm_obra';
+      when 'carga' then
+        perform public.gravar_carga($j${"obra": {"id": "perm_obra2", "nome": "Obra Permissões 2",
+          "area_m2": 1000, "inicio": "2025-03-01", "meses": 1, "data_base": 2025},
+          "competencias": [{"mes_idx": 0}], "lancamentos": []}$j$::jsonb);
+      when 'cidades' then
+        update public.cidades set iss_pct = iss_pct where id = (select min(id) from public.cidades);
+        get diagnostics n = row_count;
+      when 'parametros' then
+        update public.parametros set carnaval = carnaval;
+        get diagnostics n = row_count;
+      when 'funcoes' then
+        update public.funcoes set nome = nome where id = 'ped';
+        get diagnostics n = row_count;
+      when 'rubricas' then
+        update public.rubricas set nome = nome where codigo = 1;
+        get diagnostics n = row_count;
+      when 'projetar' then
+        insert into public.projecoes (nome, inicio, prazo_meses, area_m2)
+          values ('Teste', '2027-01-01', 3, 1000);
+      when 'aprovar' then
+        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'aprovada');
+      when 'auditoria' then
+        select count(*) into n from public.auditoria;
+      when 'usuarios' then
+        perform public.listar_usuarios();
+    end case;
+    if n = 0 then return false; end if;
+    raise exception using errcode = 'P0099'; -- deu certo: desfaz
+  exception
+    when sqlstate 'P0099' then return true;
+    when others then return false;
+  end;
+end;
+$$;
+grant execute on function public.teste_consegue(text) to authenticated;
+
 -- diverge: o que a tabela de permissões diz × o que as funções e a RLS deixam, por usuário
 -- recebe os usuários prontos: lidos como postgres (a RLS de usuarios esconderia as linhas)
 create function public.teste_divergencias(usuarios jsonb) returns setof text language plpgsql as $$
 declare
   u record;
   t record;
-  linhas integer;
   vistos integer := 0;
+  op text;
+  esperado boolean;
 begin
   for u in select * from jsonb_to_recordset(usuarios)
              as x (id uuid, email text, perfil public.perfil, admin boolean) loop
@@ -24,25 +82,25 @@ begin
       jsonb_build_object('sub', u.id, 'role', 'authenticated')::text, true);
     for t in select * from public.permissoes() x
              where x.admin = u.admin and (u.admin or x.perfil = u.perfil::text) loop
+      -- funções pode_* (as telas e as políticas usam)
       if (t.ordem = 2 and t.le <> public.pode_carregar())
-         or (t.ordem = 3 and t.edita <> public.pode_carregar())
+         or (t.ordem in (1, 3) and t.edita <> public.pode_carregar())
          or (t.ordem in (4, 5) and t.edita <> public.pode_editar_config())
          or (t.ordem in (6, 7) and t.edita <> public.pode_editar_cadastros())
          or (t.ordem = 8 and t.edita <> public.pode_projetar())
          or (t.ordem = 9 and t.aprova <> public.pode_aprovar())
          or (t.ordem = 11 and t.le <> public.pode_auditar())
          or (t.ordem = 12 and t.le <> public.sou_admin()) then
-        return next u.email || ': ' || t.modulo;
+        return next u.email || ': função de ' || t.modulo;
       end if;
-      -- a RLS de verdade: parâmetros e funções
-      if t.ordem = 5 then
-        update public.parametros set carnaval = carnaval;
-        get diagnostics linhas = row_count;
-        if (linhas > 0) <> t.edita then return next u.email || ': RLS de parâmetros'; end if;
-      elsif t.ordem = 6 then
-        update public.funcoes set nome = nome where id = 'ped';
-        get diagnostics linhas = row_count;
-        if (linhas > 0) <> t.edita then return next u.email || ': RLS de funções'; end if;
+      -- a operação real de cada módulo (exportações não têm operação própria no banco)
+      op := (array['premissas', 'folha', 'carga', 'cidades', 'parametros', 'funcoes', 'rubricas',
+                   'projetar', 'aprovar', null, 'auditoria', 'usuarios'])[t.ordem];
+      esperado := case t.ordem when 2 then t.le when 9 then t.aprova when 11 then t.le
+                               when 12 then t.le else t.edita end;
+      if op is not null and public.teste_consegue(op) <> esperado then
+        return next u.email || ': ' || t.modulo || case when esperado
+          then ' (a tabela diz que pode, o banco nega)' else ' (o banco deixa, a tabela diz que não)' end;
       end if;
     end loop;
   end loop;
@@ -57,7 +115,7 @@ select set_config('teste.usuarios', (select jsonb_agg(jsonb_build_object('id', i
   'perfil', perfil, 'admin', admin)) from public.usuarios where email like 'perm-%')::text, true);
 set local role authenticated;
 select is(array(select public.teste_divergencias(current_setting('teste.usuarios')::jsonb)), array[]::text[],
-  'tabela de permissões = funções pode_* e RLS, para cada perfil e para o admin');
+  'tabela de permissões = funções pode_* e operação real de cada módulo, por perfil e admin');
 
 -- quem não carrega vê a folha por matrícula só nos totais
 select is((select so_totais from public.permissoes() where ordem = 2 and perfil = 'engenharia'),

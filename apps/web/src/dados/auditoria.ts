@@ -27,6 +27,8 @@ export interface FiltroAuditoria {
   /** dd/mm/aaaa já convertido para aaaa-mm-dd */
   de?: string | null;
   ate?: string | null;
+  /** mais antigas primeiro */
+  antigas?: boolean;
   pagina: number;
   porPagina: number;
 }
@@ -42,8 +44,8 @@ export function useAuditoria(f: FiltroAuditoria, ativo = true) {
         .select("id, em, usuario_email, modulo, tabela, ref, registro, operacao, antes, depois", {
           count: "exact",
         })
-        .order("em", { ascending: false })
-        .order("id", { ascending: false });
+        .order("em", { ascending: !!f.antigas })
+        .order("id", { ascending: !!f.antigas });
       if (f.modulo) q = q.eq("modulo", f.modulo);
       if (f.ref) q = q.eq("ref", f.ref);
       if (f.pessoa?.trim()) q = q.ilike("usuario_email", `%${f.pessoa.trim()}%`);

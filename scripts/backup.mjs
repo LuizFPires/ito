@@ -5,11 +5,12 @@
 //
 // Homologação e produção pedem a senha do banco em .env.supabase.local
 // (SUPABASE_DB_PASSWORD_HOMOLOGACAO / SUPABASE_DB_PASSWORD_PRODUCAO). O dump traz valores por
-// matrícula (sem nomes): guarde a pasta em local com acesso restrito.
+// matrícula (sem nomes): guarde a pasta em local com acesso restrito. No Windows, umask e chmod não
+// restringem o acesso: use uma pasta do próprio usuário ou com permissão só para a controladoria.
 import { execSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, relative, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 // o backup traz contas (hash de senha) e valores por matrícula: só o dono lê, desde a criação
 process.umask(0o077);
@@ -35,11 +36,17 @@ if (!["local", "homologacao", "producao"].includes(ambiente)) {
   process.exit(1);
 }
 const i = resto.indexOf("--pasta");
+if (i >= 0 && !resto[i + 1]) {
+  console.error("Informe a pasta depois de --pasta.");
+  process.exit(1);
+}
 const carimbo = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
 const pasta = resolve(
   i >= 0 ? resto[i + 1] : join(homedir(), "ITO-backups", `${ambiente}-${carimbo}`),
 );
-if (!relative(REPO, pasta).startsWith("..")) {
+// fora do repositório: outro disco (caminho absoluto) ou acima dele ("..\x", não "..x")
+const rel = relative(REPO, pasta);
+if (!(isAbsolute(rel) || rel === ".." || rel.startsWith(`..${sep}`))) {
   console.error("A pasta do backup fica fora do repositório (os dados não vão para o git).");
   process.exit(1);
 }

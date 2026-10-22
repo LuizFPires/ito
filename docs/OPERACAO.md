@@ -15,12 +15,14 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    ```sh
    pnpm exec supabase functions deploy usuarios --project-ref <ref>
    ```
-3. **Auth:** aplique a configuração. O comando leva o modelo do e-mail de convite em português (`supabase/templates/convite.html`).
+3. **Auth:** aplique a configuração. O comando leva os modelos de e-mail em português: convite (`supabase/templates/convite.html`) e troca de senha (`recuperar.html`).
    ```sh
    pnpm exec supabase config diff --project-ref <ref>
    pnpm exec supabase config push --project-ref <ref>
    ```
-   Se o push não levar o modelo, cole o mesmo HTML em Authentication → Email Templates → Invite user, com o assunto "Convite para o ITO".
+   Se o push não levar os modelos, cole o HTML em Authentication → Email Templates: "Invite user" com o assunto "Convite para o ITO" e "Reset password" com "Definir senha do ITO".
+   - **E-mail de verdade (SMTP), obrigatório em produção:** o envio padrão do Supabase manda pouquíssimos e-mails por hora e só para a equipe do projeto, e o convite pela tela falha com "O convite não foi enviado". Configure um SMTP próprio (o da empresa ou um serviço como Resend, SendGrid, Amazon SES) em Authentication → SMTP Settings, com o remetente do domínio da Clássica, antes do primeiro convite.
+   - **Primeira publicação da Edge Function:** confira que convidar, desativar e reativar funcionam. Se o projeto tiver desligado as chaves antigas (JWT), a função pode não receber `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`; nesse caso, guarde a chave secreta como segredo da função (`supabase secrets set`) e ajuste a leitura em `supabase/functions/usuarios/index.ts`.
 4. **Front:** o merge na `main` publica a produção na Vercel. Cada PR gera um preview ligado à homologação.
 5. **Confira** depois de cada publicação:
    - entrar com um usuário de cada perfil;
@@ -34,7 +36,8 @@ A gestão é pela tela **Administração → Usuários**, só para quem é admin
 
 - **Convidar:** informe e-mail, nome, perfil e, se for o caso, admin.
   - A pessoa recebe o e-mail "Convite para o ITO" e define a senha (mínimo de 10 caracteres) em `/definir-senha`.
-  - Convidar de novo quem ainda não entrou reenvia o convite.
+  - O link vale por 1 hora. Se expirar, ou se a pessoa abriu o link e não salvou a senha, use **Enviar link de senha** na linha dela: manda o convite de novo ou, para quem já tem senha, o e-mail de troca de senha.
+  - Quem esqueceu a senha usa **Esqueci a senha** na tela de entrada.
 - **Perfil e admin:** mudam na própria lista e valem na hora.
   - O admin não tira o próprio acesso de admin.
   - O ITO nunca fica sem pelo menos um admin ativo.
@@ -61,7 +64,8 @@ São duas linhas de defesa:
    pnpm db:backup homologacao --pasta D:\backups\ito
    ```
    - Precisa da senha do banco em `.env.supabase.local` (`SUPABASE_DB_PASSWORD_PRODUCAO` ou `_HOMOLOGACAO`). A senha vai para o CLI por variável de ambiente, nunca na linha de comando.
-   - O dump traz valores por matrícula, sem nomes. Guarde-o em pasta com acesso restrito (cofre ou unidade da controladoria), nunca no git nem em e-mail.
+   - O dump traz contas (com o hash da senha) e valores por matrícula, sem nomes; sessões e tokens de renovação ficam de fora. Guarde-o em pasta com acesso restrito (cofre ou unidade da controladoria), nunca no git nem em e-mail.
+   - No Linux e no Mac, o script cria a pasta e os arquivos só para o dono. No Windows isso não vale: use uma pasta do próprio usuário ou com permissão só para a controladoria.
    - **Rotina sugerida:** semanal em produção e antes de cada migração que mexa em dados. Guarde as 8 últimas cópias.
 
 ## 4. Restauração
@@ -69,7 +73,7 @@ São duas linhas de defesa:
 **Ensaio ou conferência no ambiente local:**
 
 ```sh
-pnpm db:restaurar <pasta do backup>
+pnpm db:restaurar <pasta do backup> --confirmar
 ```
 
 O comando:
@@ -99,9 +103,12 @@ O ensaio de 22/10/2026 restaurou as 23 obras migradas (3.172 lançamentos, 5 usu
 
 **Administração → Auditoria** mostra o que mudou, com a versão anterior e a nova, quem mudou e quando, com filtros por módulo, pessoa e período. A tela é para admin, controladoria e diretoria; a auditoria de usuários, só para o admin.
 
-- O detalhe da obra, da projeção, da data-base e da CCT tem um "Histórico de alterações" com os registros daquele item.
+- O detalhe da obra, da projeção e da CCT tem um "Histórico de alterações" daquele item; em Parâmetros, o histórico é de toda a tabela da empresa (data-bases, HE, adicionais, calendário).
+- Convidar, desativar e reativar ficam com o admin que fez. A criação da conta pelo Auth aparece sem autor, seguida da linha do admin que convidou.
+- Regravar o resumo de uma projeção (feito ao abrir, quando os preços mudaram) não aparece como alteração.
 - Ninguém edita nem apaga a auditoria, e ela é guardada para sempre.
-- A carga e a exclusão de uma obra registram só a obra, não cada lançamento por matrícula.
+- A carga e a exclusão de uma obra registram a obra e os cadastros que a carga mudar (sinônimos de função, rubricas novas), não as linhas por mês nem cada lançamento por matrícula.
+- Quem lê a auditoria (controladoria e diretoria) vê o e-mail de quem alterou, mesmo sem acesso à lista de usuários: é o que dá sentido à trilha.
 
 ## 6. Desempenho
 

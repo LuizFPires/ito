@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
-import { entrar } from "./ajuda";
+import { entrar, semRolagemLateral } from "./ajuda";
 
 const URL_API = "http://127.0.0.1:54821";
 const MAILPIT = "http://127.0.0.1:54824";
@@ -52,6 +52,17 @@ test("admin convida, muda o perfil, desativa e reativa; a pessoa define a senha 
   await expect(linha).toContainText("desativado");
   await linha.getByRole("button", { name: "Reativar" }).click();
   await expect(linha).toContainText("convite pendente");
+  await linha.getByRole("button", { name: "Enviar link de senha" }).click();
+  await expect(page.getByText("Link enviado por e-mail")).toBeVisible();
+  expect(await semRolagemLateral(page)).toBe(true);
+
+  // ordenar por perfil: Controladoria (admin) antes de Diretoria
+  await page.getByRole("button", { name: "Perfil" }).click();
+  const perfis = await page
+    .getByRole("table", { name: "Usuários" })
+    .getByRole("combobox")
+    .evaluateAll((s) => s.map((x) => (x as HTMLSelectElement).value));
+  expect(perfis.indexOf("controladoria")).toBeLessThan(perfis.indexOf("diretoria"));
 
   // o e-mail do convite (Mailpit do Supabase local) leva a definir a senha
   let link = "";

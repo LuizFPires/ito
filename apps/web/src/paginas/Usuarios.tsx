@@ -6,17 +6,19 @@ import type { Convite, Permissao, UsuarioLista } from "../dados/usuarios";
 import {
   useAlterarUsuario,
   useConvidar,
+  useLinkSenha,
   usePermissoes,
   useSituacao,
   useUsuarios,
 } from "../dados/usuarios";
-import { contemTermos, paginar } from "../lib/lista";
+import { alternarOrdem, contemTermos, ordenar, paginar } from "../lib/lista";
+import type { Ordem } from "../lib/lista";
 import { podeGerirUsuarios } from "../lib/permissoes";
 import type { Perfil } from "../lib/supabase";
 import { NOME_PERFIL } from "../lib/supabase";
 import { MENU } from "../shell/rotas";
 import { Badge, Botao, Cartao, Chip } from "../ui/componentes";
-import { Campo, CampoBusca, Interruptor, Kpi, Paginacao, Selecao } from "../ui/formulario";
+import { Campo, CampoBusca, Interruptor, Kpi, Paginacao, Selecao, ThOrdem } from "../ui/formulario";
 import f from "../ui/formulario.module.css";
 import { Pagina } from "./Pagina";
 
@@ -30,6 +32,7 @@ const CURTO: Record<Perfil, string> = {
   diretoria: "Diretoria",
 };
 type Situacao = "todos" | "ativos" | "pendentes" | "desativados";
+type Chave = "nome" | "perfil" | "situacao";
 
 function situacaoDe(u: UsuarioLista): Exclude<Situacao, "todos"> {
   if (!u.ativo) return "desativados";
@@ -45,16 +48,23 @@ export function TelaUsuarios() {
   const [sit, setSit] = useState<Situacao>("todos");
   const [pagina, setPagina] = useState(1);
   const [convidando, setConvidando] = useState(false);
+  const [ordem, setOrdem] = useState<Ordem<Chave>>({ chave: "nome", dir: 1 });
+  const ordenarPor = (k: Chave) => setOrdem(alternarOrdem(ordem, k));
 
   const todos = lista.data ?? [];
   const filtrados = useMemo(
     () =>
-      (lista.data ?? []).filter(
-        (u) =>
-          (sit === "todos" || situacaoDe(u) === sit) &&
-          contemTermos(`${u.nome} ${u.email} ${NOME_PERFIL[u.perfil]}`, q),
+      ordenar(
+        (lista.data ?? []).filter(
+          (u) =>
+            (sit === "todos" || situacaoDe(u) === sit) &&
+            contemTermos(`${u.nome} ${u.email} ${NOME_PERFIL[u.perfil]}`, q),
+        ),
+        ordem,
+        (u, k) =>
+          k === "nome" ? u.nome || u.email : k === "perfil" ? NOME_PERFIL[u.perfil] : situacaoDe(u),
       ),
-    [lista.data, sit, q],
+    [lista.data, sit, q, ordem],
   );
   const pg = paginar(filtrados, pagina, POR_PAGINA);
   const conta = (s: Exclude<Situacao, "todos">) => todos.filter((u) => situacaoDe(u) === s).length;
@@ -141,10 +151,16 @@ export function TelaUsuarios() {
             <table className={f.tabela} aria-label="Usuários">
               <thead>
                 <tr>
-                  <th>Pessoa</th>
-                  <th>Perfil</th>
+                  <ThOrdem chave="nome" ordem={ordem} onOrdenar={ordenarPor}>
+                    Pessoa
+                  </ThOrdem>
+                  <ThOrdem chave="perfil" ordem={ordem} onOrdenar={ordenarPor}>
+                    Perfil
+                  </ThOrdem>
                   <th>Admin</th>
-                  <th>Situação</th>
+                  <ThOrdem chave="situacao" ordem={ordem} onOrdenar={ordenarPor}>
+                    Situação
+                  </ThOrdem>
                   <th className={f.r}>Ação</th>
                 </tr>
               </thead>
@@ -172,8 +188,9 @@ export function TelaUsuarios() {
 function LinhaUsuario({ u, eu }: { u: UsuarioLista; eu: boolean }) {
   const alterar = useAlterarUsuario();
   const situacao = useSituacao();
+  const link = useLinkSenha();
   const s = situacaoDe(u);
-  const ocupado = alterar.isPending || situacao.isPending;
+  const ocupado = alterar.isPending || situacao.isPending || link.isPending;
   return (
     <tr>
       <td>
@@ -213,7 +230,18 @@ function LinhaUsuario({ u, eu }: { u: UsuarioLista; eu: boolean }) {
           {u.ultimo_acesso ? `último acesso ${dataHora(u.ultimo_acesso)}` : "nunca entrou"}
         </div>
       </td>
-      <td className={f.r}>
+      <td className={f.r} style={{ whiteSpace: "nowrap" }}>
+        {u.ativo && (
+          <Botao
+            pequeno
+            variante="fantasma"
+            disabled={ocupado}
+            title="Envia por e-mail o link para definir a senha (convite de novo ou troca de senha)"
+            onClick={() => link.mutate(u.id)}
+          >
+            Enviar link de senha
+          </Botao>
+        )}{" "}
         {!eu && (
           <Botao
             pequeno
@@ -303,8 +331,8 @@ function NovoConvite({ onFechar }: { onFechar: () => void }) {
         </p>
       )}
       <p className="sub" style={{ padding: "0 22px 16px", margin: 0 }}>
-        A pessoa recebe um e-mail com o link para definir a senha. Convidar de novo quem ainda não
-        entrou reenvia o convite.
+        A pessoa recebe um e-mail com o link para definir a senha (vale por 1 hora). Se expirar, use
+        “Enviar link de senha” na lista.
       </p>
     </Cartao>
   );

@@ -33,26 +33,35 @@ function sorteio(semente: number) {
 
 async function gerarCcts(api: Api) {
   const existentes = await api.ler<{ id: string }>("ccts?select=id");
-  const faltam = META.ccts - existentes.length;
-  for (let i = 0; i < faltam; i++) {
-    const id = `${P}cct_${String(i + 1).padStart(3, "0")}`;
-    await api.rpc("duplicar_cct", { p_origem: "bh", p_id: id, p_nome: `Desempenho CCT ${i + 1}` });
+  const ids = new Set(existentes.map((c) => c.id));
+  let criadas = 0;
+  // numeração que pula o que já existe: rodar de novo depois de uma execução parcial completa
+  for (let n = 1; existentes.length + criadas < META.ccts; n++) {
+    const id = `${P}cct_${String(n).padStart(3, "0")}`;
+    if (ids.has(id)) continue;
+    await api.rpc("duplicar_cct", { p_origem: "bh", p_id: id, p_nome: `Desempenho CCT ${n}` });
+    criadas++;
   }
-  console.log(`CCTs: ${existentes.length} + ${Math.max(0, faltam)}`);
+  console.log(`CCTs: ${existentes.length} + ${criadas}`);
 }
 
 async function gerarCidades(api: Api) {
   const existentes = await api.ler<{ id: string }>("cidades?select=id");
   const ccts = (await api.ler<{ id: string }>("ccts?select=id&order=id")).map((c) => c.id);
-  const faltam = META.cidades - existentes.length;
-  const novas = Array.from({ length: Math.max(0, faltam) }, (_, i) => ({
-    id: `${P}cid_${String(i + 1).padStart(3, "0")}`,
-    nome: `Cidade Desempenho ${i + 1}`,
-    uf: "MG",
-    cct_id: ccts[i % ccts.length],
-    tarifa_local: 5 + (i % 4),
-    iss_pct: 2 + (i % 3),
-  }));
+  const ids = new Set(existentes.map((c) => c.id));
+  const novas = [];
+  for (let n = 1; existentes.length + novas.length < META.cidades; n++) {
+    const id = `${P}cid_${String(n).padStart(3, "0")}`;
+    if (ids.has(id)) continue;
+    novas.push({
+      id,
+      nome: `Cidade Desempenho ${n}`,
+      uf: "MG",
+      cct_id: ccts[n % ccts.length],
+      tarifa_local: 5 + (n % 4),
+      iss_pct: 2 + (n % 3),
+    });
+  }
   for (let k = 0; k < novas.length; k += 100) await api.inserir("cidades", novas.slice(k, k + 100));
   console.log(`cidades: ${existentes.length} + ${novas.length}`);
 }

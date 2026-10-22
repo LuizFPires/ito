@@ -30,7 +30,7 @@ test("alteração vira linha da auditoria com antes e depois; histórico no deta
   await page.getByRole("link", { name: "Auditoria" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Auditoria" })).toBeVisible();
   await page.getByLabel("Módulo").selectOption("projecoes");
-  const linha = page.getByRole("row").filter({ hasText: "area m2" }).first();
+  const linha = page.getByRole("row").filter({ hasText: "área (m²)" }).first();
   await expect(linha).toContainText("5.000");
   await expect(linha).toContainText("6.500");
   await expect(linha).toContainText("admin@ito.local");
@@ -40,7 +40,7 @@ test("alteração vira linha da auditoria com antes e depois; histórico no deta
   await page.goto(`/projecoes/${p!.id}`);
   const hist = page.getByRole("region", { name: "Histórico de alterações" });
   await hist.getByRole("button", { name: "Mostrar" }).click();
-  await expect(hist.getByRole("row").filter({ hasText: "area m2" })).toContainText("6.500");
+  await expect(hist.getByRole("row").filter({ hasText: "área (m²)" })).toContainText("6.500");
 });
 
 test("quem não lê a auditoria não vê o menu nem os dados", async ({ page }) => {

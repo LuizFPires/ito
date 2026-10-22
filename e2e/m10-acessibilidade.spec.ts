@@ -99,6 +99,17 @@ for (const tema of ["claro", "escuro"] as const) {
       await page.waitForLoadState("networkidle");
       achados.push(...(await varrer(page, rota)));
     }
+    // estados abertos: formulário de convite e histórico de alterações
+    await page.goto("/usuarios");
+    await page.getByRole("button", { name: "Convidar usuário" }).click();
+    achados.push(...(await varrer(page, "/usuarios (convite aberto)")));
+    await page.goto(`/obras/${OBRA}`);
+    await page
+      .getByRole("region", { name: "Histórico de alterações" })
+      .getByRole("button", { name: "Mostrar" })
+      .click();
+    await page.waitForLoadState("networkidle");
+    achados.push(...(await varrer(page, "obra (histórico aberto)")));
     expect(achados).toEqual([]);
   });
 }

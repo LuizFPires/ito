@@ -1,21 +1,27 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { dataHora, numero, parseData } from "@ito/formato";
 import { useSessao } from "../auth/sessao";
 import type { Alteracao } from "../dados/auditoria";
 import { useAuditoria } from "../dados/auditoria";
-import { diferencas, MODULOS, OPERACAO, rotuloRegistro, valorAuditado } from "../lib/auditoria";
+import {
+  diferencas,
+  MODULOS,
+  nomeCampo,
+  OPERACAO,
+  rotuloRegistro,
+  valorAuditado,
+} from "../lib/auditoria";
 import type { Pagina as PaginaLista } from "../lib/lista";
 import { podeAuditar } from "../lib/permissoes";
 import { MENU } from "../shell/rotas";
-import { Badge, Botao, Cartao } from "../ui/componentes";
+import { Badge, Botao, Cartao, Segmento } from "../ui/componentes";
 import { Campo, CampoBusca, Paginacao, Selecao } from "../ui/formulario";
 import f from "../ui/formulario.module.css";
 import { Pagina } from "./Pagina";
 
 const POR_PAGINA = 25;
 const TOM = { insert: "ok", update: "ambar", delete: "erro" } as const;
-const nomeCampo = (c: string) => c.replace(/_/g, " ");
 
 function paginaDe<T>(itens: T[], pagina: number, total: number, por: number): PaginaLista<T> {
   const paginas = Math.max(1, Math.ceil(total / por));
@@ -152,12 +158,19 @@ export function TelaAuditoria() {
   const [pessoa, setPessoa] = useState("");
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
+  const [antigas, setAntigas] = useState(false);
   const [pagina, setPagina] = useState(1);
+  // a busca por pessoa consulta o servidor: espera a digitação assentar
+  const [pessoaBusca, setPessoaBusca] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setPessoaBusca(pessoa.trim().length >= 2 ? pessoa.trim() : ""), 300);
+    return () => clearTimeout(t);
+  }, [pessoa]);
   const deIso = de.trim() ? parseData(de) : null;
   const ateIso = ate.trim() ? parseData(ate) : null;
   const dataInvalida = (de.trim() && !deIso) || (ate.trim() && !ateIso);
   const q = useAuditoria(
-    { modulo, pessoa, de: deIso, ate: ateIso, pagina, porPagina: POR_PAGINA },
+    { modulo, pessoa: pessoaBusca, de: deIso, ate: ateIso, antigas, pagina, porPagina: POR_PAGINA },
     pode && !dataInvalida,
   );
   const filtrar = (fn: () => void) => {
@@ -218,6 +231,15 @@ export function TelaAuditoria() {
               onChange={(e) => filtrar(() => setAte(e.target.value))}
             />
           </Campo>
+          <Segmento
+            rotulo="Ordem"
+            opcoes={[
+              { valor: "recentes", texto: "Mais recentes" },
+              { valor: "antigas", texto: "Mais antigas" },
+            ]}
+            valor={antigas ? "antigas" : "recentes"}
+            onChange={(v) => filtrar(() => setAntigas(v === "antigas"))}
+          />
         </div>
         {dataInvalida ? (
           <p className="sub" style={{ padding: 22 }} role="alert">
@@ -250,7 +272,7 @@ export function TelaAuditoria() {
  * Histórico de um registro (obra, CCT, cidade, data-base, projeção) no detalhe dele: as últimas
  * alterações com a versão anterior. Só aparece para quem lê a auditoria.
  */
-export function HistoricoAlteracoes({ modulo, refId }: { modulo: string; refId: string }) {
+export function HistoricoAlteracoes({ modulo, refId }: { modulo: string; refId?: string }) {
   const { usuario } = useSessao();
   const pode = podeAuditar(usuario);
   const [aberto, setAberto] = useState(false);

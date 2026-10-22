@@ -157,7 +157,7 @@ export function TelaParametros() {
       {aba === "cal" && <AbaCalendario pode={pode} anoInicial={vigente} />}
       {aba === "datas" && <AbaDatasBase datas={datas ?? []} vigente={vigente} pode={pode} />}
 
-      {ano && <HistoricoAlteracoes key={ano} modulo="parametros" refId={String(ano)} />}
+      <HistoricoAlteracoes modulo="parametros" />
       <Cartao className={f.painel} style={{ position: "static" }}>
         <span className="rotulo">O que é histórico e o que é atualizado</span>
         <p className="sub" style={{ margin: 0, maxWidth: "80ch" }}>

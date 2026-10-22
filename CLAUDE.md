@@ -260,6 +260,14 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Backup:** os backups diários do Supabase são a primeira linha; além deles, `pnpm db:backup` gera um dump (esquema + dados) de homologação ou produção numa pasta fora do repositório, e a restauração é ensaiada no banco local e descrita em `docs/OPERACAO.md`. (auto — recomendado)
 - **Usuários:** convite pelo e-mail do Supabase Auth (link para definir a senha), por uma Edge Function `usuarios` que confere se quem chama é admin; desativar = bloquear o login no Auth e marcar `ativo = false` (a autoria fica); último acesso vem do Auth. Só admin vê a tela. (auto — recomendado)
 - **Tabela de permissões** servida pelo banco (função `permissoes()`: módulo × perfil → lê, edita, aprova e limitações) e mostrada na tela de usuários; um teste de banco percorre cada perfil (com e sem admin) e falha se a tabela divergir do que as funções `pode_*` e a RLS realmente deixam. (auto — recomendado)
+- Revisão do M10 (22/10/2026), corrigido:
+  - **Autoria** das ações da função de usuários (convidar, desativar, reativar) = o admin que chamou (`gerir_usuario` + `autor_atual()`); a criação da conta pelo Auth fica sem autor.
+  - **A carga registra os cadastros que muda** (sinônimos, rubricas novas); só as linhas por mês da obra ficam fora. **Resumo da projeção** regravado ao abrir não entra na auditoria.
+  - Auditoria **imutável também para a chave de serviço** (gatilho), política de leitura sem chamada por linha, busca por pessoa com espera de 300 ms; valores em R$ e % e campos com nomes legíveis; histórico de Parâmetros = toda a tabela da empresa.
+  - **Link de senha:** vale 1 hora (texto do e-mail corrigido); "Enviar link de senha" na lista (convite de novo ou troca de senha) e "Esqueci a senha" no login; convite pendente = ainda sem senha. SMTP próprio documentado como obrigatório em produção.
+  - Teste de permissões faz a **operação real de cada módulo** por perfil (conferido com mutação); trava contra dois admins se removerem ao mesmo tempo; ordenação na lista de usuários.
+  - Scripts: backup só para o dono e sem sessões, pasta em outro disco aceita; restauração pede `--confirmar`; gerador de desempenho completa o que falta sem colidir ids.
+  - Aceito: quem lê a auditoria vê o e-mail de quem alterou (é a trilha); o gerador de desempenho deixa linhas de auditoria no banco local.
 - O M10 começou empilhado no M9 (`feat/m10-endurecimento` a partir de `feat/m9-migracao`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)

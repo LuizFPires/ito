@@ -61,7 +61,37 @@ async function chamador(req: Request): Promise<{ id: string } | Response> {
 const mensagemBanco = (c: Record<string, unknown>) =>
   String(c.message ?? c.msg ?? "Não foi possível gravar. Tente de novo.");
 
-async function convidar(corpo: Record<string, unknown>, origem: string) {
+/** Grava na linha de usuarios com o admin que chamou como autor (auditoria e proteções). */
+const gerir = (autor: string, id: string, patch: Record<string, unknown>) =>
+  chamar("/rest/v1/rpc/gerir_usuario", {
+    method: "POST",
+    json: { p_autor: autor, p_id: id, p_patch: patch },
+  });
+
+const destinoDoLink = (origem: string) =>
+  origem ? `?redirect_to=${encodeURIComponent(`${origem}/definir-senha`)}` : "";
+
+/**
+ * Link para definir a senha: convite de novo para quem ainda não entrou; para quem já tem conta
+ * confirmada, o e-mail de troca de senha. Os dois levam a /definir-senha.
+ */
+async function enviarLink(email: string, origem: string, nome?: string) {
+  const convite = await chamar(`/auth/v1/invite${destinoDoLink(origem)}`, {
+    method: "POST",
+    json: nome ? { email, data: { nome } } : { email },
+  });
+  if (convite.ok) return { ok: true as const, id: String(convite.corpo.id), novo: true };
+  const jaExiste =
+    convite.status === 422 || /already|registered/i.test(mensagemBanco(convite.corpo));
+  if (!jaExiste) return { ok: false as const };
+  const troca = await chamar(`/auth/v1/recover${destinoDoLink(origem)}`, {
+    method: "POST",
+    json: { email },
+  });
+  return troca.ok ? { ok: true as const, id: "", novo: false } : { ok: false as const };
+}
+
+async function convidar(corpo: Record<string, unknown>, origem: string, quem: string) {
   const email = String(corpo.email ?? "")
     .trim()
     .toLowerCase();
@@ -72,48 +102,46 @@ async function convidar(corpo: Record<string, unknown>, origem: string) {
   if (!nome) return erro(400, "Informe o nome de quem vai entrar.");
   if (!PERFIS.includes(perfil)) return erro(400, "Escolha o perfil.");
 
-  // o Auth lê o destino do link na query (e confere com a lista de endereços permitidos)
-  const destino = origem ? `?redirect_to=${encodeURIComponent(`${origem}/definir-senha`)}` : "";
-  const convite = await chamar(`/auth/v1/invite${destino}`, {
-    method: "POST",
-    json: { email, data: { nome } },
-  });
-  if (!convite.ok) {
-    const jaExiste =
-      convite.status === 422 || /already|registered/i.test(mensagemBanco(convite.corpo));
+  const existe = await chamar(`/rest/v1/usuarios?select=id&email=eq.${encodeURIComponent(email)}`);
+  if (Array.isArray(existe.corpo) && existe.corpo.length)
     return erro(
-      jaExiste ? 409 : 502,
-      jaExiste
-        ? "Já existe um usuário com esse e-mail. Reative-o na lista, se estiver desativado."
-        : "O convite não foi enviado. Tente de novo em instantes.",
+      409,
+      "Já existe um usuário com esse e-mail. Use “Enviar link de senha” na lista (ou Reativar, se estiver desativado).",
     );
-  }
-  const id = String(convite.corpo.id);
+  const link = await enviarLink(email, origem, nome);
+  if (!link.ok || !link.novo)
+    return erro(502, "O convite não foi enviado. Tente de novo em instantes.");
   // perfil e admin: no Auth (app_metadata, só o servidor define) e na linha de usuarios
-  await chamar(`/auth/v1/admin/users/${id}`, {
+  await chamar(`/auth/v1/admin/users/${link.id}`, {
     method: "PUT",
     json: { app_metadata: { perfil, admin } },
   });
-  const linha = await chamar(`/rest/v1/usuarios?id=eq.${id}`, {
-    method: "PATCH",
-    json: { nome, perfil, admin },
-  });
+  const linha = await gerir(quem, link.id, { nome, perfil, admin });
   if (!linha.ok) return erro(500, mensagemBanco(linha.corpo));
+  return resposta(200, { id: link.id });
+}
+
+const idValido = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
+
+async function linkDeSenha(id: string, origem: string) {
+  if (!idValido(id)) return erro(400, "Usuário inválido. Atualize a página.");
+  const u = await chamar(`/rest/v1/usuarios?select=email,ativo&id=eq.${id}`);
+  const linha = Array.isArray(u.corpo) ? (u.corpo[0] as { email: string; ativo: boolean }) : null;
+  if (!linha) return erro(404, "Usuário não encontrado. Atualize a página.");
+  if (!linha.ativo) return erro(400, "Reative o usuário antes de enviar o link.");
+  const link = await enviarLink(linha.email, origem);
+  if (!link.ok) return erro(502, "O e-mail não foi enviado. Tente de novo em instantes.");
   return resposta(200, { id });
 }
 
 async function mudarSituacao(id: string, ativo: boolean, quem: string) {
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return erro(400, "Usuário inválido. Atualize a página.");
+  if (!idValido(id)) return erro(400, "Usuário inválido. Atualize a página.");
   if (!ativo && id === quem)
     return erro(400, "Você não pode desativar a si mesmo. Peça a outro administrador.");
   // primeiro o banco: o gatilho recusa deixar o ITO sem admin ativo
-  const linha = await chamar(`/rest/v1/usuarios?id=eq.${id}`, {
-    method: "PATCH",
-    headers: { Prefer: "return=representation" },
-    json: { ativo },
-  });
+  const linha = await gerir(quem, id, { ativo });
   if (!linha.ok) return erro(400, mensagemBanco(linha.corpo));
-  if (!Array.isArray(linha.corpo) || !linha.corpo.length)
+  if (linha.corpo !== (1 as unknown))
     return erro(404, "Usuário não encontrado. Atualize a página.");
   const auth = await chamar(`/auth/v1/admin/users/${id}`, {
     method: "PUT",
@@ -121,7 +149,7 @@ async function mudarSituacao(id: string, ativo: boolean, quem: string) {
   });
   if (!auth.ok) {
     // desfaz no banco para as duas pontas não divergirem
-    await chamar(`/rest/v1/usuarios?id=eq.${id}`, { method: "PATCH", json: { ativo: !ativo } });
+    await gerir(quem, id, { ativo: !ativo });
     return erro(502, "Não foi possível mudar o acesso no login. Tente de novo.");
   }
   // quem foi desativado sai na hora: sem sessão nem renovação do token (a RLS já nega leituras)
@@ -143,7 +171,9 @@ Deno.serve(async (req) => {
   const origem = req.headers.get("Origin") ?? Deno.env.get("ITO_SITE_URL") ?? "";
   switch (corpo.acao) {
     case "convidar":
-      return convidar(corpo, origem);
+      return convidar(corpo, origem, quem.id);
+    case "link_senha":
+      return linkDeSenha(String(corpo.id ?? ""), origem);
     case "desativar":
       return mudarSituacao(String(corpo.id ?? ""), false, quem.id);
     case "reativar":

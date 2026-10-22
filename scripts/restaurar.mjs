@@ -3,7 +3,7 @@
 // puseram e carrega o dados.sql do backup com os gatilhos desligados (a auditoria não registra a
 // restauração). Restaurar em homologação ou produção segue docs/OPERACAO.md (não por aqui).
 //
-//   pnpm db:restaurar <pasta do backup>
+//   pnpm db:restaurar <pasta do backup> --confirmar   (apaga o banco local antes)
 import { execFileSync, execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -11,7 +11,14 @@ import { join, resolve } from "node:path";
 const REPO = resolve(import.meta.dirname, "..");
 const pasta = process.argv[2] && resolve(process.argv[2]);
 if (!pasta || !existsSync(join(pasta, "dados.sql"))) {
-  console.log("Uso: pnpm db:restaurar <pasta do backup com dados.sql>");
+  console.log("Uso: pnpm db:restaurar <pasta do backup com dados.sql> --confirmar");
+  process.exit(1);
+}
+if (!process.argv.includes("--confirmar")) {
+  console.log(
+    "A restauração APAGA o banco local (inclusive obras carregadas) e põe o backup no lugar. " +
+      "Rode de novo com --confirmar.",
+  );
   process.exit(1);
 }
 const projeto = /project_id\s*=\s*"([^"]+)"/.exec(
@@ -24,6 +31,7 @@ execSync("pnpm db:reset", { cwd: REPO, stdio: ["ignore", "ignore", "inherit"] })
 
 // esvazia public e auth (dados das migrações e do seed) antes de carregar o backup
 const limpar = `
+set session_replication_role = replica;
 do $$
 declare t text;
 begin

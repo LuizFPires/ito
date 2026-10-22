@@ -251,6 +251,10 @@ otp_expiry = 3600
 subject = "Convite para o ITO"
 content_path = "./supabase/templates/convite.html"
 
+[auth.email.template.recovery]
+subject = "Definir senha do ITO"
+content_path = "./supabase/templates/recuperar.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true

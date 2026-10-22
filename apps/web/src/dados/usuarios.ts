@@ -104,6 +104,9 @@ export const useSituacao = () =>
     "Salvo",
   );
 
+export const useLinkSenha = () =>
+  useAcao((id: string) => funcao({ acao: "link_senha", id }), "Link enviado por e-mail");
+
 export const useAlterarUsuario = () =>
   useAcao(async ({ id, patch }: { id: string; patch: { perfil?: Perfil; admin?: boolean } }) => {
     const { data, error } = await supabase.from("usuarios").update(patch).eq("id", id).select("id");

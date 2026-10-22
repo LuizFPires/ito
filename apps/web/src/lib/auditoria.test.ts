@@ -23,6 +23,10 @@ describe("auditoria", () => {
 
   it("valores no formato brasileiro", () => {
     expect(valorAuditado(1716.5)).toBe("1.716,5");
+    expect(valorAuditado(1716.5, "valor")).toBe("R$ 1.716,50");
+    expect(valorAuditado(3, "iss_pct")).toBe("3,00%");
+    expect(valorAuditado({ ped: 5, serv: -10 }, "ajustes")).toBe("ped: 5; serv: -10");
+    expect(valorAuditado({ ped: [2, 3] }, "quantidades_manuais")).toBe("ped: 2, 3");
     expect(valorAuditado(43.96)).toBe("43,96");
     expect(valorAuditado(12000)).toBe("12.000");
     expect(valorAuditado(2026, "ano")).toBe("2026");

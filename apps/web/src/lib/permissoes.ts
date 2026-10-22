@@ -22,6 +22,7 @@ export function podeCarregar(u: Usuario | null | undefined): boolean {
 export function podeProjetar(u: Usuario | null | undefined): boolean {
   return (
     !!u &&
+    u.ativo &&
     (u.admin ||
       u.perfil === "planejamento" ||
       u.perfil === "engenharia" ||
