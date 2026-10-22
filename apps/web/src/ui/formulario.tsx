@@ -63,6 +63,8 @@ interface CampoNumeroProps {
   dica?: string;
   /** Para células de tabela: rótulo oculto e campo estreito. */
   compacto?: boolean;
+  /** Largura do campo compacto em px (padrão 120). */
+  largura?: number;
   /**
    * Chamado ao sair do campo (ou Enter) quando o número é válido e mudou, já arredondado
    * para `casas`. Se devolver uma promessa que falha, o campo volta ao valor anterior.
@@ -81,6 +83,7 @@ export function CampoNumero({
   desabilitado,
   dica,
   compacto,
+  largura,
   onSalvar,
 }: CampoNumeroProps) {
   const [txt, setTxt] = useState(numero(valor, casas));
@@ -127,6 +130,7 @@ export function CampoNumero({
       <input
         className={cx(s.input, s.num, erro && s.invalido, compacto && s.compacto)}
         inputMode="decimal"
+        style={largura ? { width: largura } : undefined}
         value={txt}
         disabled={desabilitado}
         aria-invalid={!!erro}
@@ -282,5 +286,49 @@ export function Kpi({
       <span className={s.kpiValor}>{valor}</span>
       {sub && <span className="sub">{sub}</span>}
     </Cartao>
+  );
+}
+
+/**
+ * Escolha com busca para listas longas (centenas de cidades): o navegador filtra as opções
+ * enquanto se digita. Ao bater exatamente numa opção, chama `onEscolher` e limpa o campo.
+ */
+export function SeletorComBusca({
+  rotulo,
+  placeholder,
+  opcoes,
+  onEscolher,
+}: {
+  rotulo: string;
+  placeholder: string;
+  opcoes: readonly { valor: string; texto: string }[];
+  onEscolher: (valor: string) => void;
+}) {
+  const id = useId();
+  const [txt, setTxt] = useState("");
+  return (
+    <>
+      <input
+        className={s.input}
+        style={{ width: "auto", minWidth: 240, minHeight: 32, borderRadius: 999, fontSize: 12 }}
+        list={id}
+        aria-label={rotulo}
+        placeholder={placeholder}
+        value={txt}
+        onChange={(e) => {
+          const v = e.target.value;
+          const achou = opcoes.find((o) => o.texto === v);
+          if (achou) {
+            onEscolher(achou.valor);
+            setTxt("");
+          } else setTxt(v);
+        }}
+      />
+      <datalist id={id}>
+        {opcoes.map((o) => (
+          <option key={o.valor} value={o.texto} />
+        ))}
+      </datalist>
+    </>
   );
 }

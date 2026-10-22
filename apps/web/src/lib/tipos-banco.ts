@@ -48,6 +48,245 @@ export type Database = {
         };
         Relationships: [];
       };
+      cct_beneficios: {
+        Row: {
+          beneficio_id: string;
+          cct_id: string;
+          valor: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          beneficio_id: string;
+          cct_id: string;
+          valor: number;
+        };
+        Update: {
+          beneficio_id?: string;
+          cct_id?: string;
+          valor?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cct_beneficios_beneficio_id_fkey";
+            columns: ["beneficio_id"];
+            isOneToOne: false;
+            referencedRelation: "beneficios";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cct_beneficios_cct_id_fkey";
+            columns: ["cct_id"];
+            isOneToOne: false;
+            referencedRelation: "ccts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cct_gratificacoes: {
+        Row: {
+          cct_id: string;
+          funcao_id: string;
+          valor: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          cct_id: string;
+          funcao_id: string;
+          valor: number;
+        };
+        Update: {
+          cct_id?: string;
+          funcao_id?: string;
+          valor?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cct_gratificacoes_cct_id_fkey";
+            columns: ["cct_id"];
+            isOneToOne: false;
+            referencedRelation: "ccts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cct_gratificacoes_funcao_id_fkey";
+            columns: ["funcao_id"];
+            isOneToOne: false;
+            referencedRelation: "funcoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cct_salarios: {
+        Row: {
+          cct_id: string;
+          funcao_id: string;
+          valor: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          cct_id: string;
+          funcao_id: string;
+          valor: number;
+        };
+        Update: {
+          cct_id?: string;
+          funcao_id?: string;
+          valor?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cct_salarios_cct_id_fkey";
+            columns: ["cct_id"];
+            isOneToOne: false;
+            referencedRelation: "ccts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cct_salarios_funcao_id_fkey";
+            columns: ["funcao_id"];
+            isOneToOne: false;
+            referencedRelation: "funcoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ccts: {
+        Row: {
+          atualizado_em: string;
+          atualizado_por: string | null;
+          id: string;
+          mes_data_base: number;
+          nome: string;
+          reajuste_estimado_pct: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          atualizado_em?: string;
+          atualizado_por?: string | null;
+          id: string;
+          mes_data_base?: number;
+          nome: string;
+          reajuste_estimado_pct?: number;
+        };
+        Update: {
+          atualizado_em?: string;
+          atualizado_por?: string | null;
+          id?: string;
+          mes_data_base?: number;
+          nome?: string;
+          reajuste_estimado_pct?: number;
+        };
+        Relationships: [];
+      };
+      cidade_feriados: {
+        Row: {
+          cidade_id: string;
+          dia: number;
+          mes: number;
+          nome: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cidade_id: string;
+          dia: number;
+          mes: number;
+          nome: string;
+        };
+        Update: {
+          cidade_id?: string;
+          dia?: number;
+          mes?: number;
+          nome?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cidade_feriados_cidade_id_fkey";
+            columns: ["cidade_id"];
+            isOneToOne: false;
+            referencedRelation: "cidades";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cidade_passagens: {
+        Row: {
+          cidade_id: string;
+          origem_id: string;
+          valor: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          cidade_id: string;
+          origem_id: string;
+          valor: number;
+        };
+        Update: {
+          cidade_id?: string;
+          origem_id?: string;
+          valor?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cidade_passagens_cidade_id_fkey";
+            columns: ["cidade_id"];
+            isOneToOne: false;
+            referencedRelation: "cidades";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cidade_passagens_origem_id_fkey";
+            columns: ["origem_id"];
+            isOneToOne: false;
+            referencedRelation: "cidades";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cidades: {
+        Row: {
+          atualizado_em: string;
+          atualizado_por: string | null;
+          cct_id: string;
+          conducoes: number;
+          id: string;
+          iss_pct: number;
+          nome: string;
+          tarifa_local: number;
+          uf: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          atualizado_em?: string;
+          atualizado_por?: string | null;
+          cct_id: string;
+          conducoes?: number;
+          id: string;
+          iss_pct?: number;
+          nome: string;
+          tarifa_local?: number;
+          uf: string;
+        };
+        Update: {
+          atualizado_em?: string;
+          atualizado_por?: string | null;
+          cct_id?: string;
+          conducoes?: number;
+          id?: string;
+          iss_pct?: number;
+          nome?: string;
+          tarifa_local?: number;
+          uf?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cidades_cct_id_fkey";
+            columns: ["cct_id"];
+            isOneToOne: false;
+            referencedRelation: "ccts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       data_base_beneficios: {
         Row: {
           ano: number;
@@ -473,6 +712,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      ajustar_cct: { Args: { p_cct: string; p_pct: number }; Returns: number };
+      criar_cct: { Args: { p_id: string; p_nome: string }; Returns: string };
       criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
       criar_funcao: {
         Args: {
@@ -484,6 +725,8 @@ export type Database = {
         Returns: string;
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
+      duplicar_cct: { Args: { p_id: string; p_nome: string; p_origem: string }; Returns: string };
+      exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
       meu_perfil: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];

@@ -1,0 +1,96 @@
+/* Convenções: trilho (lista) + área de trabalho (editor ou comparação). */
+.divisao {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .divisao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.trilho {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.trabalho {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.trilhoTopo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+/* a busca é flex: 1 1 220px; numa coluna isso cresceria na vertical */
+.trilhoTopo input[type="search"] {
+  flex: none;
+  max-width: none;
+}
+.ordenar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.item {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.item[data-ativa] {
+  background: var(--amber-tint);
+}
+.marca {
+  margin: 0 6px 0 14px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--active-bg);
+  flex-shrink: 0;
+}
+.itemBotao {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px 12px 6px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--ink);
+}
+.itemBotao strong {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.itemBotao[aria-current] strong {
+  font-weight: 600;
+}
+.itemBotao :global(.sub) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.duasColunas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}

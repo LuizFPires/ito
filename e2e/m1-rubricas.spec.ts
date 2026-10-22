@@ -31,7 +31,7 @@ test("DP/RH cria e classifica uma rubrica nova", async ({ page }) => {
   await form.getByLabel("Nome").fill("adicional teste e2e");
   await form.getByLabel("Entra no custo como").selectOption("extras");
   await form.getByRole("button", { name: "Criar rubrica" }).click();
-  await expect(page.getByRole("status")).toContainText("Rubrica criada");
+  await expect(form).toHaveCount(0); // o formulário fecha quando a rubrica é gravada
 
   await page.getByRole("searchbox", { name: "Buscar rubrica" }).fill(cod);
   const linha = page.getByRole("row").nth(1);

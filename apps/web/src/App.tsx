@@ -15,6 +15,9 @@ const queryClient = new QueryClient({
 const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>> = {
   "/funcoes": async () => ({ Component: (await import("./paginas/Funcoes")).TelaFuncoes }),
   "/rubricas": async () => ({ Component: (await import("./paginas/Rubricas")).TelaRubricas }),
+  "/cidades": async () => ({
+    Component: (await import("./paginas/cidades/TelaCidades")).TelaCidades,
+  }),
   "/parametros": async () => ({
     Component: (await import("./paginas/Parametros")).TelaParametros,
   }),

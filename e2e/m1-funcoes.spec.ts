@@ -23,23 +23,32 @@ test("engenharia só lê: sem 'Nova função' e campos travados", async ({ page 
   await expect(painel.getByLabel("Ferramentas (R$/mês)")).toBeDisabled();
 });
 
-test("DP/RH edita ferramentas e sinônimos de uma função", async ({ page }) => {
+// Uma função por worker: repetições em paralelo não editam o mesmo registro.
+const PARA_EDITAR: [string, string][] = [
+  ["Armador", "60"],
+  ["Almoxarife", "0"],
+  ["Auxiliar de engenharia", "0"],
+  ["Técnico de segurança", "0"],
+];
+
+test("DP/RH edita ferramentas e sinônimos de uma função", async ({ page }, testInfo) => {
+  const [funcao, original] = PARA_EDITAR[testInfo.parallelIndex % PARA_EDITAR.length]!;
   await entrar(page, "dprh@ito.local");
   await page.goto("/funcoes");
-  await page.getByRole("button", { name: "Armador", exact: true }).click();
-  const painel = page.getByRole("region", { name: "Função Armador" });
+  await page.getByRole("button", { name: funcao, exact: true }).click();
+  const painel = page.getByRole("region", { name: `Função ${funcao}` });
 
   const ferr = painel.getByLabel("Ferramentas (R$/mês)");
   await ferr.fill("1.234,5");
   await ferr.press("Enter");
   await expect(page.getByRole("status")).toContainText("Salvo");
   await page.reload();
-  await page.getByRole("button", { name: "Armador", exact: true }).click();
+  await page.getByRole("button", { name: funcao, exact: true }).click();
   await expect(painel.getByLabel("Ferramentas (R$/mês)")).toHaveValue("1.234,50");
-  await painel.getByLabel("Ferramentas (R$/mês)").fill("60");
+  await painel.getByLabel("Ferramentas (R$/mês)").fill(original);
   await painel.getByLabel("Ferramentas (R$/mês)").press("Enter");
 
-  const sin = `ARMADOR TESTE ${Date.now()}`;
+  const sin = `SINONIMO TESTE ${Date.now()}`;
   await painel.getByLabel("Novo sinônimo").fill(sin.toLowerCase());
   await painel.getByRole("button", { name: "Adicionar" }).click();
   await expect(painel.getByText(sin)).toBeVisible();

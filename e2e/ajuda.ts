@@ -62,6 +62,15 @@ export async function apiAdmin() {
   return {
     apagar: (caminho: string) =>
       fetch(`${url}/rest/v1/${caminho}`, { method: "DELETE", headers: cab }),
+    inserir: async (caminho: string, corpo: unknown) => {
+      const r = await fetch(`${url}/rest/v1/${caminho}`, {
+        method: "POST",
+        headers: cab,
+        body: JSON.stringify(corpo),
+      });
+      if (!r.ok) throw new Error(`POST ${caminho}: ${r.status} ${await r.text()}`);
+      return r;
+    },
     alterar: (caminho: string, corpo: unknown) =>
       fetch(`${url}/rest/v1/${caminho}`, {
         method: "PATCH",

@@ -29,7 +29,7 @@ TabelaEmpresa { data_base (ano), salarios {funcao: R$}, beneficios {beneficio: R
 Parametros    { data_base_vigente, calendario: { carnaval: bool, corpus_christi: bool,
                 feriados_empresa: [ {data, nome} ] } }
 
-CCT           { id, nome, mes_data_base (0–11), reajuste_estimado_pct,
+CCT           { id, nome, mes_data_base (0–11 no protótipo; 1–12 no banco, ver nota M2), reajuste_estimado_pct,
                 salarios {funcao: R$}, gratificacoes {funcao: R$/mês}, beneficios {beneficio: R$} }
 Cidade        { id, nome/UF, cct_id, tarifa_local, conducoes_por_trajeto, iss_pct,
                 feriados: [ {dd-mm, nome} ],                -- recorrentes todo ano
@@ -37,6 +37,8 @@ Cidade        { id, nome/UF, cct_id, tarifa_local, conducoes_por_trajeto, iss_pc
 ```
 
 > **Implementação (M1):** tabelas `funcoes` (+ `fator_he`, `ativo`), `funcao_sinonimos`, `rubricas` (+ `ativo`), `beneficios`, `datas_base` com filhas `data_base_salarios`, `data_base_beneficios` e `data_base_encargos`, `parametros` (linha única) e `feriados_empresa`. Percentuais de 0 a 100. Calendário e taxas de encargos: `packages/motor` (`calendario.ts`, `encargos.ts`).
+
+> **Implementação (M2):** `ccts` (mês da data-base 1–12), `cct_salarios`, `cct_gratificacoes`, `cct_beneficios` (função ou benefício sem valor na CCT usa a tabela da empresa vigente); `cidades` (nome + UF), `cidade_feriados` (dia + mês, recorrentes) e `cidade_passagens` (por cidade de origem). VT e feriados da cidade: `packages/motor/src/local.ts`.
 
 ### 1.2 Base histórica (por obra)
 
