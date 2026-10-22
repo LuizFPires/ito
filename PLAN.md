@@ -199,7 +199,7 @@
 
 ## M10 — Endurecimento
 - [x] Auditoria (quem alterou parâmetros, CCTs, premissas e projeções; versão anterior)
-- [ ] Performance com 1.000 obras, 100 CCTs e 500 cidades
+- [x] Performance com 1.000 obras, 100 CCTs e 500 cidades. Medido em 22/10/2026 no Supabase local (`pnpm desempenho gerar`, depois `ITO_DESEMPENHO=1 pnpm e2e e2e/m10-desempenho.spec.ts`): base com 1.000 obras abre em 1,1 s, filtra em 0,1 s e pagina em 0,3 s; detalhe de obra 1,1 s; 100 CCTs 1,3 s; 500 cidades 0,1 s; projeção de 36 meses com 5 referências e 20 funções recalcula em 53 ms (meta 300 ms, teste `desempenho.test.ts`)
 - [ ] Acessibilidade (navegação por teclado, contraste nos dois modos)
 - [ ] Backup e restauração; documentação de operação
 - [x] **Tela de usuários** (só admin), sem precisar do painel do Supabase nem de SQL:
