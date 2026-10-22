@@ -28,11 +28,12 @@ const obra = {
   ),
 };
 let projecao = "";
+let longa = "";
 
 async function limpar() {
   const api = await apiAdmin();
   await api.inserir("rpc/excluir_obra", { p_id: OBRA }).catch(() => {});
-  await api.apagar("projecoes?nome=eq.E2E%20Exportação");
+  await api.apagar("projecoes?nome=like.E2E%20Exporta*");
 }
 test.beforeAll(async () => {
   await limpar();
@@ -49,6 +50,21 @@ test.beforeAll(async () => {
   void r;
   const [p] = await api.ler<{ id: string }[]>("projecoes?select=id&nome=eq.E2E%20Exportação");
   projecao = p!.id;
+  await api.inserir("projecoes", {
+    nome: "E2E Exportação longa",
+    inicio: "2027-03-01",
+    prazo_meses: 30,
+    area_m2: 9000,
+    cidade_id: "vespasiano",
+    quantidades_manuais: {
+      ped: Array.from({ length: 30 }, (_, i) => 4 + (i % 7)),
+      serv: Array.from({ length: 30 }, (_, i) => 3 + (i % 5)),
+    },
+  });
+  const [l] = await api.ler<{ id: string }[]>(
+    "projecoes?select=id&nome=eq.E2E%20Exportação%20longa",
+  );
+  longa = l!.id;
 });
 test.afterAll(limpar);
 
@@ -134,4 +150,18 @@ test("projeção para .xlsx e resumo em PDF para a diretoria", async ({ page }) 
   await expect(page.getByRole("button", { name: "Imprimir ou salvar em PDF" })).toBeHidden();
   const pdf = await page.pdf({ format: "A4" });
   expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+});
+
+test("resumo de uma obra de 30 meses cabe numa página A4", async ({ page }) => {
+  await entrar(page);
+  await page.goto(`/projecoes/${longa}/imprimir`);
+  await expect(page.getByRole("heading", { level: 1, name: "E2E Exportação longa" })).toBeVisible();
+  // meses agrupados (3 por linha): 10 períodos + total
+  await expect(page.getByRole("columnheader", { name: "Período" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "mar/27 a mai/27" })).toBeVisible();
+  await page.emulateMedia({ media: "print" });
+  const pdf = (await page.pdf({ format: "A4", margin: { top: "12mm", bottom: "12mm" } })).toString(
+    "latin1",
+  );
+  expect(pdf.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(1);
 });

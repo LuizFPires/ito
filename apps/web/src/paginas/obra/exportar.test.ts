@@ -41,7 +41,7 @@ describe("exportar a obra", () => {
       "Líquido da folha",
     ]);
     // desconto com sinal negativo; nenhuma coluna de matrícula
-    expect(t.linhas[1]).toEqual(["900", "INSS", "desconto", -99, -0, -99]);
+    expect(t.linhas[1]).toEqual(["900", "INSS", "desconto", -99, 0, -99]);
     expect(t.linhas[4]).toEqual(["", "Líquido da folha", "", 1551, 1700, 3251]);
     expect(t.colunas.map((c) => c.titulo)).not.toContain("Matrícula");
   });

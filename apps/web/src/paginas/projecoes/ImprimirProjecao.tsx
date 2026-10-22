@@ -14,6 +14,7 @@ import { BarrasMensais, Legenda } from "../../ui/BarrasMensais";
 import { Botao } from "../../ui/componentes";
 import { NOME_GRUPO_F, soma } from "../obra/comum";
 import { useInfoFuncoes } from "./funcoes";
+import { textoReajustes } from "./exportar";
 import { manualValido, rotulosMeses } from "./projecoes";
 import s from "./imprimir.module.css";
 
@@ -33,7 +34,7 @@ export function ImprimirProjecao() {
   const q = useProjecao(id);
   const p = q.data;
   const e = useMemo(() => (p ? entradasDaLinha(p) : null), [p]);
-  const { contexto, cct, precos } = usePrecos(e?.cidadeId ?? null, e?.cidadeOrigemId ?? null);
+  const { contexto, cct, precos, erro } = usePrecos(e?.cidadeId ?? null, e?.cidadeOrigemId ?? null);
   const refsQ = useReferencias(e?.referencias ?? []);
   const { fun, ordenarFuncoes } = useInfoFuncoes(contexto?.ctx);
   const manual = e ? manualValido(e.quantidadesManuais, e.prazo) : false;
@@ -65,6 +66,13 @@ export function ImprimirProjecao() {
     if (p) document.title = `${p.nome} · resumo · ITO`;
   }, [p]);
 
+  if (q.isError || erro || refsQ.isError)
+    return (
+      <p className={s.aviso} role="alert">
+        Não foi possível carregar a projeção. Atualize a página.{" "}
+        <Link to={p ? `/projecoes/${p.id}` : "/projecoes"}>Voltar</Link>
+      </p>
+    );
   if (q.isLoading || (p && !calc)) return <p className={s.aviso}>Preparando o resumo…</p>;
   if (!p || !e || !calc?.r || !contexto)
     return (
@@ -85,6 +93,18 @@ export function ImprimirProjecao() {
   const a = r.aplicadas;
   const gt = soma(Object.values(R.porGrupo)) || 1;
   const custoMes = R.porMes.map((m) => m.total);
+  // até 12 linhas para caber numa página: meses agrupados em trimestres, semestres… se preciso
+  const passo = Math.max(1, Math.ceil(e.prazo / 12));
+  const periodos = Array.from({ length: Math.ceil(e.prazo / passo) }, (_, j) => {
+    const de = j * passo;
+    const ate = Math.min(e.prazo, de + passo) - 1;
+    return {
+      nome: de === ate ? rotulos[de]! : `${rotulos[de]} a ${rotulos[ate]}`,
+      pessoas: Math.max(...r.totais.slice(de, ate + 1)),
+      custo: soma(custoMes.slice(de, ate + 1)),
+      acumulado: soma(custoMes.slice(0, ate + 1)),
+    };
+  });
   const pedreiro = somar(R.porFuncao.ped ?? []);
   const series = ids.map((k) => ({
     id: k,
@@ -174,26 +194,24 @@ export function ImprimirProjecao() {
           <table className={s.tabela}>
             <thead>
               <tr>
-                <th>Mês</th>
-                <th>Pessoas</th>
+                <th>{passo > 1 ? "Período" : "Mês"}</th>
+                <th>{passo > 1 ? "Pico" : "Pessoas"}</th>
                 <th>Custo</th>
                 <th>Acumulado</th>
               </tr>
             </thead>
             <tbody>
-              {rotulos.map((m, i) => (
-                <tr key={m}>
-                  <td>{m}</td>
-                  <td>{numero(r.totais[i])}</td>
-                  <td>{moeda(custoMes[i], 0)}</td>
-                  <td>
-                    {percentual(r.total ? (soma(custoMes.slice(0, i + 1)) / r.total) * 100 : 0, 0)}
-                  </td>
+              {periodos.map((x) => (
+                <tr key={x.nome}>
+                  <td>{x.nome}</td>
+                  <td>{numero(x.pessoas)}</td>
+                  <td>{moeda(x.custo, 0)}</td>
+                  <td>{percentual(r.total ? (x.acumulado / r.total) * 100 : 0, 0)}</td>
                 </tr>
               ))}
               <tr className={s.total}>
                 <td>Total</td>
-                <td>{numero(r.pessoaMes)}</td>
+                <td>{numero(r.pessoaMes, 1)} PM</td>
                 <td>{moeda(r.total, 0)}</td>
                 <td />
               </tr>
@@ -255,11 +273,7 @@ export function ImprimirProjecao() {
               pessoa·mês
             </li>
             <li>Gratificações e prêmios {percentual(pr.gratPremiosPct, 1)}</li>
-            <li>
-              {calc.reajustes.length
-                ? `Reajuste de ${percentual(calc.reajustes[0]!.pct, 1)} a partir de ${calc.reajustes.map((x) => rotulos[x.mesIdx]).join(" e ")}${calc.reajustes[0]!.automatico ? " (data-base da CCT)" : " (informado)"}`
-                : "Sem reajuste no prazo"}
-            </li>
+            <li>{textoReajustes(calc.reajustes, rotulos)}</li>
             <li>{pr.provisionar ? "Com provisões de férias, 1/3, 13º e GRRF" : "Sem provisões"}</li>
             {(pr.riscoPct > 0 || pr.lucroPct > 0 || pr.tribLucroPct > 0) && (
               <li>

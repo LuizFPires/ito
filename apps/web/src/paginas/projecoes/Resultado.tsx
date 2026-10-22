@@ -20,7 +20,7 @@ import { useInfoFuncoes } from "./funcoes";
 import { baixarXlsx, nomeArquivo } from "../../lib/planilha";
 import { BotaoCopiar } from "../../ui/BotaoCopiar";
 import u from "../../ui/ui.module.css";
-import { tabelaCustoComponente, tabelaCustoFuncao } from "../obra/exportar";
+import { tabelaCustoComponente, tabelaCustoFuncao, tabelaEfetivo } from "../obra/exportar";
 import { tabelasDaProjecao, titulosProjecao } from "./exportar";
 import { manualValido, rotulosMeses } from "./projecoes";
 import s from "./projecoes.module.css";
@@ -481,11 +481,12 @@ export function Resultado({
             />
             {detalhe && (
               <BotaoCopiar
-                tabela={() =>
-                  porComp
-                    ? tabelaCustoComponente(R, ids, rotulos, V, caixa, tituloCusto())
-                    : tabelaCustoFuncao(R, ids, funExp, rotulos, V, tituloCusto())
-                }
+                // como o protótipo: efetivo, custo por componente e por função, na visão da tela
+                tabela={() => [
+                  tabelaEfetivo(r.obra, ids, funExp, rotulos, tituloCusto()),
+                  tabelaCustoComponente(R, ids, rotulos, V, caixa, tituloCusto()),
+                  tabelaCustoFuncao(R, ids, funExp, rotulos, V, tituloCusto()),
+                ]}
               />
             )}
           </span>

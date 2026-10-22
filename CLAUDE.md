@@ -216,6 +216,16 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Rubricas exportadas agregadas** por rubrica e mês, sem matrícula, e só para quem carrega (DP/RH, controladoria, admin), porque a folha por rubrica já é restrita a eles na tela (M4/M5). Os demais exportam sem a aba Rubricas. (auto — recomendado)
 - **Copiar para Excel** nas tabelas mês a mês principais da obra, com o mesmo texto tabulado BR do M7. (auto — recomendado)
 - **PDF da projeção** = página de impressão (`/projecoes/:id/imprimir`) com folha de estilo de impressão; o navegador salva em PDF. Sem biblioteca nova; fontes Geist e formato BR iguais aos da tela. (auto — recomendado)
+- Comparação do M8 com o protótipo (21/10/2026):
+  - **Copiar na projeção** leva as 3 tabelas do protótipo (efetivo, custo por componente e por função, na visão da tela), cada uma com o nome numa linha antes; nas abas da obra, a tabela da aba. (auto — recomendado)
+  - Sem área de transferência (HTTP, permissão negada), a cópia usa o plano B do navegador, como o protótipo; se falhar também, sugere o .xlsx. (auto — recomendado)
+  - **PDF de uma página, em competência** (o custo aprovado); curva S e projeção × referências ficam na tela e no .xlsx. (auto — recomendado)
+  - Comparar projeções não exporta (o PLAN não pede); a diretoria lê a comparação na tela. (auto — recomendado)
+- Revisão do M8 (21/10/2026):
+  - **Totais da planilha fecham com a soma das células:** R$ arredondado em centavos antes de somar (o total pode diferir do motor em centavos, nunca da soma do Excel).
+  - **PDF sempre numa página:** com mais de 12 meses, a tabela de custo agrupa os meses (trimestres, semestres…) e mostra o pico de cada período.
+  - Cabeças exportadas como inteiros; apropriação exportada com o mesmo filtro de contas da aba; reajustes com o mesmo texto na tela, no .xlsx e no PDF; página de impressão mostra erro de carga em vez de esperar para sempre.
+  - Aceito sem correção: o resumo impresso não usa a tabela da empresa enquanto a CCT carrega (os preços só existem com a CCT da cidade carregada).
 - O M8 começou empilhado no M7 (`feat/m8-exportacoes` a partir de `feat/m7-projecoes`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)

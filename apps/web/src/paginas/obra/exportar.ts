@@ -8,7 +8,16 @@ import type { Coluna, Tabela } from "../../lib/planilha";
 import type { LinhaConta } from "./calculos";
 import type { DadosAba, FuncaoInfo } from "./comum";
 import { COMPONENTES, NOME_GRUPO_F, rotulosDe, soma } from "./comum";
-import { numero } from "@ito/formato";
+import { arredondar, numero } from "@ito/formato";
+
+/** R$ em centavos antes de somar: o total da planilha fecha com a soma das células. */
+const cent = (xs: readonly number[]) => xs.map((v) => arredondar(v, 2));
+const somaMeses = (linhas: readonly (readonly number[])[], n: number) =>
+  Array.from({ length: n }, (_, i) => arredondar(soma(linhas.map((l) => l[i] ?? 0)), 2));
+
+/** Contas com valor no período (o mesmo filtro da aba Apropriação). */
+export const contasComValor = <L extends { v: readonly number[] }>(linhas: readonly L[]) =>
+  linhas.filter((l) => soma(l.v) > 0.5);
 
 /** Cabeçalho das abas exportadas: obra, cliente, cidade, área e período. */
 export function tituloObra(dados: Pick<DadosAba, "d" | "obra" | "cidade">): string[] {
@@ -51,8 +60,8 @@ export function tabelaEfetivo(
     colunas: [
       { titulo: "Função", formato: "texto", largura: 26 },
       { titulo: "Grupo", formato: "texto" },
-      ...meses(rotulos, "pm"),
-      { titulo: "Pessoa-mês", formato: "pm" },
+      ...meses(rotulos, cabecas ? "inteiro" : "pm"),
+      { titulo: cabecas ? "Total" : "Pessoa-mês", formato: cabecas ? "inteiro" : "pm" },
     ],
     linhas: [
       ...ids.map((k) => [fun(k).nome, NOME_GRUPO_F[fun(k).grupo], ...v(k), soma(v(k))]),
@@ -70,8 +79,8 @@ export function tabelaCustoFuncao(
   V: (c: CustoMes | Soma) => number,
   titulo: readonly string[],
 ): Tabela {
-  const linha = (k: string) => r.porFuncao[k]!.map(V);
-  const M = rotulos.map((_, i) => somar(ids.map((k) => r.porFuncao[k]![i]!)));
+  const linha = (k: string) => cent(r.porFuncao[k]!.map(V));
+  const tot = somaMeses(ids.map(linha), rotulos.length);
   return {
     aba: "Custo por função",
     titulo,
@@ -83,7 +92,7 @@ export function tabelaCustoFuncao(
     ],
     linhas: [
       ...ids.map((k) => [fun(k).nome, NOME_GRUPO_F[fun(k).grupo], ...linha(k), soma(linha(k))]),
-      ["Total do mês", "", ...M.map(V), soma(M.map(V))],
+      ["Total do mês", "", ...tot, soma(tot)],
     ],
     total: true,
   };
@@ -108,12 +117,12 @@ export function tabelaCustoComponente(
       { titulo: "Total", formato: "moeda", largura: 16 },
     ],
     linhas: [
-      ...COMPONENTES.filter((c) => !(caixa && c.k === "prov")).map((c) => [
-        c.n,
-        ...M.map((m) => m[c.k]),
-        soma(M.map((m) => m[c.k])),
-      ]),
-      ["Total do mês", ...M.map(V), soma(M.map(V))],
+      ...COMPONENTES.filter((c) => !(caixa && c.k === "prov")).map((c) => {
+        const v = cent(M.map((m) => m[c.k]));
+        return [c.n, ...v, soma(v)];
+      }),
+      // caixa: o total do mês não é a soma dos componentes (eles estão em competência)
+      ...[cent(M.map(V))].map((v) => ["Total do mês", ...v, soma(v)]),
     ],
     total: true,
   };
@@ -124,7 +133,8 @@ export function tabelaApropriacao(
   rotulos: readonly string[],
   titulo: readonly string[],
 ): Tabela {
-  const tot = rotulos.map((_, i) => soma(linhas.map((l) => l.v[i]!)));
+  const vs = linhas.map((l) => cent(l.v));
+  const tot = somaMeses(vs, rotulos.length);
   return {
     aba: "Apropriação",
     titulo: [...titulo, "Valores da época, competência"],
@@ -135,7 +145,7 @@ export function tabelaApropriacao(
       { titulo: "Total", formato: "moeda", largura: 16 },
     ],
     linhas: [
-      ...linhas.map((l) => [l.conta, l.nome, ...l.v, soma(l.v)]),
+      ...linhas.map((l, j) => [l.conta, l.nome, ...vs[j]!, soma(vs[j]!)]),
       ["Total", "", ...tot, soma(tot)],
     ],
     total: true,
@@ -192,7 +202,7 @@ export function tabelaRubricas(
     .filter((c) => porCodigo.get(c)!.some((v) => Math.abs(v) > 0.5))
     .sort((a, b) => a - b);
   const serie = (c: number) =>
-    porCodigo.get(c)!.map((v) => (cad.get(c)?.tipo === "desconto" ? -Math.abs(v) : v));
+    cent(porCodigo.get(c)!.map((v) => (cad.get(c)?.tipo === "desconto" ? -Math.abs(v) : v)));
   const somaTipo = (tipo: string) =>
     rotulos.map((_, i) =>
       soma(codigos.filter((c) => cad.get(c)?.tipo === tipo).map((c) => serie(c)[i]!)),

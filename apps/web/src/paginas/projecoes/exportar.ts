@@ -3,8 +3,8 @@
  * trazer gente de fora e projeção × referências. Mesmos números da tela, preços da cidade.
  */
 import { mesAno, moeda, numero, percentual } from "@ito/formato";
-import type { Cenario, CustoMes, Soma } from "@ito/motor";
-import { anoMes, PREMISSAS_PADRAO, TIPOS_HE } from "@ito/motor";
+import type { Cenario, CustoMes, Reajuste, Soma } from "@ito/motor";
+import { PREMISSAS_PADRAO, TIPOS_HE } from "@ito/motor";
 import type { Calculo, Entradas } from "../../lib/projecaoDoBanco";
 import type { Tabela } from "../../lib/planilha";
 import type { FuncaoInfo } from "../obra/comum";
@@ -44,6 +44,15 @@ const NOME_CENARIO: Record<Cenario["nome"], string> = {
   aloj: "Toda alojada",
 };
 
+/** Reajustes no prazo, como a tela e o PDF mostram (vários = compostos, cada um com o mês). */
+export function textoReajustes(reajustes: readonly Reajuste[], rotulos: readonly string[]): string {
+  if (!reajustes.length) return "Sem reajuste no prazo";
+  const origem = reajustes[0]!.automatico ? "data-base da CCT" : "informado";
+  return `Reajuste de ${reajustes
+    .map((x) => `${percentual(x.pct, 1)} em ${rotulos[x.mesIdx] ?? ""}`)
+    .join(" e ")} (${origem}${reajustes.length > 1 ? ", composto" : ""})`;
+}
+
 export function titulosProjecao(d: Pick<DadosExportacao, "e" | "cidade" | "vigente">): string[] {
   const { e } = d;
   return [
@@ -66,10 +75,6 @@ export function tabelasDaProjecao(d: DadosExportacao): Tabela[] {
   const tv = [...t, d.caixa ? "Visão caixa" : "Visão competência (com provisões)"];
   const pr = { ...PREMISSAS_PADRAO, ...e.premissas };
   const a = r.aplicadas;
-  const mes = (i: number) => {
-    const m = anoMes(e.inicio, i);
-    return mesAno(m.ano, m.mes);
-  };
   const premissas: [string, string][] = [
     ["Projeção", e.nome],
     ["Situação", d.situacao ?? "Rascunho"],
@@ -101,17 +106,7 @@ export function tabelasDaProjecao(d: DadosExportacao): Tabela[] {
       `${percentual(pr.riscoPct, 1)} · ${percentual(pr.lucroPct, 1)} · ${percentual(pr.tribLucroPct, 1)}`,
     ],
     ["Provisões", pr.provisionar ? "Sim (competência)" : "Não"],
-    [
-      "Reajustes",
-      calc.reajustes.length
-        ? calc.reajustes
-            .map(
-              (x) =>
-                `${percentual(x.pct, 1)} em ${mes(x.mesIdx)}${x.automatico ? " (data-base da CCT)" : " (informado)"}`,
-            )
-            .join("; ")
-        : "Sem reajuste no prazo",
-    ],
+    ["Reajustes", textoReajustes(calc.reajustes, rotulos)],
     ["Quem vem todo dia sai de", d.origem ?? "—"],
     ["Custo total", moeda(r.total)],
     ["Pico de efetivo", `${numero(r.pico)} pessoas`],

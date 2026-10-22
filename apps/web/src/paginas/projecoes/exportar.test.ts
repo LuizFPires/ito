@@ -72,9 +72,10 @@ describe("exportar a projeção", () => {
 
   it("premissas com o reajuste da data-base e o total igual ao do custo", () => {
     const p = new Map(tabelas[0]!.linhas.map((l) => [l[0], l[1]]));
-    expect(p.get("Reajustes")).toBe("6,0% em mai/27 (data-base da CCT)");
+    expect(p.get("Reajustes")).toBe("Reajuste de 6,0% em mai/27 (data-base da CCT)");
     const custo = tabelas[2]!.linhas.at(-1)!;
-    expect(custo.at(-1)).toBeCloseTo(calc.r!.total, 6);
+    // soma de células em centavos: até alguns centavos do total do motor
+    expect(Math.abs((custo.at(-1) as number) - calc.r!.total)).toBeLessThan(0.05);
     expect(tabelas[1]!.linhas.at(-1)!.at(-1)).toBe(45);
   });
 

@@ -10,6 +10,7 @@ import { apropriacaoPorConta } from "./calculos";
 import type { DadosAba } from "./comum";
 import { ORDEM_GRUPOS, rotulosDe } from "./comum";
 import {
+  contasComValor,
   rubricasPorMes,
   tabelaApropriacao,
   tabelaCustoComponente,
@@ -49,9 +50,7 @@ export function BotaoExportarObra({ dados }: { dados: DadosAba }) {
         tabelaCustoFuncao(r, ids, fun, rotulos, V, tv),
         tabelaCustoComponente(r, ids, rotulos, V, vista.caixa, tv),
         tabelaApropriacao(
-          apropriacaoPorConta(epoca, fun, ben.data ?? []).filter((l) =>
-            l.v.some((v) => Math.abs(v) > 0.5),
-          ),
+          contasComValor(apropriacaoPorConta(epoca, fun, ben.data ?? [])),
           rotulos,
           t,
         ),
