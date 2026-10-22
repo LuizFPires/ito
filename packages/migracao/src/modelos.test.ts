@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Abas } from "./historico";
-import { lerModeloXlsb, sinalPeloNome } from "./modeloXlsb";
+import type { Abas, Celula } from "./historico";
+import { conferirCabecalho, fimDasRubricas, lerModeloXlsb, sinalPeloNome } from "./modeloXlsb";
 import { histogramaDaPlanilha, lerModeloXlsm } from "./modeloXlsm";
 
 // .xlsm sintético (só matrícula; a coluna do nome existe mas nunca é lida)
@@ -225,5 +225,28 @@ describe("modelo .xlsb (uma coluna por rubrica)", () => {
     expect(sinalPeloNome("VALE TRANSPORTE VALOR")).toBe("");
     expect(sinalPeloNome("EMPRÉSTIMO (CRÉDITO TRABALHADOR)")).toBe("-");
     expect(sinalPeloNome("13 SALARIO INTEGRAL")).toBe("+");
+  });
+  it("rubricas param no primeiro total, mesmo sem a coluna Proventos (revisão M9)", () => {
+    const semProventos = [...titulos];
+    semProventos[19] = "CUSTO TOTAL";
+    semProventos[20] = "FGTS";
+    semProventos[21] = "HORAS NORMAIS";
+    expect(fimDasRubricas(semProventos as Celula[])).toBe(19);
+    expect(fimDasRubricas(titulos as Celula[])).toBe(19);
+  });
+
+  it("cabeçalho fora do layout é recusado (o nome cairia na função)", () => {
+    const deslocado = [
+      null,
+      "Nome Funcionário",
+      "Cód Func",
+      "PC",
+      "Função",
+      "Status",
+      "Competência",
+    ];
+    deslocado[12] = "Salário Base";
+    expect(() => conferirCabecalho(deslocado, "x.xlsb")).toThrow(/fora do layout/);
+    expect(() => conferirCabecalho(titulos as Celula[], "x.xlsb")).not.toThrow();
   });
 });

@@ -225,6 +225,8 @@ export interface LinhaVt {
   comp: Competencia;
   matricula: string;
   valor: number;
+  /** construtora em que a matrícula está fichada (migração M9); sem ela, Clássica */
+  construtora?: Construtora;
 }
 
 export function lerVt(p: Planilha): { linhas: LinhaVt[]; erros: ErroLeitura[] } {

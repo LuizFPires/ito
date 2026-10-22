@@ -400,13 +400,13 @@ export function montarCarga(
         foraDoPeriodoArquivos.vt++;
         continue;
       }
-      const k = `${i}|${v.matricula}`;
+      const k = `${i}|${v.matricula}|${v.construtora ?? "classica"}`;
       vt.set(k, (vt.get(k) ?? 0) + v.valor);
     }
     const porPessoaMes = [...lanc.values()].sort((a, b) => b.equivalente - a.equivalente);
     const usado = new Set<string>();
     for (const l of porPessoaMes) {
-      const k = `${l.mes_idx}|${l.matricula}`;
+      const k = `${l.mes_idx}|${l.matricula}|${l.construtora}`;
       const v = usado.has(k) ? undefined : vt.get(k);
       const outroTem = usado.has(k) || vt.has(k);
       if (v !== undefined) usado.add(k);

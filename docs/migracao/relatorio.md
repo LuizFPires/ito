@@ -6,7 +6,7 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - Planilhas usadas: 27; deixadas de lado: 4
 - Funções novas usadas: nenhuma
 - Cidades novas: nenhuma
-- Rubricas novas: 97 (classificação sugerida em rubricas.csv, para o DP/RH revisar)
+- Rubricas novas: 42 (classificação sugerida em rubricas.csv, para o DP/RH revisar)
 
 ## MART MINAS ARAXÁ (`araxa`)
 
@@ -29,7 +29,7 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - 20 matrículas · 178 lançamentos · 164,9 pessoa-mês
 - Funções: ASSISTENTE ADMINISTRATIVO FINANCEIRO → Analista administrativo; AUXILIAR ADMINISTRATIVO → Analista administrativo; AUXILIAR DE ALMOXARIFE → Almoxarife; AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; AUXILIAR DE ENGENHARIA INFRA → Auxiliar de engenharia; AUXILIAR TEC SEGURANÇA TRABALHO → Técnico de segurança; CARPINTEIRO → Carpinteiro; COMPRADOR → Comprador; ELETRICISTA → Eletricista; ENCARREGADO DE OBRAS → Encarregado; MESTRE DE OBRA → Mestre de obras; PEDREIRO → Pedreiro; SERVENTE → Servente; TECNICO DE SEGURANÇA DO TRABALHO → Técnico de segurança
 - Verificações da carga: ⚠️ Total de proventos não bate com o resumo da folha; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 11 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 156.043,77 em 11 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 153.911,40 em 11 meses
 - Histograma MM BETIM II v05.02..xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (130 lançamentos de HE)
 - Histograma MM BETIM II v05.02..xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 - Histograma MM BETIM II v05.02..xlsb: proventos de 2023-7: lidos R$ 48.883,50 × planilha R$ 48.957,50
@@ -67,7 +67,7 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - 6 matrículas · 56 lançamentos · 51,3 pessoa-mês
 - Funções: AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; CARPINTEIRO DE OBRAS → Carpinteiro; ENCARREGADO DE OBRAS → Encarregado; MESTRE DE OBRA → Mestre de obras; PEDREIRO → Pedreiro; SERVENTE → Servente
 - Verificações da carga: ⚠️ Total de proventos não bate com o resumo da folha; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 24 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 65.438,60 em 24 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 64.120,29 em 24 meses
 - Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (48 lançamentos de HE)
 - Histograma PAQUETA WENCESLAU - SEM ENCARGOS.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 
@@ -225,7 +225,7 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - 10 matrículas · 37 lançamentos · 32,7 pessoa-mês
 - Funções: ASSISTENTE ADMINISTRATIVO FINANCEIRO → Analista administrativo; AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; ENCARREGADO DE OBRAS → Encarregado; MESTRE DE OBRA → Mestre de obras; PEDREIRO → Pedreiro; SERVENTE → Servente; TECNICO DE SEGURANÇA DO TRABALHO → Técnico de segurança
 - Verificações da carga: ℹ️ Folha sem resumo; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 14 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 734.137,86 em 14 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 11.386,63 em 14 meses
 - Histograma BH GLORIA.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (28 lançamentos de HE)
 - Histograma BH GLORIA.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 
@@ -237,7 +237,7 @@ Gerado em 21/10/2026. Sem dado pessoal: só contagens, funções, rubricas e tot
 - 17 matrículas · 79 lançamentos · 65,2 pessoa-mês
 - Funções: ASSISTENTE ADMINISTRATIVO FINANCEIRO → Analista administrativo; AUXILIAR ADMINISTRATIVO → Analista administrativo; AUXILIAR DE ALMOXARIFE → Almoxarife; AUXILIAR DE ENGENHARIA → Auxiliar de engenharia; ELETRICISTA → Eletricista; ENCARREGADO DE OBRAS → Encarregado; MESTRE DE OBRA → Mestre de obras; PEDREIRO → Pedreiro; SERVENTE → Servente; TECNICO DE SEGURANÇA DO TRABALHO → Técnico de segurança
 - Verificações da carga: ⚠️ Total de proventos não bate com o resumo da folha; ℹ️ Sem cartão de ponto; ℹ️ Sem arquivo de vale-transporte; ℹ️ Notas fiscais de prestadores não enviadas; ℹ️ Sem relatório do ERP; ℹ️ Conferência rubricas × custo: diferença em 11 meses
-- Conferência rubricas × custo do ITO: diferença total R$ 107.324,18 em 11 meses
+- Conferência rubricas × custo do ITO: diferença total R$ 102.369,64 em 11 meses
 - Histograma LAGOA SANTABH.xlsb: horas de HE e de falta estimadas pelo valor e pelo salário-hora (59 lançamentos de HE)
 - Histograma LAGOA SANTABH.xlsb: fração do mês estimada pelas horas normais sobre o salário base; admissão = primeiro mês na obra
 

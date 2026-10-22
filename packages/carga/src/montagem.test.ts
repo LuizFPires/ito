@@ -167,6 +167,26 @@ describe("casos da revisão do M4", () => {
     );
   });
 
+  it("VT vai para a matrícula da mesma construtora (revisão M9)", () => {
+    const ampla = <T extends { matricula: string }>(x: T) =>
+      x.matricula === "1001" ? { ...x, construtora: "ampla" as const } : x;
+    const f = {
+      ...FOLHA,
+      rubricas: FOLHA.rubricas.map(ampla),
+      pessoas: FOLHA.pessoas.map(ampla),
+    };
+    const comp = FOLHA.pessoas.find((p) => p.matricula === "1001")!.comp;
+    const vt = [
+      { comp, matricula: "1001", valor: 100 },
+      { comp, matricula: "1001", valor: 50, construtora: "ampla" as const },
+    ];
+    const m = montarCarga(DADOS, { folha: f, vt }, CADASTRO, ESCOLHAS_VAZIAS, TABELA);
+    const daAmpla = m.payload.lancamentos.filter(
+      (l) => l.matricula === "1001" && l.construtora === "ampla" && l.vt_valor !== null,
+    );
+    expect(daAmpla.map((l) => l.vt_valor)).toEqual([50]);
+  });
+
   it("NF repetida fica uma; mês escolhido fora do período vira sem competência", () => {
     const nota = {
       arquivo: "a.xml",

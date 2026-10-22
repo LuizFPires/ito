@@ -243,6 +243,13 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Obras de 2016 a 2022** entram com a tabela da empresa de 2023 como "época" (marcadas no relatório) até a controladoria cadastrar as data-bases daqueles anos; aí basta trocar a data-base da obra. As projeções não mudam (quantidades do histórico, preços vigentes). (usuário)
 - **Conferência da migração:** proventos lidos × coluna "Proventos" de cada planilha .xlsb e efetivo do ITO × histograma da aba Resultados do .xlsm, por mês, no relatório. No .xlsm, dias de referência vazios = não trabalhou no mês (pessoa-mês zero), como a própria planilha. (auto — recomendado)
 - **Área provisória de 10.000 m² em todas as obras** (usuário): os indicadores por m² (PM/1.000 m², R$/m²) não comparam obras de tamanhos diferentes até as áreas reais entrarem em `docs/migracao/obras.csv` (rodar a carga de novo substitui). Cidades confirmadas pelo usuário: Blue Light, Jacuí, Paquetá e Galpão Dalias em BH; Hort Fruti em Contagem; BH Passos em Passos (cidade nova, CCT Sul de Minas). Matrícula normalizada na leitura ("1152 A" → "1152A").
+- Revisão do M9 (21/10/2026), carga refeita no local e na homologação:
+  - **Colunas de rubrica do .xlsb param no primeiro título de total** (Proventos, Descontos, ∑ Custo, FGTS, Provisões, INSS empregado/empregador, Pagamento salarial…), mesmo nas planilhas sem a coluna "Proventos"; antes, totais e encargos entravam como provento. As colunas fixas (matrícula, função, competência, salário base) são conferidas pelo cabeçalho e a planilha fora do layout é recusada.
+  - **Mesma rubrica só com nome igual** (sem acento, ordinal e pontuação) ou diferente só por um percentual no fim; prefixo solto não vale ("13 SALARIO INTEGRAL" não é a 8550 de rescisão). "Dias faltas" é quantidade (informativo).
+  - Rubricas que a própria migração criou (código ≥ 9500) e saíram da tabela são apagadas na carga, se não tiverem lançamento.
+  - Aba Pessoas e VT separados por construtora (a mesma matrícula na Clássica e na Ampla são duas pessoas).
+  - A carga só substitui obra carregada pelo mesmo usuário; carga de outra pessoa pede `--substituir`.
+  - Em `funcoes.csv` e `rubricas.csv`, só a linha com **revisado = sim** (marcada pelo DP/RH) manda sobre as regras; o resto é sugestão regerada a cada execução.
 - O M9 começou empilhado no M8 (`feat/m9-migracao` a partir de `feat/m8-exportacoes`), pela mesma pendência do CI.
 
 ## Design system "Canteiro" (ITO)

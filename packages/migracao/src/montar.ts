@@ -66,7 +66,8 @@ export function leituraDaObra(o: ObraHistorica): Leituras {
           referencia: r.referencia,
           valor: r.valor,
         });
-      if (l.vt) vt.push({ comp: l.comp, matricula: l.matricula, valor: l.vt });
+      if (l.vt)
+        vt.push({ comp: l.comp, matricula: l.matricula, valor: l.vt, construtora: l.construtora });
     }
     for (const x of p.proventos) {
       const k = `${x.comp.ano}-${x.comp.mes}`;

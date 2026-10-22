@@ -151,17 +151,25 @@ export function lerXlsb(
     if (!buf) continue;
     const linhas: ValorCelula[][] = [];
     let linha = -1;
+    let truncada = false;
     for (const r of registros(buf)) {
       if (r.tipo === BRT.ROW_HDR) {
         linha = r.dados.getUint32(0, true);
         continue;
       }
-      if (linha < 0 || linha >= max) continue;
+      if (linha < 0) continue;
       const v = valorCelula(r, sst);
       if (v === undefined) continue;
+      if (linha >= max) {
+        // célula vazia além do limite não conta (dimensão inflada); com dado, avisa
+        if (v !== null && v !== "") truncada = true;
+        continue;
+      }
       const col = r.dados.getUint32(0, true);
       (linhas[linha] ??= [])[col] = v;
     }
+    if (truncada)
+      console.warn(`aba ${a.nome}: há dados depois da linha ${max}, que ficaram de fora`);
     saida[a.nome] = linhas;
   }
   return saida;

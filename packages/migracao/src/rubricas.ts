@@ -34,7 +34,8 @@ export const SEM_CODIGO: readonly [RegExp, number, string][] = [
 
 export function classificarRubrica(descricao: string, sinal: "+" | "-" | ""): Classificacao {
   const n = normal(descricao).replace(/^[+-]\s*/, "");
-  // valores que o motor já calcula ou que só movem dinheiro
+  // quantidades (dias), valores que o motor já calcula ou que só movem dinheiro
+  if (/^dias faltas/.test(n)) return c("informativo", "info");
   if (/vale transporte|estouro|adiantamento salarial|arredondamento/.test(n))
     return c("informativo", "info");
   if (/^desconto adiantamento/.test(n)) return c("informativo", "info");

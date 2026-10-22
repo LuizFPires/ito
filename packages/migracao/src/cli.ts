@@ -34,7 +34,7 @@ import { montarObra, rubricasNovasDe } from "./montar";
 import type { ArquivoLido, ObraHistorica } from "./obras";
 import { agruparObras, CIDADES_NOVAS, construtoraDe, periodo, sugestaoDaObra } from "./obras";
 import type { LinhaTabela, Ocorrencia } from "./tabelaRubricas";
-import { montarTabelaRubricas } from "./tabelaRubricas";
+import { montarTabelaRubricas, PRIMEIRO_CODIGO_MIGRACAO } from "./tabelaRubricas";
 import { lerXlsb } from "./xlsb";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -46,6 +46,7 @@ interface Api {
   ler<R>(caminho: string): Promise<R[]>;
   rpc<R>(nome: string, corpo: unknown): Promise<R>;
   inserir(tabela: string, corpo: unknown): Promise<void>;
+  apagar(caminho: string): Promise<void>;
 }
 
 function envLocal(): Record<string, string> {
@@ -63,11 +64,13 @@ function envLocal(): Record<string, string> {
   }
 }
 
-async function conectar(args: Record<string, string>): Promise<{ api: Api; url: string }> {
+async function conectar(
+  args: Record<string, string>,
+): Promise<{ api: Api; url: string; usuario: string }> {
   const env = envLocal();
   const url = args.url ?? env.VITE_SUPABASE_URL ?? "http://127.0.0.1:54821";
   const chave = args.chave ?? env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
-  const local = /127\.0\.0\.1|localhost/.test(url);
+  const local = ["127.0.0.1", "localhost"].includes(new URL(url).hostname);
   const email = process.env.ITO_MIGRACAO_EMAIL ?? (local ? "admin@ito.local" : "");
   const senha = process.env.ITO_MIGRACAO_SENHA ?? (local ? "ito-dev-2026" : "");
   if (!email || !senha)
@@ -78,7 +81,10 @@ async function conectar(args: Record<string, string>): Promise<{ api: Api; url: 
     body: JSON.stringify({ email, password: senha }),
   });
   if (!r.ok) throw new Error(`Login recusado (${r.status}). Confira e-mail, senha e a URL.`);
-  const { access_token } = (await r.json()) as { access_token: string };
+  const { access_token, user } = (await r.json()) as {
+    access_token: string;
+    user: { id: string };
+  };
   const cab = {
     apikey: chave,
     Authorization: `Bearer ${access_token}`,
@@ -89,6 +95,7 @@ async function conectar(args: Record<string, string>): Promise<{ api: Api; url: 
   };
   return {
     url,
+    usuario: user.id,
     api: {
       async ler<R>(caminho: string) {
         const todas: R[] = [];
@@ -120,6 +127,10 @@ async function conectar(args: Record<string, string>): Promise<{ api: Api; url: 
           body: JSON.stringify(corpo),
         });
         await falha(r, `POST ${tabela}`);
+      },
+      async apagar(caminho: string) {
+        const r = await fetch(`${url}/rest/v1/${caminho}`, { method: "DELETE", headers: cab });
+        await falha(r, `DELETE ${caminho}`);
       },
     },
   };
@@ -280,10 +291,11 @@ const gravarTabela = (nome: string, colunas: readonly string[], linhas: readonly
 };
 
 /** texto da planilha → função do ITO revisada em funcoes.csv */
+/** Só as linhas que uma pessoa revisou (coluna "revisado" = sim) mandam sobre as regras. */
 const funcoesRevisadas = () =>
   new Map(
     lerTabela("funcoes.csv")
-      .filter((l) => l.funcao && l.texto)
+      .filter((l) => l.funcao && l.texto && l.revisado === "sim")
       .map((l) => [l.texto!, l.funcao!] as const),
   );
 
@@ -301,7 +313,7 @@ const COLUNAS_OBRAS = [
   "arquivos",
   "observacao",
 ] as const;
-const COLUNAS_FUNCOES = ["texto", "funcao", "origem", "matriculas", "obras"] as const;
+const COLUNAS_FUNCOES = ["texto", "funcao", "origem", "revisado", "matriculas", "obras"] as const;
 const COLUNAS_RUBRICAS = [
   "codigo_planilha",
   "titulo",
@@ -310,6 +322,7 @@ const COLUNAS_RUBRICAS = [
   "tipo",
   "componente",
   "origem",
+  "revisado",
 ] as const;
 
 // ── preparar ────────────────────────────────────────────────────────────────
@@ -352,7 +365,7 @@ async function preparar(pasta: string, c: Contexto9): Promise<Preparo> {
     );
   const dicionario = [...c.cadastro.rubricas.map((r) => ({ codigo: r.codigo, nome: r.nome }))];
   const revisao = lerTabela("rubricas.csv")
-    .filter((l) => l.origem === "revisao" || l.revisado === "sim")
+    .filter((l) => l.revisado === "sim")
     .map((l) => ({
       codigoPlanilha: numeroBr(l.codigo_planilha),
       titulo: l.titulo ?? "",
@@ -390,7 +403,7 @@ async function preparar(pasta: string, c: Contexto9): Promise<Preparo> {
   });
   const obras = agruparObras(lidos);
 
-  // funções: tabela revisada (coluna "funcao" de funcoes.csv) manda sobre as regras
+  // funções: linhas revisadas de funcoes.csv (revisado = sim) mandam sobre as regras
   const tabFuncoes = funcoesRevisadas();
   const funcaoDe = (texto: string, classe: string) =>
     funcaoDoHistorico(texto, classe, tabFuncoes, c.sinonimos).id;
@@ -542,7 +555,8 @@ function gravarTabelas(p: Preparo, c: Contexto9) {
       .map(([texto, x]) => ({
         texto,
         funcao: x.funcao,
-        origem: tabFuncoes.has(texto) ? "revisao" : x.origem,
+        origem: x.origem,
+        revisado: tabFuncoes.has(texto) ? "sim" : "",
         matriculas: String(x.matriculas),
         obras: [...x.obras].join(" "),
       })),
@@ -558,6 +572,7 @@ function gravarTabelas(p: Preparo, c: Contexto9) {
       tipo: l.nova?.tipo ?? "",
       componente: l.nova?.componente ?? "",
       origem: l.origem,
+      revisado: l.origem === "revisao" ? "sim" : "",
     })),
   );
 }
@@ -666,7 +681,11 @@ function relatorio(p: Preparo, c: Contexto9, resultado: Map<string, string>): st
 
 // ── carregar ────────────────────────────────────────────────────────────────
 
-async function carregar(pasta: string, api: Api) {
+/**
+ * Grava as obras prontas. Obra que já existe só é substituída se foi a própria migração (o mesmo
+ * usuário) que a carregou; carga feita por outra pessoa pede `--substituir` (revisão M9).
+ */
+async function carregar(pasta: string, api: Api, usuario: string, forcar: boolean) {
   let c = await carregarContexto(api);
   let p = await preparar(pasta, c);
   // 1. funções e cidades novas que as obras usam
@@ -691,6 +710,11 @@ async function carregar(pasta: string, api: Api) {
   c = await carregarContexto(api);
   p = await preparar(pasta, c);
   const resultado = new Map<string, string>();
+  const existentes = new Map(
+    (
+      await api.ler<{ id: string; carregada_por: string | null }>("obras?select=id,carregada_por")
+    ).map((o) => [o.id, o.carregada_por]),
+  );
   for (const o of p.obras) {
     const m = p.montagens.get(o.id);
     const pend = (p.pendencias.get(o.id) ?? []).filter((x) => !x.startsWith("sem cidade"));
@@ -701,8 +725,13 @@ async function carregar(pasta: string, api: Api) {
       );
       continue;
     }
+    const existe = existentes.has(o.id);
+    if (existe && existentes.get(o.id) !== usuario && !forcar) {
+      resultado.set(o.id, "já existe, carregada por outra pessoa (use --substituir)");
+      continue;
+    }
     try {
-      await api.rpc("gravar_carga", { p: { ...m.verificacao.payload, substituir: true } });
+      await api.rpc("gravar_carga", { p: { ...m.verificacao.payload, substituir: existe } });
       resultado.set(o.id, "carregada");
       console.log(`obra carregada: ${o.id}`);
     } catch (e) {
@@ -712,6 +741,17 @@ async function carregar(pasta: string, api: Api) {
       );
     }
   }
+  // 3. rubricas que a própria migração criou e saíram da tabela (colunas de total da planilha,
+  // revisão M9): apaga as que não têm lançamento; a FK protege as que ainda têm
+  const naTabela = new Set(p.tabelaRubricas.map((l) => l.codigo));
+  for (const r of c.cadastro.rubricas)
+    if (r.codigo >= PRIMEIRO_CODIGO_MIGRACAO && !naTabela.has(r.codigo))
+      try {
+        await api.apagar(`rubricas?codigo=eq.${r.codigo}`);
+        console.log(`rubrica fora da tabela apagada: ${r.codigo}`);
+      } catch {
+        console.log(`rubrica ${r.codigo} fora da tabela ainda tem lançamentos; ficou`);
+      }
   gravarTabelas(p, c);
   writeFileSync(join(DOCS, "relatorio.md"), relatorio(p, c, resultado), "utf8");
 }
@@ -721,21 +761,26 @@ async function carregar(pasta: string, api: Api) {
 async function main() {
   const [cmd, pasta, ...resto] = process.argv.slice(2);
   const args: Record<string, string> = {};
-  for (let i = 0; i < resto.length; i += 2) args[resto[i]!.replace(/^--/, "")] = resto[i + 1] ?? "";
+  for (let i = 0; i < resto.length; i++) {
+    const nome = resto[i]!.replace(/^--/, "");
+    const valor = resto[i + 1];
+    if (valor === undefined || valor.startsWith("--")) args[nome] = "sim";
+    else args[nome] = (i++, valor);
+  }
   if (!cmd || !pasta || !["preparar", "carregar"].includes(cmd)) {
     console.log(
-      "Uso: pnpm migrar preparar|carregar <pasta das planilhas> [--url URL --chave CHAVE]",
+      "Uso: pnpm migrar preparar|carregar <pasta das planilhas> [--url URL --chave CHAVE] [--substituir]",
     );
     process.exit(1);
   }
-  const { api, url } = await conectar(args);
+  const { api, url, usuario } = await conectar(args);
   console.log(`banco: ${url}`);
   if (cmd === "preparar") {
     const c = await carregarContexto(api);
     const p = await preparar(pasta, c);
     gravarTabelas(p, c);
     writeFileSync(join(DOCS, "relatorio.md"), relatorio(p, c, new Map()), "utf8");
-  } else await carregar(pasta, api);
+  } else await carregar(pasta, api, usuario, args.substituir === "sim");
   console.log(`tabelas e relatório em ${relative(process.cwd(), DOCS)}`);
 }
 

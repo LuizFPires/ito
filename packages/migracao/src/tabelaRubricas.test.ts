@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classificarRubrica } from "./rubricas";
-import { montarTabelaRubricas, PRIMEIRO_CODIGO_MIGRACAO } from "./tabelaRubricas";
+import { mesmoNome, montarTabelaRubricas, PRIMEIRO_CODIGO_MIGRACAO } from "./tabelaRubricas";
 
 const dic = [
   { codigo: 1, nome: "HORAS NORMAIS" },
@@ -89,5 +89,16 @@ describe("classificação de rubrica nova", () => {
       componente: "extras",
       baseProvisoes: true,
     });
+  });
+});
+
+describe("mesmoNome", () => {
+  it("igual sem acento, ordinal ou percentual no fim", () => {
+    expect(mesmoNome("13º SALÁRIO", "13 SALARIO")).toBe(true);
+    expect(mesmoNome("PERICULOSIDADE", "PERICULOSIDADE 30%")).toBe(true);
+  });
+  it("prefixo solto não vale (revisão M9)", () => {
+    expect(mesmoNome("13 SALARIO INTEGRAL", "13 SALARIO INTEGRAL RESCISAO")).toBe(false);
+    expect(mesmoNome("HORAS", "HORAS NORMAIS")).toBe(false);
   });
 });

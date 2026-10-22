@@ -39,14 +39,18 @@ const titulo = (t: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-/** Nomes que querem dizer a mesma rubrica (iguais, ou um contém o outro com folga). */
+/**
+ * Nomes que querem dizer a mesma rubrica: iguais (sem acento e pontuação) ou diferentes só por um
+ * percentual no fim ("PERICULOSIDADE" × "PERICULOSIDADE 30%"). Prefixo solto não vale: "13 SALARIO
+ * INTEGRAL" não é "13º SALÁRIO INTEGRAL RESCISÃO" (revisão M9).
+ */
 export function mesmoNome(a: string, b: string): boolean {
-  const x = titulo(a);
-  const y = titulo(b);
+  const x = titulo(a).replace(/\b(\d+)o\b/g, "$1");
+  const y = titulo(b).replace(/\b(\d+)o\b/g, "$1");
   if (!x || !y) return false;
   if (x === y) return true;
   const [curto, longo] = x.length < y.length ? [x, y] : [y, x];
-  return curto.length >= 10 && longo.startsWith(curto);
+  return longo.startsWith(curto) && /^\s*\d+(,\d+)?\s*%$/.test(longo.slice(curto.length));
 }
 
 const chave = (o: { codigoPlanilha: number | null; titulo: string }) =>

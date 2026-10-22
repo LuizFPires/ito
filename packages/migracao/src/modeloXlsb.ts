@@ -2,7 +2,8 @@
  * Modelo .xlsb (2023–2026): aba Histograma com uma linha por matrícula e competência e uma coluna
  * por rubrica da folha (código na linha 5, sinal na linha 2, nome na linha 6). Só valores em R$:
  * horas de HE e de falta e a fração do mês são estimadas (marcadas no relatório).
- * Nunca lê a coluna do nome (coluna B) nem a descrição da aba Adicionais (traz nomes).
+ * Nunca lê a coluna do nome (coluna C) nem a descrição da aba Adicionais (traz nomes). As colunas
+ * fixas (matrícula, função, competência) são conferidas pelo cabeçalho antes da leitura.
  */
 import type { Competencia, Construtora } from "@ito/carga";
 import { moeda } from "@ito/formato";
@@ -42,6 +43,32 @@ export function sinalPeloNome(nome: string): "+" | "-" | "" {
 const ehHorasNormais = (codigo: number, nome: string) =>
   codigo === 1 || /saldo de salario|afast\. p\/doenca/.test(nome);
 
+/**
+ * Títulos que abrem o bloco de totais da planilha (custo, encargos, provisões, líquido): as
+ * rubricas param antes deles, mesmo nas planilhas sem a coluna "Proventos" (revisão M9).
+ */
+const TOTAIS =
+  /^(proventos|descontos|∑|custo|provisoes|fgts$|base inss|exc inss|remuneracao para provisoes|tributos|pagamento salarial|liquido trct|inss \(empreg|irrf$|desc\. taxa)/;
+
+export function fimDasRubricas(nomes: readonly Celula[]): number {
+  for (let c = COL.salarioBase + 1; c < nomes.length; c++)
+    if (TOTAIS.test(normal(nomes[c]))) return c;
+  return nomes.length;
+}
+
+/** Confere o cabeçalho das colunas fixas: se a versão mudou, recusa (o nome cairia na função). */
+export function conferirCabecalho(nomes: readonly Celula[], arquivo: string) {
+  const ok =
+    /^cod/.test(normal(nomes[COL.matricula])) &&
+    /^funcao/.test(normal(nomes[COL.funcao])) &&
+    /^competencia/.test(normal(nomes[COL.competencia])) &&
+    /salario base/.test(normal(nomes[COL.salarioBase]));
+  if (!ok)
+    throw new Error(
+      `${arquivo}: aba Histograma fora do layout esperado (matrícula na B, função na E, competência na G, salário base na M). Ajuste o conversor antes de migrar.`,
+    );
+}
+
 export interface ColunaXlsb {
   col: number;
   /** código da linha 5 (nem sempre atualizado quando a coluna foi renomeada) */
@@ -56,8 +83,7 @@ export function colunasXlsb(abas: Abas): ColunaXlsb[] {
   const sinais = h[LINHA.sinal] ?? [];
   const codigos = h[LINHA.codigo] ?? [];
   const nomes = h[LINHA.nome] ?? [];
-  const iProventos = (nomes as Celula[]).findIndex((v) => normal(v) === "proventos");
-  const fim = iProventos > 0 ? iProventos : codigos.length;
+  const fim = fimDasRubricas(nomes);
   const cols: ColunaXlsb[] = [];
   for (let c = COL.salarioBase + 1; c < fim; c++) {
     const titulo = String(nomes[c] ?? "")
@@ -92,6 +118,7 @@ export function lerModeloXlsb(
   const avisos: Aviso[] = [];
   const h = abas.Histograma ?? [];
   const nomes = h[LINHA.nome] ?? [];
+  conferirCabecalho(nomes, arquivo);
   const iProventos = (nomes as Celula[]).findIndex((v) => normal(v) === "proventos");
   const rub: { col: number; codigo: number; nome: string; sinal: "+" | "-" | "" }[] = [];
   for (const x of colunasXlsb(abas)) {
