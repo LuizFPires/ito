@@ -1561,12 +1561,7 @@ export type Database = {
       criar_cct: { Args: { p_id: string; p_nome: string }; Returns: string };
       criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
       criar_funcao: {
-        Args: {
-          p_escala_area?: boolean;
-          p_id: string;
-          p_nome: string;
-          p_sinonimo?: string;
-        };
+        Args: { p_escala_area?: boolean; p_id: string; p_nome: string; p_sinonimo?: string };
         Returns: string;
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
