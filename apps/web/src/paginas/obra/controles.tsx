@@ -4,22 +4,6 @@ import type { Vista } from "./comum";
 
 export type SetVista = Dispatch<SetStateAction<Vista>>;
 
-export function ControleGrupo({ vista, setVista }: { vista: Vista; setVista: SetVista }) {
-  return (
-    <Segmento
-      rotulo="Grupos de função"
-      opcoes={[
-        { valor: "todas", texto: "Todas" },
-        { valor: "direta", texto: "Direta" },
-        { valor: "indireta", texto: "Indireta" },
-        { valor: "adm", texto: "Adm." },
-      ]}
-      valor={vista.grupo}
-      onChange={(v) => setVista((x) => ({ ...x, grupo: v }))}
-    />
-  );
-}
-
 export function ControleEixo({ vista, setVista }: { vista: Vista; setVista: SetVista }) {
   return (
     <Segmento

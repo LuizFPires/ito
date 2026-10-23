@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Pendencias } from "@ito/carga";
 import { funcaoDoTexto } from "@ito/carga";
 import { numero } from "@ito/formato";
-import { NOME_GRUPO, useCriarFuncao } from "../../dados/cadastros";
+import { useCriarFuncao } from "../../dados/cadastros";
 import { codigoDe, contemTermos, paginar } from "../../lib/lista";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
 import { useToast } from "../../ui/toast";
@@ -84,7 +84,7 @@ export function EtapaFuncoes({
     let id = base;
     for (let i = 2; usados.has(id); i++) id = `${base.slice(0, 30)}${i}`;
     try {
-      await criar.gravar({ id, nome, grupo: "direta", sinonimo: texto });
+      await criar.gravar({ id, nome, sinonimo: texto });
     } catch {
       return; // o aviso do erro já apareceu
     }
@@ -155,7 +155,6 @@ export function EtapaFuncoes({
                       <option value={id}>{ctx.cadastro.nomesFuncoes[id] ?? id} (inativa)</option>
                     )}
                   </Selecao>
-                  {fn && <div className="sub">{NOME_GRUPO[fn.grupo]}</div>}
                 </td>
                 <td>
                   {id ? (

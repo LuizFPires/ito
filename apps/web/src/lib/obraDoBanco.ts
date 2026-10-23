@@ -143,7 +143,6 @@ export interface Resumo {
   pico: number;
   pessoa_mes: number;
   he_por_pessoa: number;
-  indireta_pct: number;
   custo_epoca: number;
   custo_atual: number;
   histograma: number[];
@@ -151,7 +150,7 @@ export interface Resumo {
 
 const r2 = (v: number) => Math.round(v * 100) / 100;
 
-/** Resumo da lista (como no protótipo): pico, pessoa-mês, HE por pessoa ponderada, % indireta. */
+/** Resumo da lista (como no protótipo): pico, pessoa-mês e HE por pessoa ponderada. */
 export function resumoDaObra(
   b: ObraBanco,
   ctx: Contexto,
@@ -161,14 +160,10 @@ export function resumoDaObra(
 ): Resumo {
   const { obra } = obraDoBanco(b);
   const n = b.obra.meses;
-  const grupo = new Map(ctx.funcoes.map((f) => [f.id, f.grupo]));
   const totais = Array.from({ length: n }, (_, i) =>
     Object.values(obra.equivalente).reduce((s, v) => s + (v[i] ?? 0), 0),
   );
   const pm = totais.reduce((a, b2) => a + b2, 0);
-  const indireta = Object.entries(obra.equivalente)
-    .filter(([f]) => grupo.get(f) !== "direta")
-    .reduce((s, [, v]) => s + v.reduce((a, x) => a + x, 0), 0);
   const he = pm ? totais.reduce((s, x, i) => s + x * (obra.heMedia[i] ?? 0), 0) / pm : 0;
   return {
     obra_id: b.obra.id,
@@ -179,7 +174,6 @@ export function resumoDaObra(
     pico: r2(Math.max(0, ...totais)),
     pessoa_mes: r2(pm),
     he_por_pessoa: r2(he),
-    indireta_pct: pm ? Math.round((indireta / pm) * 1e6) / 1e4 : 0,
     custo_epoca: r2(calcular(b, ctx, tabelas, vigente, "epoca").total.total),
     custo_atual: r2(calcular(b, ctx, tabelas, vigente, "atualizado").total.total),
     histograma: totais.map(r2),

@@ -760,7 +760,6 @@ export type Database = {
           exame_per_anual: number;
           fator_he: number;
           ferramentas_mes: number;
-          grupo: Database["public"]["Enums"]["grupo_funcao"];
           horas_noturnas_mes: number;
           id: string;
           insal_pct_sm: number;
@@ -781,7 +780,6 @@ export type Database = {
           exame_per_anual?: number;
           fator_he?: number;
           ferramentas_mes?: number;
-          grupo: Database["public"]["Enums"]["grupo_funcao"];
           horas_noturnas_mes?: number;
           id: string;
           insal_pct_sm?: number;
@@ -801,7 +799,6 @@ export type Database = {
           exame_per_anual?: number;
           fator_he?: number;
           ferramentas_mes?: number;
-          grupo?: Database["public"]["Enums"]["grupo_funcao"];
           horas_noturnas_mes?: number;
           id?: string;
           insal_pct_sm?: number;
@@ -1066,7 +1063,6 @@ export type Database = {
           custo_epoca: number;
           he_por_pessoa: number;
           histograma: number[];
-          indireta_pct: number;
           obra_id: string;
           pessoa_mes: number;
           pico: number;
@@ -1082,7 +1078,6 @@ export type Database = {
           custo_epoca?: number;
           he_por_pessoa?: number;
           histograma?: number[];
-          indireta_pct?: number;
           obra_id: string;
           pessoa_mes?: number;
           pico?: number;
@@ -1097,7 +1092,6 @@ export type Database = {
           custo_epoca?: number;
           he_por_pessoa?: number;
           histograma?: number[];
-          indireta_pct?: number;
           obra_id?: string;
           pessoa_mes?: number;
           pico?: number;
@@ -1567,12 +1561,7 @@ export type Database = {
       criar_cct: { Args: { p_id: string; p_nome: string }; Returns: string };
       criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
       criar_funcao: {
-        Args: {
-          p_grupo: Database["public"]["Enums"]["grupo_funcao"];
-          p_id: string;
-          p_nome: string;
-          p_sinonimo?: string;
-        };
+        Args: { p_escala_area?: boolean; p_id: string; p_nome: string; p_sinonimo?: string };
         Returns: string;
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
@@ -1649,7 +1638,6 @@ export type Database = {
         | "info";
       construtora: "classica" | "ampla";
       grupo_encargo: "soc" | "prov" | "nf";
-      grupo_funcao: "direta" | "indireta" | "adm";
       modo_dias: "calendario" | "fixo";
       perfil: "planejamento" | "engenharia" | "dp_rh" | "controladoria" | "diretoria";
       regime: "clt" | "sp";
@@ -1786,7 +1774,6 @@ export const Constants = {
       ],
       construtora: ["classica", "ampla"],
       grupo_encargo: ["soc", "prov", "nf"],
-      grupo_funcao: ["direta", "indireta", "adm"],
       modo_dias: ["calendario", "fixo"],
       perfil: ["planejamento", "engenharia", "dp_rh", "controladoria", "diretoria"],
       regime: ["clt", "sp"],

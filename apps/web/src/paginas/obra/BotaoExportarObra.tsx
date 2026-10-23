@@ -8,7 +8,7 @@ import { Botao } from "../../ui/componentes";
 import { useToast } from "../../ui/toast";
 import { apropriacaoPorConta } from "./calculos";
 import type { DadosAba } from "./comum";
-import { ORDEM_GRUPOS, rotulosDe } from "./comum";
+import { porNome, rotulosDe } from "./comum";
 import {
   contasComValor,
   rubricasPorMes,
@@ -37,11 +37,7 @@ export function BotaoExportarObra({ dados }: { dados: DadosAba }) {
     try {
       const { d, obra, r, epoca, fun, V, vista, pode } = dados;
       const rotulos = rotulosDe(obra, "data");
-      const ids = [...r.funcoes].sort(
-        (a, b) =>
-          ORDEM_GRUPOS.indexOf(fun(a).grupo) - ORDEM_GRUPOS.indexOf(fun(b).grupo) ||
-          fun(a).nome.localeCompare(fun(b).nome, "pt-BR"),
-      );
+      const ids = [...r.funcoes].sort(porNome(fun));
       const t = tituloObra(dados);
       const tv = [...t, tituloVisao(dados)];
       const tabelas: Tabela[] = [

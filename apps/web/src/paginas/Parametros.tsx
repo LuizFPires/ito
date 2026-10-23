@@ -13,7 +13,6 @@ import { calendarioMes, taxasEncargos } from "@ito/motor";
 import type { ItemEncargo } from "@ito/motor";
 import { useSessao } from "../auth/sessao";
 import {
-  NOME_GRUPO,
   useAdicionarFeriado,
   useAtualizarDataBase,
   useAtualizarEncargo,
@@ -206,8 +205,8 @@ function AbaSalarios({
   const { data: ant } = useDataBase(anterior);
   const gravar = useGravarSalario(ano);
   const [q, setQ] = useState("");
-  const [ordem, setOrdem] = useState<Ordem<"nome" | "grupo" | "salario" | "variacao">>({
-    chave: "grupo",
+  const [ordem, setOrdem] = useState<Ordem<"nome" | "salario" | "variacao">>({
+    chave: "nome",
     dir: 1,
   });
   const variacao = (id: string) => {
@@ -215,22 +214,13 @@ function AbaSalarios({
     const a = ant?.salarios[id];
     return v !== undefined && a ? v / a - 1 : -Infinity;
   };
-  const ordemGrupo = { direta: 0, indireta: 1, adm: 2 };
   const lista = ordenar(
     (funcoes ?? []).filter(
-      (x) =>
-        (x.ativo || det.salarios[x.id] !== undefined) &&
-        contemTermos(`${x.nome} ${NOME_GRUPO[x.grupo]}`, q),
+      (x) => (x.ativo || det.salarios[x.id] !== undefined) && contemTermos(x.nome, q),
     ),
     ordem,
     (x, k) =>
-      k === "nome"
-        ? x.nome
-        : k === "grupo"
-          ? `${ordemGrupo[x.grupo]} ${x.nome}`
-          : k === "salario"
-            ? (det.salarios[x.id] ?? -1)
-            : variacao(x.id),
+      k === "nome" ? x.nome : k === "salario" ? (det.salarios[x.id] ?? -1) : variacao(x.id),
   );
   const ordenarPor = (k: typeof ordem.chave) => setOrdem(alternarOrdem(ordem, k));
   return (
@@ -239,21 +229,13 @@ function AbaSalarios({
       sub="R$ por mês. Na projeção, a CCT da cidade substitui estes valores."
     >
       <div className={f.barra}>
-        <CampoBusca
-          rotulo="Buscar função"
-          placeholder="Função ou grupo"
-          valor={q}
-          onChange={setQ}
-        />
+        <CampoBusca rotulo="Buscar função" placeholder="Nome da função" valor={q} onChange={setQ} />
       </div>
       <table className={f.tabela}>
         <thead>
           <tr>
             <ThOrdem chave="nome" ordem={ordem} onOrdenar={ordenarPor}>
               Função padrão
-            </ThOrdem>
-            <ThOrdem chave="grupo" ordem={ordem} onOrdenar={ordenarPor}>
-              Grupo
             </ThOrdem>
             <ThOrdem chave="salario" ordem={ordem} onOrdenar={ordenarPor} direita>
               Salário {ano}
@@ -266,7 +248,7 @@ function AbaSalarios({
         <tbody>
           {!lista.length && (
             <tr>
-              <td colSpan={4} className="sub" style={{ textAlign: "center", padding: 24 }}>
+              <td colSpan={3} className="sub" style={{ textAlign: "center", padding: 24 }}>
                 Nenhuma função encontrada. Limpe a busca.
               </td>
             </tr>
@@ -286,7 +268,6 @@ function AbaSalarios({
                     </>
                   )}
                 </td>
-                <td>{NOME_GRUPO[x.grupo]}</td>
                 <td className={f.r}>
                   {pode ? (
                     <CampoNumero

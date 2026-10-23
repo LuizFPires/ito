@@ -5,24 +5,27 @@
  */
 import { normal } from "./historico";
 
-export type Grupo = "direta" | "indireta" | "adm";
-
-/** Funções que a migração cria (as 14 do ITO já existem). */
-export const FUNCOES_NOVAS: Readonly<Record<string, { nome: string; grupo: Grupo }>> = {
-  eng: { nome: "Engenheiro", grupo: "indireta" },
-  superv: { nome: "Supervisor de obra", grupo: "indireta" },
-  topog: { nome: "Topografia", grupo: "indireta" },
-  planej: { nome: "Analista de planejamento", grupo: "indireta" },
-  tecenf: { nome: "Técnico de enfermagem do trabalho", grupo: "indireta" },
-  auxger: { nome: "Auxiliar de serviços gerais", grupo: "indireta" },
-  opbet: { nome: "Operador de betoneira", grupo: "direta" },
-  pintor: { nome: "Pintor", grupo: "direta" },
-  serralh: { nome: "Serralheiro", grupo: "direta" },
-  compr: { nome: "Comprador", grupo: "adm" },
-  rh: { nome: "Analista de RH", grupo: "adm" },
-  geradm: { nome: "Gerente administrativo", grupo: "adm" },
-  motoboy: { nome: "Moto boy", grupo: "adm" },
-  outras: { nome: "Outras funções (migração)", grupo: "indireta" },
+/**
+ * Funções que a migração cria (as 14 do ITO já existem): se crescem com a área da obra e de qual
+ * função do ITO herdam o cadastro até a função nova existir (exames, adicionais, fator de HE).
+ */
+export const FUNCOES_NOVAS: Readonly<
+  Record<string, { nome: string; escalaArea: boolean; modelo: "ped" | "encar" | "admin" }>
+> = {
+  eng: { nome: "Engenheiro", escalaArea: false, modelo: "encar" },
+  superv: { nome: "Supervisor de obra", escalaArea: false, modelo: "encar" },
+  topog: { nome: "Topografia", escalaArea: false, modelo: "encar" },
+  planej: { nome: "Analista de planejamento", escalaArea: false, modelo: "encar" },
+  tecenf: { nome: "Técnico de enfermagem do trabalho", escalaArea: false, modelo: "encar" },
+  auxger: { nome: "Auxiliar de serviços gerais", escalaArea: false, modelo: "encar" },
+  opbet: { nome: "Operador de betoneira", escalaArea: true, modelo: "ped" },
+  pintor: { nome: "Pintor", escalaArea: true, modelo: "ped" },
+  serralh: { nome: "Serralheiro", escalaArea: true, modelo: "ped" },
+  compr: { nome: "Comprador", escalaArea: false, modelo: "admin" },
+  rh: { nome: "Analista de RH", escalaArea: false, modelo: "admin" },
+  geradm: { nome: "Gerente administrativo", escalaArea: false, modelo: "admin" },
+  motoboy: { nome: "Moto boy", escalaArea: false, modelo: "admin" },
+  outras: { nome: "Outras funções (migração)", escalaArea: false, modelo: "encar" },
 };
 
 /** Regras: a primeira cujo padrão aparece no texto (sem acento, minúsculo) decide. */

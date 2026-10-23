@@ -125,7 +125,7 @@ describe("projeção de quantidades (§5)", () => {
 });
 
 describe("indicadores derivados (§4.7)", () => {
-  it("R$/dia, encargos %, benefícios % e % indireta", () => {
+  it("R$/dia, encargos % e benefícios %", () => {
     const r = calcularObra(obra({ ped: [6, 6], mestre: [1, 1], admin: [1, 1] }), tabela, ctx, SINT);
     const t = r.total;
     const ind = indicadores(r);
@@ -133,7 +133,6 @@ describe("indicadores derivados (§4.7)", () => {
     expect(ind.porDiaSemTaxa).toBeCloseTo(t.remun / t.dias, 10);
     expect(ind.encargosPct).toBeCloseTo(((t.enc + t.prov + t.nf) / t.remun) * 100, 10);
     expect(ind.beneficiosPct).toBeCloseTo(((t.vt + t.benef) / t.remun) * 100, 10);
-    expect(ind.indiretaPct).toBeCloseTo(25, 10); // (2 + 2) ÷ 16
   });
 });
 

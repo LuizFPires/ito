@@ -74,7 +74,6 @@ export function funcaoDe(P: Prototipo, f: Qualquer): Funcao {
   const ad = f.adic ?? {};
   return {
     id: f.k,
-    grupo: f.grupo,
     vinculo: f.vinc === "est" ? "estagio" : "clt",
     escalaArea: !!f.escala,
     exames: { adm: ex.adm ?? 0, perAnual: ex.per ?? 0, dem: ex.dem ?? 0 },

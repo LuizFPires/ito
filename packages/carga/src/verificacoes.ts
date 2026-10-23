@@ -242,7 +242,7 @@ export function verificarCarga(
           id: "funcoes",
           estado: "ok",
           titulo: "Todas as funções da folha têm função padrão",
-          detalhe: "Inclui mão de obra indireta e administrativa.",
+          detalhe: "Cada linha da folha está ligada a uma função do ITO.",
         },
   );
   const pr = m.pendencias.rubricas;

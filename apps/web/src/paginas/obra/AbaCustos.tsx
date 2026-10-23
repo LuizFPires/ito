@@ -8,22 +8,14 @@ import f from "../../ui/formulario.module.css";
 import { BotaoCopiar } from "../../ui/BotaoCopiar";
 import type { DadosAba } from "./comum";
 import { tabelaCustoComponente, tabelaCustoFuncao, tituloObra, tituloVisao } from "./exportar";
-import {
-  COMPONENTES,
-  componentesVisiveis,
-  NOME_GRUPO_F,
-  notaVisao,
-  ORDEM_GRUPOS,
-  soma,
-} from "./comum";
+import { COMPONENTES, componentesVisiveis, notaVisao, soma } from "./comum";
 import type { SetVista } from "./controles";
-import { ControleEixo, ControleGrupo } from "./controles";
+import { ControleEixo } from "./controles";
 import s from "./obra.module.css";
 
 export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetVista }) {
   const [porComp, setPorComp] = useState(false);
   const { r, ids, fun, rotulos, vista, V, d, ctx } = dados;
-  const n = rotulos.length;
   const comps = componentesVisiveis(vista.caixa);
   // componentes do filtro de grupo, mês a mês
   const M = rotulos.map((_, i) => somar(ids.map((k) => r.porFuncao[k]![i]!)));
@@ -84,7 +76,6 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
                 valor={porComp ? "comp" : "func"}
                 onChange={(v) => setPorComp(v === "comp")}
               />
-              <ControleGrupo vista={vista} setVista={setVista} />
               <ControleEixo vista={vista} setVista={setVista} />
             </span>
           </div>
@@ -185,68 +176,46 @@ export function AbaCustos({ dados, setVista }: { dados: DadosAba; setVista: SetV
               </tbody>
             ) : (
               <tbody>
-                {ORDEM_GRUPOS.map((g) => {
-                  const gk = ids.filter((k) => fun(k).grupo === g);
-                  if (!gk.length) return null;
-                  return [
-                    <tr key={`g-${g}`} className={s.grupoLinha}>
-                      <td colSpan={n + 2}>Mão de obra {NOME_GRUPO_F[g].toLowerCase()}</td>
-                    </tr>,
-                    ...gk.map((k) => {
-                      const linha = r.porFuncao[k]!;
-                      const t = soma(linha.map(V));
-                      const pm = soma(linha.map((c) => c.x));
-                      return (
-                        <tr key={k}>
-                          <td className={f.forte}>
-                            <span className={s.amostra} style={{ background: fun(k).cor }} />
-                            {fun(k).nome}
-                            <div className="sub">
-                              {moeda(linha[0]!.salario)} salário ·{" "}
-                              {linha[0]!.regime === "sp"
-                                ? "prestador S/P"
-                                : linha[0]!.regime === "estagio"
-                                  ? "estágio"
-                                  : "folha CLT"}
-                            </div>
-                          </td>
-                          {linha.map((c, i) => (
-                            <td key={i} className={f.r}>
-                              {c.x ? (
-                                <>
-                                  <strong>{moeda(V(c), 0)}</strong>
-                                  <div className={`sub ${s.nowrap}`}>
-                                    {numero(c.x, 1)} × {moeda(V(c) / c.x, 0)}
-                                  </div>
-                                </>
-                              ) : (
-                                <span className="sub">–</span>
-                              )}
-                            </td>
-                          ))}
-                          <td className={f.r}>
-                            <strong>{moeda(t, 0)}</strong>
-                            <div className={`sub ${s.nowrap}`}>
-                              {numero(pm, 1)} PM × {moeda(pm ? t / pm : 0, 0)}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    }),
-                    vista.grupo === "todas" && (
-                      <tr key={`s-${g}`} className={s.subtotal}>
-                        <td>Subtotal {NOME_GRUPO_F[g].toLowerCase()}</td>
-                        {rotulos.map((_, i) => (
-                          <td key={i} className={f.r}>
-                            {moeda(soma(gk.map((k) => V(r.porFuncao[k]![i]!))), 0)}
-                          </td>
-                        ))}
-                        <td className={f.r}>
-                          {moeda(soma(gk.flatMap((k) => r.porFuncao[k]!.map(V))), 0)}
+                {ids.map((k) => {
+                  const linha = r.porFuncao[k]!;
+                  const t = soma(linha.map(V));
+                  const pm = soma(linha.map((c) => c.x));
+                  return (
+                    <tr key={k}>
+                      <td className={f.forte}>
+                        <span className={s.amostra} style={{ background: fun(k).cor }} />
+                        {fun(k).nome}
+                        <div className="sub">
+                          {moeda(linha[0]!.salario)} salário ·{" "}
+                          {linha[0]!.regime === "sp"
+                            ? "prestador S/P"
+                            : linha[0]!.regime === "estagio"
+                              ? "estágio"
+                              : "folha CLT"}
+                        </div>
+                      </td>
+                      {linha.map((c, i) => (
+                        <td key={i} className={f.r}>
+                          {c.x ? (
+                            <>
+                              <strong>{moeda(V(c), 0)}</strong>
+                              <div className={`sub ${s.nowrap}`}>
+                                {numero(c.x, 1)} × {moeda(V(c) / c.x, 0)}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="sub">–</span>
+                          )}
                         </td>
-                      </tr>
-                    ),
-                  ];
+                      ))}
+                      <td className={f.r}>
+                        <strong>{moeda(t, 0)}</strong>
+                        <div className={`sub ${s.nowrap}`}>
+                          {numero(pm, 1)} PM × {moeda(pm ? t / pm : 0, 0)}
+                        </div>
+                      </td>
+                    </tr>
+                  );
                 })}
                 <tr className="total">
                   <td>Total do mês</td>

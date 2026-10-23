@@ -3,7 +3,6 @@ import { useLocation } from "react-router";
 import { moeda, numero } from "@ito/formato";
 import { useSessao } from "../auth/sessao";
 import {
-  NOME_GRUPO,
   useAdicionarSinonimo,
   useAtualizarFuncao,
   useCriarFuncao,
@@ -13,11 +12,11 @@ import {
   useParametros,
   useRemoverSinonimo,
 } from "../dados/cadastros";
-import type { Funcao, GrupoFuncao } from "../dados/cadastros";
+import type { Funcao } from "../dados/cadastros";
 import { alternarOrdem, codigoDe, contemTermos, ordenar, paginar } from "../lib/lista";
 import type { Ordem } from "../lib/lista";
 import { podeEditarCadastros } from "../lib/permissoes";
-import { Badge, Botao, Cartao, Chip } from "../ui/componentes";
+import { Badge, Botao, Cartao } from "../ui/componentes";
 import {
   Campo,
   CampoBusca,
@@ -32,8 +31,7 @@ import { MENU } from "../shell/rotas";
 import { Pagina } from "./Pagina";
 
 const POR_PAGINA = 15;
-const GRUPOS = Object.entries(NOME_GRUPO) as [GrupoFuncao, string][];
-type Chave = "nome" | "grupo" | "salario";
+type Chave = "nome" | "salario";
 
 export function TelaFuncoes() {
   const d = MENU.find((x) => x.caminho === "/funcoes")!;
@@ -46,9 +44,8 @@ export function TelaFuncoes() {
   const { data: obrasPor } = useObrasPorFuncao();
 
   const [q, setQ] = useState("");
-  const [grupo, setGrupo] = useState<GrupoFuncao | "todas">("todas");
   const [inativas, setInativas] = useState(false);
-  const [ordem, setOrdem] = useState<Ordem<Chave>>({ chave: "grupo", dir: 1 });
+  const [ordem, setOrdem] = useState<Ordem<Chave>>({ chave: "nome", dir: 1 });
   const [pagina, setPagina] = useState(1);
   // Vindo da busca global: abre a função escolhida (também quando já está nesta tela).
   const local = useLocation();
@@ -65,18 +62,12 @@ export function TelaFuncoes() {
     const filtradas = (funcoes ?? []).filter(
       (x) =>
         (inativas || x.ativo) &&
-        (grupo === "todas" || x.grupo === grupo) &&
         contemTermos(`${x.nome} ${x.conta_pc} ${x.sinonimos.join(" ")}`, q),
     );
-    const ordemGrupo = { direta: 0, indireta: 1, adm: 2 };
     return ordenar(filtradas, ordem, (x, k) =>
-      k === "nome"
-        ? x.nome
-        : k === "grupo"
-          ? `${ordemGrupo[x.grupo]} ${x.nome}`
-          : (db?.salarios[x.id] ?? -1),
+      k === "nome" ? x.nome : (db?.salarios[x.id] ?? -1),
     );
-  }, [funcoes, inativas, grupo, q, ordem, db]);
+  }, [funcoes, inativas, q, ordem, db]);
   const pg = paginar(lista, pagina, POR_PAGINA);
   const atual = sel && sel !== "nova" ? funcoes?.find((x) => x.id === sel) : undefined;
 
@@ -96,16 +87,6 @@ export function TelaFuncoes() {
               valor={q}
               onChange={(v) => filtrar(() => setQ(v))}
             />
-            <div className="chips" role="group" aria-label="Grupo" style={{ display: "flex" }}>
-              <Chip ativo={grupo === "todas"} onClick={() => filtrar(() => setGrupo("todas"))}>
-                Todas
-              </Chip>
-              {GRUPOS.map(([g, n]) => (
-                <Chip key={g} ativo={grupo === g} onClick={() => filtrar(() => setGrupo(g))}>
-                  {n}
-                </Chip>
-              ))}
-            </div>
             <Interruptor
               rotulo="Mostrar inativas"
               texto="Inativas"
@@ -137,13 +118,6 @@ export function TelaFuncoes() {
                       onOrdenar={(k) => setOrdem(alternarOrdem(ordem, k))}
                     >
                       Função
-                    </ThOrdem>
-                    <ThOrdem
-                      chave="grupo"
-                      ordem={ordem}
-                      onOrdenar={(k) => setOrdem(alternarOrdem(ordem, k))}
-                    >
-                      Grupo
                     </ThOrdem>
                     <th>Escala</th>
                     <ThOrdem
@@ -192,7 +166,6 @@ export function TelaFuncoes() {
                           {obrasPor?.[x.id] === 1 ? "obra" : "obras"}
                         </div>
                       </td>
-                      <td>{NOME_GRUPO[x.grupo]}</td>
                       <td>{x.escala_area ? "Com a área" : "Fixo por mês"}</td>
                       <td className={f.r}>
                         {salario(x.id) !== undefined ? (
@@ -205,7 +178,7 @@ export function TelaFuncoes() {
                   ))}
                   {!pg.itens.length && (
                     <tr>
-                      <td colSpan={4} className="sub" style={{ textAlign: "center", padding: 32 }}>
+                      <td colSpan={3} className="sub" style={{ textAlign: "center", padding: 32 }}>
                         Nenhuma função encontrada. Limpe a busca ou os filtros.
                       </td>
                     </tr>
@@ -268,9 +241,7 @@ function DetalheFuncao({
     <Cartao className={f.painel} aria-label={`Função ${x.nome}`}>
       <div className={f.painelCabeca}>
         <div>
-          <span className="rotulo">
-            {NOME_GRUPO[x.grupo]} · código {x.id}
-          </span>
+          <span className="rotulo">Código {x.id}</span>
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>{x.nome}</h2>
           <span className="sub">
             Salário {vigente}: {salario !== undefined ? moeda(salario) : "não definido"} (em
@@ -310,19 +281,6 @@ function DetalheFuncao({
                 salvar({ conta_pc: conta.trim() }).catch(() => setConta(x.conta_pc));
             }}
           />
-        </Campo>
-        <Campo rotulo="Grupo">
-          <Selecao
-            value={x.grupo}
-            disabled={!pode}
-            onChange={(e) => salvar({ grupo: e.target.value as GrupoFuncao })}
-          >
-            {GRUPOS.map(([g, n]) => (
-              <option key={g} value={g}>
-                {n}
-              </option>
-            ))}
-          </Selecao>
         </Campo>
         <Campo rotulo="Vínculo">
           <Selecao
@@ -481,7 +439,7 @@ function NovaFuncao({
 }) {
   const criar = useCriarFuncao();
   const [nome, setNome] = useState("");
-  const [grupo, setGrupo] = useState<GrupoFuncao>("direta");
+  const [escala, setEscala] = useState(true);
   const [sinonimo, setSinonimo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const id = codigoDe(nome);
@@ -496,7 +454,12 @@ function NovaFuncao({
       return setErro(`O sinônimo "${sin}" já está na função ${dona.nome}. Use outro texto.`);
     setErro(null);
     criar.mutate(
-      { id, nome: nome.trim(), grupo, sinonimo: sinonimo.trim().toUpperCase() || undefined },
+      {
+        id,
+        nome: nome.trim(),
+        escalaArea: escala,
+        sinonimo: sinonimo.trim().toUpperCase() || undefined,
+      },
       { onSuccess: () => onCriada(id) },
     );
   }
@@ -517,15 +480,12 @@ function NovaFuncao({
           onChange={(e) => setNome(e.target.value)}
         />
       </Campo>
-      <Campo rotulo="Grupo">
-        <Selecao value={grupo} onChange={(e) => setGrupo(e.target.value as GrupoFuncao)}>
-          {GRUPOS.map(([g, n]) => (
-            <option key={g} value={g}>
-              {n}
-            </option>
-          ))}
-        </Selecao>
-      </Campo>
+      <Interruptor
+        rotulo="Escala com a área"
+        texto="Escala com a área da obra"
+        ligado={escala}
+        onChange={setEscala}
+      />
       <Campo rotulo="Como aparece na folha (opcional)">
         <input
           className={f.input}

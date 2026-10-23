@@ -36,7 +36,6 @@ O ITO é uma plataforma de **histórico de mão de obra** das obras da Clássica
 | origem da MO | `local`, `diaria` (vem de outra cidade todo dia), `aloj` (alojada) |
 | MDO realocada | cedida ou recebida entre obras |
 | S/P | prestador com NF, sem encargos de folha |
-| grupo de função | `direta`, `indireta`, `adm` |
 
 Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 
@@ -270,6 +269,10 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Aceito: quem lê a auditoria vê o e-mail de quem alterou (é a trilha); o gerador de desempenho deixa linhas de auditoria no banco local.
 - O M10 começou empilhado no M9 (`feat/m10-endurecimento` a partir de `feat/m9-migracao`), pela mesma pendência do CI.
 
+### Depois do M10 (23/10/2026)
+- **Sem classificação de funções** (decisão do usuário): o ITO não divide mais as funções em direta, indireta e administrativa — saíram os filtros Todas/Direta/Indireta/Adm., os subtotais por grupo, os indicadores "Direta · indireta · adm." e "% MO indireta", a coluna e o filtro do cadastro de Funções, a coluna "Grupo" do .xlsx e o campo no banco (`funcoes.grupo`, `obra_resumo.indireta_pct`). O custo não muda: crescer com a área continua no campo **escala com a área** de cada função; função nova nasce escalando com a área (como a antiga "direta"), ajustável no cadastro. Tabelas listam as funções em ordem alfabética.
+- **Menu lateral recolhível** (só ícones, clicáveis, lembrado no navegador) e conteúdo na largura toda da tela; percentuais ao lado de valores em R$ em cinza, menores e afastados.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
@@ -278,10 +281,7 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - texto âmbar sobre claro: `#8A6400`.
 - Tipografia: **Geist** no texto e **Geist Mono** nos rótulos, em caixa alta espaçada.
 - Formas: pills (`999px`) para botões, chips e segmentos; cartões com raio de 20 px.
-- Modo claro e escuro, com tokens definidos nos dois. Gráficos de série usam a paleta de funções:
-  - direta em tons âmbar/terra;
-  - indireta em grafites;
-  - adm em verde-azulado.
+- Modo claro e escuro, com tokens definidos nos dois. Gráficos de série usam a cor de cada função (cadastro de Funções).
 
 ## Convenções de código
 

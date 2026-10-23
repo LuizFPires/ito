@@ -25,7 +25,6 @@ export interface ObraComparada {
   ind: {
     pico: number;
     pmPorMil: number;
-    indiretaPct: number;
     heMedia: number;
     absenteismoPct: number;
     rotatividadePct: number;
@@ -70,7 +69,6 @@ export function compararObra(
     ind: {
       pico: Math.max(0, ...totais),
       pmPorMil: area ? (pm / area) * 1000 : 0,
-      indiretaPct: m.indiretaPct,
       heMedia: pm ? totais.reduce((s, x, i) => s + x * (obra.heMedia[i] ?? 0), 0) / pm : 0,
       absenteismoPct: absenteismoMedio(obra),
       rotatividadePct: obra.rotatividadePct,

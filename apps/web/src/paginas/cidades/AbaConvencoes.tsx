@@ -16,14 +16,7 @@ import {
   useGravarValorCct,
 } from "../../dados/cidades";
 import type { CctResumo } from "../../dados/cidades";
-import {
-  NOME_GRUPO,
-  useBeneficios,
-  useDataBase,
-  useFuncoes,
-  useParametros,
-} from "../../dados/cadastros";
-import type { GrupoFuncao } from "../../dados/cadastros";
+import { useBeneficios, useDataBase, useFuncoes, useParametros } from "../../dados/cadastros";
 import { valorOuEmpresa } from "../../lib/ccts";
 import { useToast } from "../../ui/toast";
 import { codigoDe, contemTermos, ordenar, paginar } from "../../lib/lista";
@@ -305,8 +298,9 @@ function EditorCct({
 
   if (!det || !empresa) return <p className="sub">Carregando…</p>;
 
-  const grupos = Object.entries(NOME_GRUPO) as [GrupoFuncao, string][];
-  const ativas = (funcoes ?? []).filter((x) => x.ativo);
+  const ativas = (funcoes ?? [])
+    .filter((x) => x.ativo)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const livres = (cidades ?? []).filter((c) => c.cct_id !== cct.id);
 
   function aplicarLote() {
@@ -511,72 +505,63 @@ function EditorCct({
             </tr>
           </thead>
           <tbody>
-            {grupos.map(([g, nomeG]) => {
-              const fs = ativas.filter((x) => x.grupo === g);
-              if (!fs.length) return null;
-              return [
-                <tr key={g} className={f.grupo}>
-                  <td colSpan={4}>Mão de obra {nomeG.toLowerCase()}</td>
-                </tr>,
-                ...fs.map((x) => {
-                  const v = valorOuEmpresa(det.salarios, empresa.salarios, x.id);
-                  const e = empresa.salarios[x.id];
-                  const dif = v.valor !== undefined && e ? (v.valor / e - 1) * 100 : 0;
-                  const vc = com
-                    ? valorOuEmpresa(com.salarios, empresa.salarios, x.id).valor
-                    : undefined;
-                  const difc = v.valor !== undefined && vc ? (v.valor / vc - 1) * 100 : 0;
-                  return (
-                    <tr key={x.id}>
-                      <td>
-                        <span className={f.amostra} style={{ background: `var(--${x.cor})` }} />
-                        <span className={f.forte}>{x.nome}</span>
-                        {v.daEmpresa && <div className="sub">da empresa</div>}
-                      </td>
-                      <td className={f.r}>
-                        {pode ? (
-                          <CampoNumero
-                            compacto
-                            largura={104}
-                            rotulo={`Salário de ${x.nome}`}
-                            valor={v.valor ?? 0}
-                            onSalvar={(valor) =>
-                              salario.gravar({ cct_id: cct.id, funcao_id: x.id, valor })
-                            }
-                          />
-                        ) : (
-                          moeda(v.valor)
-                        )}
-                      </td>
-                      <td className={f.r}>
-                        {pode ? (
-                          <CampoNumero
-                            compacto
-                            largura={96}
-                            rotulo={`Gratificação de ${x.nome}`}
-                            valor={det.gratificacoes[x.id] ?? 0}
-                            onSalvar={(valor) =>
-                              grat.gravar({ cct_id: cct.id, funcao_id: x.id, valor })
-                            }
-                          />
-                        ) : (
-                          moeda(det.gratificacoes[x.id] ?? 0)
-                        )}
-                      </td>
-                      <td className={f.r}>
-                        <div>
-                          {moeda(e)} <Diferenca pct={dif} />
-                        </div>
-                        {outra && (
-                          <div className="sub">
-                            {nomeCurtoCct(outra.nome)}: {moeda(vc)} <Diferenca pct={difc} />
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                }),
-              ];
+            {ativas.map((x) => {
+              const v = valorOuEmpresa(det.salarios, empresa.salarios, x.id);
+              const e = empresa.salarios[x.id];
+              const dif = v.valor !== undefined && e ? (v.valor / e - 1) * 100 : 0;
+              const vc = com
+                ? valorOuEmpresa(com.salarios, empresa.salarios, x.id).valor
+                : undefined;
+              const difc = v.valor !== undefined && vc ? (v.valor / vc - 1) * 100 : 0;
+              return (
+                <tr key={x.id}>
+                  <td>
+                    <span className={f.amostra} style={{ background: `var(--${x.cor})` }} />
+                    <span className={f.forte}>{x.nome}</span>
+                    {v.daEmpresa && <div className="sub">da empresa</div>}
+                  </td>
+                  <td className={f.r}>
+                    {pode ? (
+                      <CampoNumero
+                        compacto
+                        largura={104}
+                        rotulo={`Salário de ${x.nome}`}
+                        valor={v.valor ?? 0}
+                        onSalvar={(valor) =>
+                          salario.gravar({ cct_id: cct.id, funcao_id: x.id, valor })
+                        }
+                      />
+                    ) : (
+                      moeda(v.valor)
+                    )}
+                  </td>
+                  <td className={f.r}>
+                    {pode ? (
+                      <CampoNumero
+                        compacto
+                        largura={96}
+                        rotulo={`Gratificação de ${x.nome}`}
+                        valor={det.gratificacoes[x.id] ?? 0}
+                        onSalvar={(valor) =>
+                          grat.gravar({ cct_id: cct.id, funcao_id: x.id, valor })
+                        }
+                      />
+                    ) : (
+                      moeda(det.gratificacoes[x.id] ?? 0)
+                    )}
+                  </td>
+                  <td className={f.r}>
+                    <div>
+                      {moeda(e)} <Diferenca pct={dif} />
+                    </div>
+                    {outra && (
+                      <div className="sub">
+                        {nomeCurtoCct(outra.nome)}: {moeda(vc)} <Diferenca pct={difc} />
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
             })}
           </tbody>
         </table>

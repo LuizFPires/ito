@@ -27,7 +27,7 @@ import { AbaRealocada } from "./AbaRealocada";
 import { AbaVisao } from "./AbaVisao";
 import { BotaoExportarObra } from "./BotaoExportarObra";
 import type { Aba, DadosAba, FuncaoInfo, Vista } from "./comum";
-import { ABAS, ORDEM_GRUPOS, rotulosDe } from "./comum";
+import { ABAS, porNome, rotulosDe } from "./comum";
 import { HistoricoAlteracoes } from "../Auditoria";
 import s from "./obra.module.css";
 
@@ -51,7 +51,6 @@ export function TelaObra() {
   const [vista, setVistaEstado] = useState<Vista>(() => ({
     visao: "epoca",
     caixa: false,
-    grupo: "todas",
     eixo: "data",
     agrupadas: false,
     ...lerPreferencias(),
@@ -87,19 +86,12 @@ export function TelaObra() {
       return {
         id: fid,
         nome: x?.nome ?? fid,
-        grupo: x?.grupo ?? ctx.ctx.funcoes.find((y) => y.id === fid)?.grupo ?? "direta",
         cor: `var(--${x?.cor ?? "i4"})`,
         conta: x?.conta_pc || "—",
       };
     };
     const r = usa === "epoca" ? epoca : atual;
-    const ids = r.funcoes
-      .filter((k) => vista.grupo === "todas" || fun(k).grupo === vista.grupo)
-      .sort(
-        (a, b) =>
-          ORDEM_GRUPOS.indexOf(fun(a).grupo) - ORDEM_GRUPOS.indexOf(fun(b).grupo) ||
-          fun(a).nome.localeCompare(fun(b).nome, "pt-BR"),
-      );
+    const ids = [...r.funcoes].sort(porNome(fun));
     return {
       d,
       obra,
@@ -297,8 +289,6 @@ function KpisObra({ dados }: { dados: DadosAba }) {
   const total = V(r.total);
   const ce = epoca.total.total;
   const cv = atual.total.total;
-  const g = r.porGrupo;
-  const gt = g.direta + g.indireta + g.adm || 1;
   const totais = r.porMes.map((m) => m.x);
   const pico = Math.max(0, ...totais);
   const pm = totais.reduce((a, b) => a + b, 0);
@@ -315,11 +305,6 @@ function KpisObra({ dados }: { dados: DadosAba }) {
         rotulo={`Reajuste época → ${dados.ctx.vigente}`}
         valor={`${cv >= ce ? "+" : ""}${percentual(ce ? (cv / ce - 1) * 100 : 0)}`}
         sub={`${moeda(ce, 0)} → ${moeda(cv, 0)}`}
-      />
-      <Kpi
-        rotulo="Direta · indireta · adm."
-        valor={`${percentual((g.direta / gt) * 100, 0)} · ${percentual((g.indireta / gt) * 100, 0)} · ${percentual((g.adm / gt) * 100, 0)}`}
-        sub="do custo total"
       />
       <Kpi
         rotulo="Pico de efetivo"

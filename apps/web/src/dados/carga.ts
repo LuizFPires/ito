@@ -49,7 +49,7 @@ export interface ContextoCarga {
   datasBase: number[];
   justificativas: string[];
   /** funções ativas, para mapear e para criar sinônimo */
-  funcoes: { id: string; nome: string; grupo: T["funcoes"]["Row"]["grupo"] }[];
+  funcoes: { id: string; nome: string }[];
   cidades: { id: string; nome: string; feriados: FeriadoRecorrente[] }[];
   obras: { id: string; nome: string }[];
 }
@@ -152,9 +152,7 @@ async function carregarContexto(): Promise<ContextoCarga> {
     vigente: parametros.data_base_vigente ?? datas[0]?.ano ?? new Date().getFullYear(),
     datasBase: datas.map((d) => d.ano),
     justificativas: just.map((j) => j.texto),
-    funcoes: funcoes
-      .filter((f) => f.ativo)
-      .map((f) => ({ id: f.id, nome: f.nome, grupo: f.grupo })),
+    funcoes: funcoes.filter((f) => f.ativo).map((f) => ({ id: f.id, nome: f.nome })),
     cidades: cidades.map((c) => ({
       id: c.id,
       nome: `${c.nome}/${c.uf}`,

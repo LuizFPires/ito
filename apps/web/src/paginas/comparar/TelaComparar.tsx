@@ -100,7 +100,6 @@ export function TelaComparar() {
     ["Data-base", (o) => `CCT ${o.dataBase}`],
     ["Pico de efetivo", (o) => `${numero(o.ind.pico, 1)} pessoas`],
     ["Pessoa-mês / 1.000 m²", (o) => numero(o.ind.pmPorMil, 1)],
-    ["% mão de obra indireta", (o) => percentual(o.ind.indiretaPct, 0)],
     ["HE média (h/pessoa·mês)", (o) => numero(o.ind.heMedia, 1)],
     ["Absenteísmo médio", (o) => percentual(o.ind.absenteismoPct)],
     ["Rotatividade", (o) => `${percentual(o.ind.rotatividadePct, 0)} a.m.`],

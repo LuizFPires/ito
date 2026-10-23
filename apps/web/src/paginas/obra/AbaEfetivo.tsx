@@ -9,9 +9,9 @@ import { BotaoCopiar } from "../../ui/BotaoCopiar";
 import { absenteismoMedio, NOME_CONSTRUTORA, porConstrutora } from "./calculos";
 import { tabelaEfetivo, tituloObra } from "./exportar";
 import type { Aba, DadosAba } from "./comum";
-import { NOME_GRUPO_F, ORDEM_GRUPOS, soma } from "./comum";
+import { soma } from "./comum";
 import type { SetVista } from "./controles";
-import { ControleEixo, ControleGrupo } from "./controles";
+import { ControleEixo } from "./controles";
 import s from "./obra.module.css";
 
 export function AbaEfetivo({
@@ -81,7 +81,6 @@ export function AbaEfetivo({
             valor={modo}
             onChange={setModo}
           />
-          <ControleGrupo vista={vista} setVista={setVista} />
           <ControleEixo vista={vista} setVista={setVista} />
           <BotaoCopiar
             tabela={() => tabelaEfetivo(obra, ids, fun, rotulos, tituloObra(dados), modo === "cab")}
@@ -102,81 +101,58 @@ export function AbaEfetivo({
               </tr>
             </thead>
             <tbody>
-              {ORDEM_GRUPOS.map((g) => {
-                const gk = ids.filter((k) => fun(k).grupo === g);
-                if (!gk.length) return null;
-                return [
-                  <tr key={`g-${g}`} className={s.grupoLinha}>
-                    <td colSpan={n + 3}>Mão de obra {NOME_GRUPO_F[g].toLowerCase()}</td>
-                  </tr>,
-                  ...gk.map((k) => (
-                    <tr key={k}>
-                      <td className={f.forte}>
-                        <span className={s.amostra} style={{ background: fun(k).cor }} />
-                        {fun(k).nome}
-                        {obra.regime?.[k] === "sp" && (
-                          <>
-                            {" "}
-                            <Badge tom="ambar">S/P</Badge>
-                          </>
+              {ids.map((k) => (
+                <tr key={k}>
+                  <td className={f.forte}>
+                    <span className={s.amostra} style={{ background: fun(k).cor }} />
+                    {fun(k).nome}
+                    {obra.regime?.[k] === "sp" && (
+                      <>
+                        {" "}
+                        <Badge tom="ambar">S/P</Badge>
+                      </>
+                    )}
+                  </td>
+                  {rotulos.map((m, i) => {
+                    const v = val(k, i);
+                    if (!v)
+                      return (
+                        <td key={i} className={f.r}>
+                          <span className="sub">–</span>
+                        </td>
+                      );
+                    const a = v / mx;
+                    const estilo = {
+                      background: `color-mix(in srgb, var(--amber) ${Math.round(a * 55)}%, transparent)`,
+                      color: a > 0.7 ? "var(--on-amber)" : undefined,
+                    };
+                    return (
+                      <td key={i} className={f.r} style={{ padding: "4px 6px" }}>
+                        {pode ? (
+                          <button
+                            type="button"
+                            className={s.celula}
+                            style={estilo}
+                            aria-pressed={cel?.k === k && cel.i === i}
+                            aria-label={`${fun(k).nome} em ${m}: ${fq(v)}`}
+                            onClick={() => setCel({ k, i })}
+                          >
+                            {fq(v)}
+                          </button>
+                        ) : (
+                          <span className={s.celula} style={estilo}>
+                            {fq(v)}
+                          </span>
                         )}
                       </td>
-                      {rotulos.map((m, i) => {
-                        const v = val(k, i);
-                        if (!v)
-                          return (
-                            <td key={i} className={f.r}>
-                              <span className="sub">–</span>
-                            </td>
-                          );
-                        const a = v / mx;
-                        const estilo = {
-                          background: `color-mix(in srgb, var(--amber) ${Math.round(a * 55)}%, transparent)`,
-                          color: a > 0.7 ? "var(--on-amber)" : undefined,
-                        };
-                        return (
-                          <td key={i} className={f.r} style={{ padding: "4px 6px" }}>
-                            {pode ? (
-                              <button
-                                type="button"
-                                className={s.celula}
-                                style={estilo}
-                                aria-pressed={cel?.k === k && cel.i === i}
-                                aria-label={`${fun(k).nome} em ${m}: ${fq(v)}`}
-                                onClick={() => setCel({ k, i })}
-                              >
-                                {fq(v)}
-                              </button>
-                            ) : (
-                              <span className={s.celula} style={estilo}>
-                                {fq(v)}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
-                      <td className={f.r}>{fq(soma(rotulos.map((_, i) => val(k, i))))}</td>
-                      <td className={f.r}>
-                        {numero((soma(obra.equivalente[k] ?? []) / area) * 1000, 1)}
-                      </td>
-                    </tr>
-                  )),
-                  vista.grupo === "todas" && (
-                    <tr key={`s-${g}`} className={s.subtotal}>
-                      <td>Subtotal {NOME_GRUPO_F[g].toLowerCase()}</td>
-                      {rotulos.map((_, i) => (
-                        <td key={i} className={f.r}>
-                          {fq(soma(gk.map((k) => val(k, i))))}
-                        </td>
-                      ))}
-                      <td className={f.r}>
-                        {fq(soma(gk.flatMap((k) => rotulos.map((_, i) => val(k, i)))))}
-                      </td>
-                      <td />
-                    </tr>
-                  ),
-                ];
-              })}
+                    );
+                  })}
+                  <td className={f.r}>{fq(soma(rotulos.map((_, i) => val(k, i))))}</td>
+                  <td className={f.r}>
+                    {numero((soma(obra.equivalente[k] ?? []) / area) * 1000, 1)}
+                  </td>
+                </tr>
+              ))}
               <tr className="total">
                 <td>Total {modo === "eq" ? "(pessoa-mês equivalente)" : "(cabeças)"}</td>
                 {tt.map((x, i) => (
@@ -232,20 +208,15 @@ export function AbaEfetivo({
                     <td className={f.r}>{numero(soma(disp), 1)}</td>
                     <td />
                   </tr>
-                  {d.realocacoes
-                    .filter(
-                      (x) =>
-                        vista.grupo === "todas" || dados.fun(x.funcao_id).grupo === vista.grupo,
-                    )
-                    .map((x) =>
-                      linhaExtra(
-                        `${x.tipo === "cedida" ? "Cedidos a" : "Recebidos de"} ${x.outra_obra} · ${fun(x.funcao_id).nome.toLowerCase()} ${x.tipo === "cedida" ? "(fora do histograma)" : "(incluídos acima)"}`,
-                        rotulos.map((_, i) =>
-                          i >= x.mes_ini && i <= x.mes_fim ? numero(x.qtd) : "–",
-                        ),
-                        numero(x.qtd * (Math.min(x.mes_fim, n - 1) - x.mes_ini + 1)),
+                  {d.realocacoes.map((x) =>
+                    linhaExtra(
+                      `${x.tipo === "cedida" ? "Cedidos a" : "Recebidos de"} ${x.outra_obra} · ${fun(x.funcao_id).nome.toLowerCase()} ${x.tipo === "cedida" ? "(fora do histograma)" : "(incluídos acima)"}`,
+                      rotulos.map((_, i) =>
+                        i >= x.mes_ini && i <= x.mes_fim ? numero(x.qtd) : "–",
                       ),
-                    )}
+                      numero(x.qtd * (Math.min(x.mes_fim, n - 1) - x.mes_ini + 1)),
+                    ),
+                  )}
                 </>
               )}
             </tbody>

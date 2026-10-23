@@ -66,7 +66,7 @@ Há também uma busca global, aberta com ⌘K.
 
 ### 3.1 Base histórica
 - Lista de obras com filtro por grupo (Mart Minas, Galpões, Academias…) e busca por nome, cliente ou cidade.
-- Indicadores do filtro: nº de obras, duração mediana, pico médio, pessoa-mês por 1.000 m², % de MO indireta e custo de MO por m² a valores vigentes.
+- Indicadores do filtro: nº de obras, duração mediana, pico médio, pessoa-mês por 1.000 m² e custo de MO por m² a valores vigentes.
 - Tabela sem rolagem lateral a partir de 1.280 px, com as colunas:
   - Obra (com cidade e CCT);
   - Área;
@@ -115,7 +115,7 @@ Todas as abas alternam entre **Época** (tabela da data-base em que a obra foi f
 ### 3.3 Comparar obras
 De 2 a 4 obras lado a lado:
 - histogramas alinhados por mês relativo;
-- indicadores (PM/1.000 m², pico, HE, % indireta, encargos %, benefícios %, R$/dia, custo/m²);
+- indicadores (PM/1.000 m², pico, HE, encargos %, benefícios %, R$/dia, custo/m²);
 - valores sempre a preços vigentes.
 
 ### 3.4 Projeções
@@ -195,7 +195,7 @@ Duas abas, pensadas para dezenas de CCTs e centenas de cidades.
 
 ### 3.8 Funções padrão
 Para cada função:
-- grupo (direta, indireta ou administrativa) e conta do plano de contas;
+- conta do plano de contas;
 - se escala com a área (proporcional aos m²) ou é fixa por mês;
 - exames por tipo (admissional, periódico anual e demissional);
 - periculosidade %, insalubridade % do salário mínimo, horas noturnas por mês e ferramentas em R$ por mês;
@@ -276,4 +276,3 @@ O ITO tem de receber e guardar, por competência:
 | **Origem da MO** | Local, vem de outra cidade todo dia (VT intermunicipal) ou alojada (alojamento e viagens, sem VT). |
 | **MDO realocada** | Pessoa na folha de uma obra trabalhando em outra. O custo vai para a obra onde ela trabalhou. |
 | **S/P** | Prestador sem vínculo: sem encargos de folha, com tributos sobre NF. |
-| **% indireta** | Pessoa-mês de indireta e administrativa ÷ pessoa-mês total. |

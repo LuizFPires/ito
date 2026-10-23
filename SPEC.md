@@ -9,7 +9,7 @@
 ### 1.1 Configuração
 
 ```
-Funcao        { id, nome, grupo: direta|indireta|adm, conta_pc, escala_area: bool,
+Funcao        { id, nome, conta_pc, escala_area: bool,
                 vinculo: clt|estagio, cor,
                 exames: { adm, per_anual, dem },            -- R$ por evento / ano
                 adicionais: { peric_pct, insal_pct_sm, horas_noturnas_mes },
@@ -61,7 +61,7 @@ Realocacao    (obra) { tipo: cedida|recebida, funcao, mes_ini, mes_fim, qtd, out
 
 > **Implementação (M4):** `obras` (período por competência: `inicio` no 1º dia do mês + `meses`; a fração do 1º e do último mês vem dos dias de vínculo da folha; `grupo` deduzido de cliente e tipologia; premissas em colunas), `obra_trocas_tabela`, `obra_feriados`, `obra_regime` (só S/P), `competencias` (+ `ito_apropriado`, `erp_realizado`, `justificativa` da lista `justificativas_erp`), `efetivo_mes` (+ `admissoes`, `desligamentos`; derivado dos lançamentos na gravação, sem a MDO realocada), `lancamentos` (+ `faltas_horas`, `licenca_dias`, `ferias_dias`, `admitido`, `vt_valor`, `realocada_para`) com `lancamento_rubricas` (`referencia`, `valor`), `realocacoes`, `notas_fiscais` (só CNPJ), `erp_realizado` (mês × conta) e `carga_rascunhos`. `rubricas.tipo_he` diz o tipo de cada rubrica de HE. Escrita só por `gravar_carga(jsonb)` e `excluir_obra`; todo mês do payload é conferido contra o período. Lançamentos e rubricas por matrícula só são lidos por quem carrega (DP/RH, controladoria, admin); os demais perfis leem os agregados.
 
-> **Implementação (M5):** `obra_resumo` (cache da lista: pico, pessoa-mês, HE/pessoa ponderada, % indireta, custo época e atualizado, histograma), gravado por `gravar_resumos` (só se calculado sobre a `revisao` atual da obra) e invalidado (`versao = 0`) quando a obra é editada; guarda a impressão digital dos parâmetros usados (`contexto`), e qualquer cadastro editado o torna velho; recalculado no navegador quando a tabela vigente ou a versão do cálculo mudam. Premissas, ausências, regime, trocas e feriados da obra editáveis por quem carrega (RLS). Época = data-base da obra com as trocas; atualizado = tabela vigente (§3).
+> **Implementação (M5):** `obra_resumo` (cache da lista: pico, pessoa-mês, HE/pessoa ponderada, custo época e atualizado, histograma), gravado por `gravar_resumos` (só se calculado sobre a `revisao` atual da obra) e invalidado (`versao = 0`) quando a obra é editada; guarda a impressão digital dos parâmetros usados (`contexto`), e qualquer cadastro editado o torna velho; recalculado no navegador quando a tabela vigente ou a versão do cálculo mudam. Premissas, ausências, regime, trocas e feriados da obra editáveis por quem carrega (RLS). Época = data-base da obra com as trocas; atualizado = tabela vigente (§3).
 
 ### 1.3 Projeção
 
@@ -212,7 +212,8 @@ Divisão por zero dá 0. No motor: `indicadores(resultado)`.
 - **Encargos %** = (enc + prov + nf) ÷ remun.
 - **Benefícios %** = (VT + benef) ÷ remun.
 - **Custo de 1 hora extra cheia** = vh × (1 + DSR%) × (1 + soc% + prov% + nf%).
-- **% indireta** = PM (indireta + adm) ÷ PM total.
+
+> **Sem classificação de funções (23/10/2026, decisão do usuário):** o ITO não divide mais as funções em direta, indireta e administrativa — nem em filtros, subtotais, indicadores (% indireta) ou cadastro. Nenhuma fórmula usava a classificação: crescer com a área na projeção é o campo `escala_area` de cada função (§5).
 
 ---
 

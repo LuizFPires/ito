@@ -8,7 +8,7 @@ import f from "../../ui/formulario.module.css";
 import type { Aba, DadosAba } from "./comum";
 import { componentesVisiveis } from "./comum";
 import type { SetVista } from "./controles";
-import { ControleEixo, ControleGrupo, ControleLayout } from "./controles";
+import { ControleEixo, ControleLayout } from "./controles";
 import s from "./obra.module.css";
 
 export function AbaVisao({
@@ -109,7 +109,6 @@ export function AbaVisao({
                 : "custo por função (R$ mil)"}
             </span>
             <span className={f.linha}>
-              <ControleGrupo vista={vista} setVista={setVista} />
               {metrica === "pessoas" && <ControleLayout vista={vista} setVista={setVista} />}
               <ControleEixo vista={vista} setVista={setVista} />
               <Segmento

@@ -73,7 +73,7 @@ test("DP/RH cria uma função nova", async ({ page }) => {
   await page.getByRole("button", { name: "Nova função" }).click();
   const painel = page.getByRole("region", { name: "Nova função" });
   await painel.getByLabel("Nome").fill(nome);
-  await painel.getByLabel("Grupo").selectOption("indireta");
+  await painel.getByRole("switch", { name: "Escala com a área" }).click();
   await painel.getByRole("button", { name: "Criar função" }).click();
   await expect(page.getByRole("status")).toContainText("Função criada");
   await expect(page.getByRole("region", { name: `Função ${nome}` })).toBeVisible();

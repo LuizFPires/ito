@@ -7,7 +7,7 @@ import { somar } from "@ito/motor";
 import type { Coluna, Tabela } from "../../lib/planilha";
 import type { LinhaConta } from "./calculos";
 import type { DadosAba, FuncaoInfo } from "./comum";
-import { COMPONENTES, NOME_GRUPO_F, rotulosDe, soma } from "./comum";
+import { COMPONENTES, rotulosDe, soma } from "./comum";
 import { arredondar, numero } from "@ito/formato";
 
 /** R$ em centavos antes de somar: o total da planilha fecha com a soma das células. */
@@ -59,13 +59,12 @@ export function tabelaEfetivo(
     ],
     colunas: [
       { titulo: "Função", formato: "texto", largura: 26 },
-      { titulo: "Grupo", formato: "texto" },
       ...meses(rotulos, cabecas ? "inteiro" : "pm"),
       { titulo: cabecas ? "Total" : "Pessoa-mês", formato: cabecas ? "inteiro" : "pm" },
     ],
     linhas: [
-      ...ids.map((k) => [fun(k).nome, NOME_GRUPO_F[fun(k).grupo], ...v(k), soma(v(k))]),
-      ["Total", "", ...rotulos.map((_, i) => soma(ids.map((k) => v(k)[i]!))), soma(ids.flatMap(v))],
+      ...ids.map((k) => [fun(k).nome, ...v(k), soma(v(k))]),
+      ["Total", ...rotulos.map((_, i) => soma(ids.map((k) => v(k)[i]!))), soma(ids.flatMap(v))],
     ],
     total: true,
   };
@@ -86,13 +85,12 @@ export function tabelaCustoFuncao(
     titulo,
     colunas: [
       { titulo: "Função", formato: "texto", largura: 26 },
-      { titulo: "Grupo", formato: "texto" },
       ...meses(rotulos, "moeda"),
       { titulo: "Total", formato: "moeda", largura: 16 },
     ],
     linhas: [
-      ...ids.map((k) => [fun(k).nome, NOME_GRUPO_F[fun(k).grupo], ...linha(k), soma(linha(k))]),
-      ["Total do mês", "", ...tot, soma(tot)],
+      ...ids.map((k) => [fun(k).nome, ...linha(k), soma(linha(k))]),
+      ["Total do mês", ...tot, soma(tot)],
     ],
     total: true,
   };

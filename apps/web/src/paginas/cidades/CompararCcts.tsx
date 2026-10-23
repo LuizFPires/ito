@@ -2,14 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { MESES, moeda, percentual } from "@ito/formato";
 import { consultaCct, nomeCidade, nomeCurtoCct, useCidades } from "../../dados/cidades";
 import type { CctResumo, DetalheCct } from "../../dados/cidades";
-import {
-  NOME_GRUPO,
-  useBeneficios,
-  useDataBase,
-  useFuncoes,
-  useParametros,
-} from "../../dados/cadastros";
-import type { GrupoFuncao } from "../../dados/cadastros";
+import { useBeneficios, useDataBase, useFuncoes, useParametros } from "../../dados/cadastros";
 import { valorOuEmpresa } from "../../lib/ccts";
 import { Botao, Cartao } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
@@ -28,8 +21,9 @@ export function CompararCcts({ ccts, onVoltar }: { ccts: CctResumo[]; onVoltar: 
   if (!empresa || dets.some((d) => !d)) return <p className="sub">Carregando…</p>;
   const D = dets as DetalheCct[];
 
-  const grupos = Object.entries(NOME_GRUPO) as [GrupoFuncao, string][];
-  const ativas = (funcoes ?? []).filter((x) => x.ativo);
+  const ativas = (funcoes ?? [])
+    .filter((x) => x.ativo)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const col = ccts.length + 1;
 
   return (
@@ -55,43 +49,32 @@ export function CompararCcts({ ccts, onVoltar }: { ccts: CctResumo[]; onVoltar: 
           </tr>
         </thead>
         <tbody>
-          {grupos.map(([g, nomeG]) => {
-            const fs = ativas.filter((x) => x.grupo === g);
-            if (!fs.length) return null;
-            return [
-              <tr key={g} className={f.grupo}>
-                <td colSpan={col}>Mão de obra {nomeG.toLowerCase()}</td>
-              </tr>,
-              ...fs.map((x) => {
-                // Sem salário na CCT nem na empresa: "—", fora do maior/menor.
-                const vs = D.map((d) => valorOuEmpresa(d.salarios, empresa.salarios, x.id).valor);
-                const def = vs.filter((v): v is number => v !== undefined);
-                const mn = Math.min(...def);
-                const mx = Math.max(...def);
-                return (
-                  <tr key={x.id}>
-                    <td>
-                      <span className={f.amostra} style={{ background: `var(--${x.cor})` }} />
-                      <span className={f.forte}>{x.nome}</span>
+          {ativas.map((x) => {
+            // Sem salário na CCT nem na empresa: "—", fora do maior/menor.
+            const vs = D.map((d) => valorOuEmpresa(d.salarios, empresa.salarios, x.id).valor);
+            const def = vs.filter((v): v is number => v !== undefined);
+            const mn = Math.min(...def);
+            const mx = Math.max(...def);
+            return (
+              <tr key={x.id}>
+                <td>
+                  <span className={f.amostra} style={{ background: `var(--${x.cor})` }} />
+                  <span className={f.forte}>{x.nome}</span>
+                </td>
+                {vs.map((v, j) => {
+                  const gr = D[j]!.gratificacoes[x.id] ?? 0;
+                  return (
+                    <td key={ccts[j]!.id} className={f.r}>
+                      <span className={v === mx && mx > mn ? f.forte : undefined}>{moeda(v)}</span>
+                      {v !== undefined && v === mn && mx > mn && (
+                        <span className="sub"> menor</span>
+                      )}
+                      {gr > 0 && <div className="sub">+ {moeda(gr, 0)} gratificação</div>}
                     </td>
-                    {vs.map((v, j) => {
-                      const gr = D[j]!.gratificacoes[x.id] ?? 0;
-                      return (
-                        <td key={ccts[j]!.id} className={f.r}>
-                          <span className={v === mx && mx > mn ? f.forte : undefined}>
-                            {moeda(v)}
-                          </span>
-                          {v !== undefined && v === mn && mx > mn && (
-                            <span className="sub"> menor</span>
-                          )}
-                          {gr > 0 && <div className="sub">+ {moeda(gr, 0)} gratificação</div>}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              }),
-            ];
+                  );
+                })}
+              </tr>
+            );
           })}
           <tr className={f.grupo}>
             <td colSpan={col}>Outros</td>

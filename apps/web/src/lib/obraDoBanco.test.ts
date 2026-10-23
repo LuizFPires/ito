@@ -89,7 +89,7 @@ describe("obra da base histórica → motor", () => {
       expect(Math.abs(doBanco.porMes[i]!.total - direto.porMes[i]!.total)).toBeLessThan(0.005);
   });
 
-  it("resumo como no protótipo: pico, pessoa-mês, HE ponderada e % indireta", () => {
+  it("resumo como no protótipo: pico, pessoa-mês e HE ponderada", () => {
     const tabelas = {
       2025: TABELA,
       2026: { ...TABELA, salarios: { ...TABELA.salarios, ped: 1800 } },
@@ -99,7 +99,6 @@ describe("obra da base histórica → motor", () => {
     expect(r.histograma).toEqual([2, 1.5]);
     expect(r.pico).toBe(2);
     expect(r.pessoa_mes).toBe(3.5);
-    expect(r.indireta_pct).toBe(0);
     expect(r.custo_atual).toBeGreaterThan(r.custo_epoca); // pedreiro mais caro na vigente
   });
 
@@ -137,7 +136,6 @@ describe("snapshot dos números das abas (aceite M5)", () => {
           total: c(x.total),
           caixa: c(x.caixa),
         })),
-        porGrupo: Object.fromEntries(Object.entries(r.porGrupo).map(([g, v]) => [g, c(v)])),
       };
     });
     expect(foto).toMatchSnapshot();
@@ -194,7 +192,6 @@ describe("revisão do M5", () => {
     const fun = (id: string) => ({
       id,
       nome: id,
-      grupo: "direta" as const,
       cor: "",
       conta: id === "ped" ? "04.03.01" : "04.03.02",
     });
