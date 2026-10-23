@@ -56,7 +56,6 @@ export type ResumoProjecao = {
   total?: number;
   pico?: number;
   pessoa_mes?: number;
-  indireta_pct?: number;
   vigente?: number;
 };
 

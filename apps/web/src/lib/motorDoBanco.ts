@@ -13,7 +13,6 @@ type LinhaEncargo = T["data_base_encargos"]["Row"];
 export function funcaoDoBanco(f: LinhaFuncao): Funcao {
   return {
     id: f.id,
-    grupo: f.grupo,
     vinculo: f.vinculo,
     escalaArea: f.escala_area,
     exames: {

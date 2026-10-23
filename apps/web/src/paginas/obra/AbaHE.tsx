@@ -9,7 +9,7 @@ import f from "../../ui/formulario.module.css";
 import type { Aba, DadosAba } from "./comum";
 import { gastoHe, NOME_HE, plural, soma } from "./comum";
 import type { SetVista } from "./controles";
-import { ControleEixo, ControleGrupo } from "./controles";
+import { ControleEixo } from "./controles";
 import s from "./obra.module.css";
 
 export function AbaHE({
@@ -148,7 +148,6 @@ export function AbaHE({
         <div className={f.barra}>
           <span className="rotulo">Gasto com horas extras por função e mês</span>
           <span style={{ marginLeft: "auto" }} className={f.linha}>
-            <ControleGrupo vista={vista} setVista={setVista} />
             <ControleEixo vista={vista} setVista={setVista} />
           </span>
         </div>

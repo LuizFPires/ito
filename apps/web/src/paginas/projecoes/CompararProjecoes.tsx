@@ -1,7 +1,6 @@
 import { Link, useSearchParams } from "react-router";
 import { useQueries } from "@tanstack/react-query";
 import { moeda, numero, percentual } from "@ito/formato";
-import { indicadores } from "@ito/motor";
 import { useContextoCarga } from "../../dados/carga";
 import { useCidades } from "../../dados/cidades";
 import type { ItemProjecao } from "../../dados/projecoes";
@@ -32,7 +31,6 @@ const LINHAS: readonly Linha[] = [
   ["Cidade", (_, c) => c.entrada.cidade?.id ?? "sem cidade"],
   ["Pico de efetivo", (_, c) => `${numero(c.r!.pico)} pessoas`],
   ["Pessoa-mês", (_, c) => numero(c.r!.pessoaMes)],
-  ["% mão de obra indireta", (_, c) => percentual(indicadores(c.r!.resultado).indiretaPct, 0)],
   ["HE por pessoa·mês", (_, c) => `${numero(c.r!.aplicadas.heMedia, 1)} h`],
   ["Absenteísmo", (_, c) => percentual(c.r!.aplicadas.absenteismoPct)],
   ["Rotatividade", (_, c) => `${percentual(c.r!.aplicadas.rotatividadePct, 1)} a.m.`],

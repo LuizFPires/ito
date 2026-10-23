@@ -2,7 +2,7 @@ begin;
 select plan(38);
 
 -- Dados mínimos (como postgres)
-insert into public.funcoes (id, nome, grupo) values ('teste_f', 'Função teste', 'direta')
+insert into public.funcoes (id, nome) values ('teste_f', 'Função teste')
   on conflict (id) do nothing;
 insert into public.rubricas (codigo, nome, tipo, componente) values (99001, 'RUBRICA TESTE', 'provento', 'sal')
   on conflict (codigo) do nothing;
@@ -28,7 +28,7 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
 select ok((select count(*) from public.funcoes) > 0, 'engenharia lê funções');
-select throws_ok($$insert into public.funcoes (id, nome, grupo) values ('x1', 'X1', 'direta')$$,
+select throws_ok($$insert into public.funcoes (id, nome) values ('x1', 'X1')$$,
   '42501', null, 'engenharia não cria função');
 update public.funcoes set nome = 'Hack' where id = 'teste_f';
 select is((select nome from public.funcoes where id = 'teste_f'), 'Função teste', 'engenharia não altera função');
@@ -81,19 +81,19 @@ select throws_ok($$update public.funcoes set atualizado_por = '00000000-0000-400
   '42501', null, 'carimbo não é forjável');
 
 -- criar_funcao: atômica, recusa sinônimo já usado
-select is(public.criar_funcao('teste_g', 'Função G', 'indireta', ' função g '), 'teste_g', 'DP/RH cria função pela RPC');
+select is(public.criar_funcao('teste_g', 'Função G', false, ' função g '), 'teste_g', 'DP/RH cria função pela RPC');
 select is((select funcao_id from public.funcao_sinonimos where texto = 'FUNÇÃO G'), 'teste_g', 'sinônimo em caixa alta');
 select is((select row(conta_pc, exame_adm, exame_per_anual, exame_dem, escala_area)::text from public.funcoes where id = 'teste_g'),
-  '(04.03.99,150.00,105.00,150.00,f)', 'padrões do protótipo (indireta: escala desligada)');
+  '(04.03.99,150.00,105.00,150.00,f)', 'padrões do protótipo (escala com a área desligada)');
 select is((select valor from public.data_base_salarios where ano = 2026 and funcao_id = 'teste_g'), 1400.00::numeric,
   'nasce com o salário do oficial na vigente');
 select isnt((select cor from public.funcoes where id = 'teste_g'), 'i4', 'cor própria (não repete a do almoxarife)');
-select throws_ok($$select public.criar_funcao('teste_h', 'Função H', 'direta', 'FUNCAO TESTE')$$, '23505', null,
+select throws_ok($$select public.criar_funcao('teste_h', 'Função H', true, 'FUNCAO TESTE')$$, '23505', null,
   'sinônimo de outra função é recusado');
 select is((select count(*)::int from public.funcoes where id = 'teste_h'), 0, 'nada criado quando o sinônimo falha');
 
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
-select throws_ok($$select public.criar_funcao('teste_i', 'Função I', 'direta')$$, '42501', null,
+select throws_ok($$select public.criar_funcao('teste_i', 'Função I', true)$$, '42501', null,
   'engenharia não cria função pela RPC');
 
 -- Data-base revisada e fora de vigência fica travada

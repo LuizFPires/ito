@@ -76,7 +76,6 @@ export function useListaObras() {
                 pico: Number(r.pico),
                 pessoa_mes: Number(r.pessoa_mes),
                 he_por_pessoa: Number(r.he_por_pessoa),
-                indireta_pct: Number(r.indireta_pct),
                 custo_epoca: Number(r.custo_epoca),
                 custo_atual: Number(r.custo_atual),
                 histograma: r.histograma.map(Number),

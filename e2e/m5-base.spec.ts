@@ -89,9 +89,9 @@ test("1.000 obras: a base carrega em menos de 2 s e pagina", async ({ page }) =>
              1000 + g, '2024-01-01', 12, 2025
       from generate_series(1, 1000) g;
     insert into public.obra_resumo (obra_id, vigente, versao, pico, pessoa_mes, he_por_pessoa,
-      indireta_pct, custo_epoca, custo_atual, histograma)
+      custo_epoca, custo_atual, histograma)
       select 'perf_' || g, r.vigente, r.versao, r.pico, r.pessoa_mes, r.he_por_pessoa,
-             r.indireta_pct, r.custo_epoca, r.custo_atual, r.histograma
+             r.custo_epoca, r.custo_atual, r.histograma
       from generate_series(1, 1000) g, public.obra_resumo r where r.obra_id = 'obra_e2e_base';
   `);
   const t0 = Date.now();

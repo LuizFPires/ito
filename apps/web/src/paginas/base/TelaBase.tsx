@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { moeda, mesAno, numero, percentual } from "@ito/formato";
+import { moeda, mesAno, numero } from "@ito/formato";
 import { anoMes } from "@ito/motor";
 import { useSessao } from "../../auth/sessao";
 import { useContextoCarga } from "../../dados/carga";
@@ -206,11 +206,6 @@ export function TelaBase() {
             rotulo="Pessoa-mês / 1.000 m²"
             valor={numero(k.pmPorMilMedia, 1)}
             sub={`mediana ${numero(k.pmPorMilMediana, 1)}`}
-          />
-          <Kpi
-            rotulo="Mão de obra indireta"
-            valor={percentual(k.indiretaMedia, 0)}
-            sub="das pessoa-mês, média"
           />
           <Kpi
             rotulo={`Custo de MO / m² · ${vigente ?? ""}`}

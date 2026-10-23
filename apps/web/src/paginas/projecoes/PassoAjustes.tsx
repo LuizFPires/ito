@@ -15,7 +15,7 @@ import type { Calculo, Entradas, Precos } from "../../lib/projecaoDoBanco";
 import { Badge, Botao, Cartao, Segmento } from "../../ui/componentes";
 import { Campo, CampoNumero, Interruptor, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
-import { NOME_GRUPO_F, NOME_HE, ORDEM_GRUPOS, soma } from "../obra/comum";
+import { NOME_HE, soma } from "../obra/comum";
 import o from "../obra/obra.module.css";
 import { useInfoFuncoes } from "./funcoes";
 import { rotulosMeses } from "./projecoes";
@@ -129,39 +129,30 @@ export function PassoAjustes({
                   </tr>
                 </thead>
                 <tbody>
-                  {ORDEM_GRUPOS.map((g) => {
-                    const gk = todas.filter((k) => fun(k).grupo === g);
-                    if (!gk.length) return null;
-                    return [
-                      <tr key={`g-${g}`} className={o.grupoLinha}>
-                        <td colSpan={e.prazo + 2}>Mão de obra {NOME_GRUPO_F[g].toLowerCase()}</td>
-                      </tr>,
-                      ...gk.map((k) => (
-                        <tr key={k}>
-                          <td className={f.forte}>
-                            <span className={o.amostra} style={{ background: fun(k).cor }} />
-                            {fun(k).nome}
-                          </td>
-                          {linhaManual(k).map((v, j) => (
-                            <td key={j} className={s.celula}>
-                              <CampoNumero
-                                rotulo={`${fun(k).nome} em ${meses[j]}`}
-                                valor={v}
-                                casas={0}
-                                max={9999}
-                                compacto
-                                largura={56}
-                                onSalvar={(x) => definirCelula(k, j, x)}
-                              />
-                            </td>
-                          ))}
-                          <td className={f.r}>
-                            <strong>{numero(soma(linhaManual(k)))}</strong>
-                          </td>
-                        </tr>
-                      )),
-                    ];
-                  })}
+                  {todas.map((k) => (
+                    <tr key={k}>
+                      <td className={f.forte}>
+                        <span className={o.amostra} style={{ background: fun(k).cor }} />
+                        {fun(k).nome}
+                      </td>
+                      {linhaManual(k).map((v, j) => (
+                        <td key={j} className={s.celula}>
+                          <CampoNumero
+                            rotulo={`${fun(k).nome} em ${meses[j]}`}
+                            valor={v}
+                            casas={0}
+                            max={9999}
+                            compacto
+                            largura={56}
+                            onSalvar={(x) => definirCelula(k, j, x)}
+                          />
+                        </td>
+                      ))}
+                      <td className={f.r}>
+                        <strong>{numero(soma(linhaManual(k)))}</strong>
+                      </td>
+                    </tr>
+                  ))}
                   <tr className="total">
                     <td>Total</td>
                     {meses.map((_, j) => (

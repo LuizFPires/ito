@@ -6,16 +6,16 @@ import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import { absenteismoMedio } from "./calculos";
 import type { DadosAba } from "./comum";
-import { NOME_GRUPO_F, soma } from "./comum";
+import { soma } from "./comum";
 import type { SetVista } from "./controles";
-import { ControleGrupo } from "./controles";
+import {} from "./controles";
 import s from "./obra.module.css";
 
 /** Exame sem valor aparece como "–" (como o protótipo). */
 const ex0 = (v: number) => (v ? moeda(v, 0) : "–");
 
 /** Indicadores da obra (PRD §3.2.8, SPEC §4.7) e médias por função. */
-export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista: SetVista }) {
+export function AbaIndicadores({ dados }: { dados: DadosAba; setVista: SetVista }) {
   const { r, obra, fun, ids, vista, d, ctx, rotulos } = dados;
   const n = rotulos.length;
   const p = tabelaDoMes(parametrosDe(d, ctx.tabelas, ctx.vigente, vista.visao), 0);
@@ -127,11 +127,6 @@ export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista:
           valor={moeda(T.exames, 0)}
           sub={`adm. ${moeda(ex.adm ?? 0, 0)} · per. ${moeda(ex.per ?? 0, 0)} · dem. ${moeda(ex.dem ?? 0, 0)}`}
         />
-        <Kpi
-          rotulo="% mão de obra indireta"
-          valor={percentual(ind.indiretaPct, 0)}
-          sub="das pessoa-mês"
-        />
       </div>
       <Cartao aria-label="Médias por função">
         <div className={f.barra}>
@@ -142,7 +137,6 @@ export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista:
               adicionais, HE e DSR)
             </span>
           </div>
-          <ControleGrupo vista={vista} setVista={setVista} />
         </div>
         <table className={f.tabela}>
           <thead>
@@ -164,7 +158,6 @@ export function AbaIndicadores({ dados, setVista }: { dados: DadosAba; setVista:
                   <td className={f.forte}>
                     <span className={s.amostra} style={{ background: fun(k).cor }} />
                     {fun(k).nome}
-                    <div className="sub">{NOME_GRUPO_F[fun(k).grupo]}</div>
                   </td>
                   <td className={f.r}>{numero(x.qtd, 2)}</td>
                   <td className={f.r}>

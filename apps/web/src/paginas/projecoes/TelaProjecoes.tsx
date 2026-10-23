@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router";
-import { data, moeda, numero, percentual } from "@ito/formato";
+import { data, moeda, numero } from "@ito/formato";
 import { useSessao } from "../../auth/sessao";
 import { nomeCidade, useCidades } from "../../dados/cidades";
 import { useContextoCarga } from "../../dados/carga";
@@ -227,9 +227,6 @@ export function TelaProjecoes() {
                       </td>
                       <td className={`${f.r} ${s.nowrap}`}>
                         {r.pico !== undefined ? `${numero(r.pico)} pessoas` : "—"}
-                        {r.indireta_pct !== undefined && (
-                          <div className="sub">{percentual(r.indireta_pct, 0)} indireta</div>
-                        )}
                       </td>
                       <td className={`${f.r} ${s.nowrap}`}>
                         <strong>{r.total !== undefined ? moeda(r.total, 0) : "—"}</strong>

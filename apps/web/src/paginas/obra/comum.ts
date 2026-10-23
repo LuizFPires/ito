@@ -1,15 +1,7 @@
 /**
  * Detalhe da obra (PRD §3.2): tipos e funções compartilhados pelas 10 abas.
  */
-import type {
-  CustoMes,
-  GrupoFuncao,
-  Movimentos,
-  Obra,
-  ResultadoObra,
-  Soma,
-  TipoHe,
-} from "@ito/motor";
+import type { CustoMes, Movimentos, Obra, ResultadoObra, Soma, TipoHe } from "@ito/motor";
 import { anoMes } from "@ito/motor";
 import { mesAno } from "@ito/formato";
 import type { ContextoCarga } from "../../dados/carga";
@@ -30,17 +22,13 @@ export const ABAS = [
 ] as const;
 export type Aba = (typeof ABAS)[number][0];
 
-export const NOME_GRUPO_F: Record<GrupoFuncao, string> = {
-  direta: "Direta",
-  indireta: "Indireta",
-  adm: "Administrativa",
-};
-export const ORDEM_GRUPOS: readonly GrupoFuncao[] = ["direta", "indireta", "adm"];
+/** Funções em ordem alfabética (sem classificação por grupo, decisão de 23/10/2026). */
+export const porNome = (fun: (id: string) => { nome: string }) => (a: string, b: string) =>
+  fun(a).nome.localeCompare(fun(b).nome, "pt-BR");
 
 export interface Vista {
   visao: Visao;
   caixa: boolean;
-  grupo: "todas" | GrupoFuncao;
   eixo: "data" | "mes";
   agrupadas: boolean;
 }
@@ -48,7 +36,6 @@ export interface Vista {
 export interface FuncaoInfo {
   id: string;
   nome: string;
-  grupo: GrupoFuncao;
   cor: string;
   conta: string;
 }
@@ -63,7 +50,7 @@ export interface DadosAba {
   atual: ResultadoObra;
   rotulos: string[];
   fun: (id: string) => FuncaoInfo;
-  /** funções com efetivo, no filtro de grupo, em ordem de grupo e nome */
+  /** funções com efetivo, em ordem de nome */
   ids: string[];
   vista: Vista;
   /** competência ou caixa */

@@ -12,7 +12,7 @@ select is(public.gravar_carga($j${
   'consulta', 'obra gravada');
 
 create temp table resumo_base on commit drop as select '{"vigente": 2026, "contexto": "abc", "pico": 1,
-  "pessoa_mes": 1, "he_por_pessoa": 0, "indireta_pct": 0, "custo_epoca": 1000, "custo_atual": 1100,
+  "pessoa_mes": 1, "he_por_pessoa": 0, "custo_epoca": 1000, "custo_atual": 1100,
   "histograma": [1, 0]}'::jsonb as r;
 create function pg_temp.resumo(rev integer) returns jsonb language sql as $$
   select jsonb_build_array((select r from resumo_base) || jsonb_build_object('obra_id', 'consulta', 'revisao', rev))

@@ -21,7 +21,6 @@ import type {
 import {
   aplicarReajustes,
   cenariosDeOrigem,
-  indicadores,
   projetar,
   reajustesDaProjecao,
   tabelaDaCidade,
@@ -235,7 +234,6 @@ export const resumoDaProjecao = (c: Calculo, vigente: number) =>
         total: Math.round(c.r.total * 100) / 100,
         pico: c.r.pico,
         pessoa_mes: Math.round(c.r.pessoaMes * 100) / 100,
-        indireta_pct: Math.round(indicadores(c.r.resultado).indiretaPct * 100) / 100,
         vigente,
       }
     : {};

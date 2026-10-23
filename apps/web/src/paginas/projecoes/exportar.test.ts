@@ -46,7 +46,6 @@ describe("exportar a projeção", () => {
     fun: (k) => ({
       id: k,
       nome: k === "ped" ? "Pedreiro" : k,
-      grupo: "direta",
       cor: "",
       estagio: false,
     }),

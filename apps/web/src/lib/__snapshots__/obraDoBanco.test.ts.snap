@@ -3,11 +3,6 @@
 exports[`snapshot dos números das abas (aceite M5) > época e atualizado, mês a mês e por componente, travados no centavo 1`] = `
 [
   {
-    "porGrupo": {
-      "adm": 0,
-      "direta": 12337.8,
-      "indireta": 0,
-    },
     "porMes": [
       {
         "benef": 400,
@@ -43,11 +38,6 @@ exports[`snapshot dos números das abas (aceite M5) > época e atualizado, mês 
     "visao": "epoca",
   },
   {
-    "porGrupo": {
-      "adm": 0,
-      "direta": 13281.14,
-      "indireta": 0,
-    },
     "porMes": [
       {
         "benef": 400,

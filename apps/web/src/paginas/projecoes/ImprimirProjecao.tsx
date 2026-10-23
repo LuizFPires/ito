@@ -12,7 +12,7 @@ import {
 } from "../../lib/projecaoDoBanco";
 import { BarrasMensais, Legenda } from "../../ui/BarrasMensais";
 import { Botao } from "../../ui/componentes";
-import { NOME_GRUPO_F, soma } from "../obra/comum";
+import { soma } from "../obra/comum";
 import { useInfoFuncoes } from "./funcoes";
 import { textoReajustes } from "./exportar";
 import { manualValido, rotulosMeses } from "./projecoes";
@@ -91,7 +91,6 @@ export function ImprimirProjecao() {
   const ind = indicadores(R);
   const pr = { ...PREMISSAS_PADRAO, ...e.premissas };
   const a = r.aplicadas;
-  const gt = soma(Object.values(R.porGrupo)) || 1;
   const custoMes = R.porMes.map((m) => m.total);
   // até 12 linhas para caber numa página: meses agrupados em trimestres, semestres… se preciso
   const passo = Math.max(1, Math.ceil(e.prazo / 12));
@@ -165,9 +164,7 @@ export function ImprimirProjecao() {
         <div>
           <span>Pico de efetivo</span>
           <strong>{numero(r.pico)} pessoas</strong>
-          <small>
-            {numero(r.pessoaMes, 1)} pessoa-mês · {percentual(ind.indiretaPct, 0)} indireta
-          </small>
+          <small>{numero(r.pessoaMes, 1)} pessoa-mês</small>
         </div>
         <div>
           <span>R$ por dia · pedreiro</span>
@@ -246,14 +243,6 @@ export function ImprimirProjecao() {
                   </tr>
                 );
               })}
-              {(["direta", "indireta", "adm"] as const).map((g) => (
-                <tr key={g} className={s.grupo}>
-                  <td>Mão de obra {NOME_GRUPO_F[g].toLowerCase()}</td>
-                  <td />
-                  <td>{moeda(R.porGrupo[g], 0)}</td>
-                  <td>{percentual((R.porGrupo[g] / gt) * 100, 0)}</td>
-                </tr>
-              ))}
             </tbody>
           </table>
         </section>

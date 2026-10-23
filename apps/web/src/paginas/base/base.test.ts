@@ -23,7 +23,6 @@ const obra = (id: string, p: Partial<LinhaBase> = {}): LinhaBase => ({
     pico: 10,
     pessoa_mes: 20,
     he_por_pessoa: 12,
-    indireta_pct: 15,
     custo_epoca: 100_000,
     custo_atual: 120_000,
     histograma: [10, 10],

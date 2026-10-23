@@ -68,7 +68,6 @@ export interface Indicadores {
   picoMedio: number;
   pmPorMilMedia: number;
   pmPorMilMediana: number;
-  indiretaMedia: number;
   custoM2Medio: number;
   custoM2Mediana: number;
 }
@@ -85,7 +84,6 @@ export function indicadores(obras: readonly LinhaBase[]): Indicadores {
     picoMedio: media(com.map((o) => o.resumo!.pico)),
     pmPorMilMedia: media(pm),
     pmPorMilMediana: mediana(pm),
-    indiretaMedia: media(com.map((o) => o.resumo!.indireta_pct)),
     custoM2Medio: media(cm),
     custoM2Mediana: mediana(cm),
   };

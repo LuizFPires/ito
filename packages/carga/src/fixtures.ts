@@ -6,14 +6,13 @@ import type { Cadastro, DadosObra } from "./montagem";
 
 const funcao = (
   id: string,
-  grupo: Funcao["grupo"],
+  escalaArea: boolean,
   fatorHe: number,
   vinculo: Funcao["vinculo"] = "clt",
 ): Funcao => ({
   id,
-  grupo,
   vinculo,
-  escalaArea: grupo === "direta",
+  escalaArea,
   exames: { adm: 150, perAnual: 105, dem: 150 },
   periculosidadePct: 0,
   insalubridadePctSm: 0,
@@ -23,10 +22,10 @@ const funcao = (
 });
 
 export const FUNCOES = [
-  funcao("ped", "direta", 1.1),
-  funcao("serv", "direta", 0.9),
-  funcao("mestre", "indireta", 0.4),
-  funcao("estag", "adm", 1, "estagio"),
+  funcao("ped", true, 1.1),
+  funcao("serv", true, 0.9),
+  funcao("mestre", false, 0.4),
+  funcao("estag", false, 1, "estagio"),
 ];
 
 export const CTX: Contexto = {

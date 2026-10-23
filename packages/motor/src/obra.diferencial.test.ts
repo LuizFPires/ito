@@ -1,5 +1,5 @@
 /**
- * Validação diferencial (decisão M3): movimentos, totais por mês, por grupo, caixa com
+ * Validação diferencial (decisão M3): movimentos, totais por mês, total, caixa com
  * adiantamento e total da obra iguais ao protótipo ITO 2.0, nas 5 obras de exemplo.
  */
 import { describe, expect, it } from "vitest";
@@ -48,9 +48,7 @@ describe.each(CASOS)("obra = protótipo · %s", (_nome: string, j: number) => {
     }
   });
 
-  it("por grupo de função e total da obra", () => {
-    for (const g of ["direta", "indireta", "adm"] as const)
-      expect(Math.abs(r.porGrupo[g] - (ref.G[g] ?? 0))).toBeLessThan(CENTAVO);
+  it("total da obra", () => {
     expect(Math.abs(r.total.total - ref.tot)).toBeLessThan(CENTAVO);
     expect(Math.abs(r.total.caixa - ref.caixa)).toBeLessThan(CENTAVO);
   });

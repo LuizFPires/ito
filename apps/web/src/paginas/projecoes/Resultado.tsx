@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { mesAno, moeda, numero, percentual } from "@ito/formato";
-import type { CustoMes, GrupoFuncao, Soma } from "@ito/motor";
+import type { CustoMes, Soma } from "@ito/motor";
 import { anoMes, indicadores, PREMISSAS_PADRAO, somar, tabelaDoMes } from "@ito/motor";
 import type { ContextoCarga } from "../../dados/carga";
 import type { ObraBanco } from "../../lib/obraDoBanco";
@@ -14,7 +14,7 @@ import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import { Linhas } from "../../ui/Linhas";
 import { useToast } from "../../ui/toast";
-import { COMPONENTES, NOME_GRUPO_F, notaVisao, ORDEM_GRUPOS, soma } from "../obra/comum";
+import { COMPONENTES, notaVisao, soma } from "../obra/comum";
 import o from "../obra/obra.module.css";
 import { useInfoFuncoes } from "./funcoes";
 import { baixarXlsx, nomeArquivo } from "../../lib/planilha";
@@ -68,7 +68,6 @@ export function Resultado({
   const [relativo, setRelativo] = useState(false);
   const [caixa, setCaixa] = useState(false);
   const [porComp, setPorComp] = useState(false);
-  const [grupo, setGrupo] = useState<"todas" | GrupoFuncao>("todas");
   const [agrupadas, setAgrupadas] = useState(false);
   const [gerando, setGerando] = useState(false);
   const { fun, ordenarFuncoes } = useInfoFuncoes(contexto.ctx);
@@ -103,24 +102,18 @@ export function Resultado({
   const rotulos = rotulosMeses(e.inicio, e.prazo, relativo);
   const ids = ordenarFuncoes(R.funcoes);
   const total = V(R.total);
-  const grupos = R.porGrupo;
-  const gt = soma(Object.values(grupos)) || 1;
   const ind = indicadores(R);
   const picoMes = r.totais.indexOf(r.pico);
   const p0 = tabelaDoMes(calc.parametros, 0);
   const vig = contexto.vigente;
   const M = rotulos.map((_, i) => somar(ids.map((k) => R.porFuncao[k]![i]!)));
-  const series = ids
-    .filter((k) => grupo === "todas" || fun(k).grupo === grupo)
-    .map((k) => ({
-      id: k,
-      nome: fun(k).nome,
-      cor: fun(k).cor,
-      valores:
-        modo === "pessoas"
-          ? (r.obra.equivalente[k] ?? [])
-          : R.porFuncao[k]!.map((c) => V(c) / 1000),
-    }));
+  const series = ids.map((k) => ({
+    id: k,
+    nome: fun(k).nome,
+    cor: fun(k).cor,
+    valores:
+      modo === "pessoas" ? (r.obra.equivalente[k] ?? []) : R.porFuncao[k]!.map((c) => V(c) / 1000),
+  }));
   const totComp = soma(M.map((m) => m.total));
   const curva = [
     {
@@ -210,11 +203,6 @@ export function Resultado({
           sub={`sobre ${numero(e.area)} m²`}
         />
         <Kpi
-          rotulo="Direta · indireta · adm."
-          valor={`${percentual((grupos.direta / gt) * 100, 0)} · ${percentual((grupos.indireta / gt) * 100, 0)} · ${percentual((grupos.adm / gt) * 100, 0)}`}
-          sub="do custo"
-        />
-        <Kpi
           rotulo="Pico de efetivo"
           valor={`${numero(r.pico)} pessoas`}
           sub={`em ${rotulos[picoMes] ?? "—"}`}
@@ -222,7 +210,7 @@ export function Resultado({
         <Kpi
           rotulo="Pessoa-mês"
           valor={numero(r.pessoaMes, 1)}
-          sub={`${numero((r.pessoaMes / e.area) * 1000, 1)} por 1.000 m² · ${percentual(ind.indiretaPct, 0)} indireta`}
+          sub={`${numero((r.pessoaMes / e.area) * 1000, 1)} por 1.000 m²`}
         />
         <Kpi
           rotulo="R$ por dia · pedreiro"
@@ -324,17 +312,6 @@ export function Resultado({
               {modo === "pessoas" ? "pessoas por função" : "custo por função (R$ mil)"}
             </span>
             <span className={f.linha}>
-              <Segmento
-                rotulo="Grupo de funções"
-                opcoes={[
-                  { valor: "todas", texto: "Todas" },
-                  { valor: "direta", texto: "Direta" },
-                  { valor: "indireta", texto: "Indireta" },
-                  { valor: "adm", texto: "Adm." },
-                ]}
-                valor={grupo}
-                onChange={setGrupo}
-              />
               {modo === "pessoas" && (
                 <Segmento
                   rotulo="Barras"
@@ -405,43 +382,32 @@ export function Resultado({
               </tr>
             </thead>
             <tbody>
-              {ORDEM_GRUPOS.map((g) => {
-                const gk = ids.filter((k) => fun(k).grupo === g);
-                if (!gk.length) return null;
-                return [
-                  <tr key={`g-${g}`} className={o.grupoLinha}>
-                    <td colSpan={rotulos.length + 2}>
-                      Mão de obra {NOME_GRUPO_F[g].toLowerCase()}
+              {ids.map((k) => {
+                const q = r.obra.equivalente[k] ?? [];
+                return (
+                  <tr key={k}>
+                    <td className={f.forte}>
+                      <span className={o.amostra} style={{ background: fun(k).cor }} />
+                      {fun(k).nome}
+                      <div className="sub">
+                        {r.pmPorMilM2[k] == null
+                          ? manual
+                            ? "informado"
+                            : "fixo por mês"
+                          : `${numero(r.pmPorMilM2[k]!, 1)} PM/1.000 m²`}
+                        {e.regime[k] === "sp" && " · prestador S/P"}
+                      </div>
                     </td>
-                  </tr>,
-                  ...gk.map((k) => {
-                    const q = r.obra.equivalente[k] ?? [];
-                    return (
-                      <tr key={k}>
-                        <td className={f.forte}>
-                          <span className={o.amostra} style={{ background: fun(k).cor }} />
-                          {fun(k).nome}
-                          <div className="sub">
-                            {r.pmPorMilM2[k] == null
-                              ? manual
-                                ? "informado"
-                                : "fixo por mês"
-                              : `${numero(r.pmPorMilM2[k]!, 1)} PM/1.000 m²`}
-                            {e.regime[k] === "sp" && " · prestador S/P"}
-                          </div>
-                        </td>
-                        {rotulos.map((_, i) => (
-                          <td key={i} className={f.r}>
-                            {q[i] ? numero(q[i]) : <span className="sub">–</span>}
-                          </td>
-                        ))}
-                        <td className={f.r}>
-                          <strong>{numero(soma(q))}</strong>
-                        </td>
-                      </tr>
-                    );
-                  }),
-                ];
+                    {rotulos.map((_, i) => (
+                      <td key={i} className={f.r}>
+                        {q[i] ? numero(q[i]) : <span className="sub">–</span>}
+                      </td>
+                    ))}
+                    <td className={f.r}>
+                      <strong>{numero(soma(q))}</strong>
+                    </td>
+                  </tr>
+                );
               })}
               <tr className="total">
                 <td>Total</td>

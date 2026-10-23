@@ -5,7 +5,6 @@
 import type { Feriado, OpcoesCalendario } from "./calendario";
 import type { ItemEncargo } from "./encargos";
 
-export type GrupoFuncao = "direta" | "indireta" | "adm";
 export type Vinculo = "clt" | "estagio";
 export type Regime = "clt" | "sp";
 export type Origem = "local" | "diaria" | "aloj";
@@ -14,7 +13,6 @@ export const TIPOS_HE: readonly TipoHe[] = ["util", "sabado", "intervalo", "feri
 
 export interface Funcao {
   id: string;
-  grupo: GrupoFuncao;
   vinculo: Vinculo;
   escalaArea: boolean;
   /** R$ por evento (admissional, demissional) e por ano (periódico) */

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { MESES, mesAno, moeda, numero, percentual } from "@ito/formato";
 import type { Reajuste } from "@ito/motor";
-import { indicadores, vtDiario } from "@ito/motor";
+import { vtDiario } from "@ito/motor";
 import { useSessao } from "../../auth/sessao";
 import { nomeCidade, nomeCurtoCct } from "../../dados/cidades";
 import { useListaObras } from "../../dados/obras";
@@ -242,11 +242,6 @@ function Assistente({
             rotulo="Custo / m²"
             valor={moeda(r.total / e.area, 0)}
             sub={`sobre ${numero(e.area)} m²`}
-          />
-          <Kpi
-            rotulo="% indireta"
-            valor={percentual(indicadores(r.resultado).indiretaPct, 0)}
-            sub="das pessoa-mês"
           />
         </div>
       )}
@@ -631,13 +626,6 @@ function PassoReferencias({
                       0,
                     )}
                   </strong>
-                </span>
-                <span>
-                  % indireta:{" "}
-                  {percentual(
-                    agg(sel.filter((o) => o.resumo).map((o) => o.resumo!.indireta_pct)),
-                    0,
-                  )}
                 </span>
                 <span>Prazos: {sel.map((o) => `${numero(o.meses)} meses`).join(", ")}</span>
               </div>

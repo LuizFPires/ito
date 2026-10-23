@@ -1,10 +1,10 @@
 /**
  * Cálculo da obra inteira: custo por função e mês, caixa com adiantamento (SPEC §4.5) e
- * agregações por mês, grupo de função e total.
+ * agregações por mês e total.
  */
 import { custoFuncaoMes, premissasDe } from "./custo";
 import type { CustoMes } from "./custo";
-import type { Contexto, GrupoFuncao, Obra, ParametrosObra } from "./modelo";
+import type { Contexto, Obra, ParametrosObra } from "./modelo";
 import { TIPOS_HE, nMeses } from "./modelo";
 import { movimentos } from "./movimentos";
 import type { Movimentos } from "./movimentos";
@@ -70,9 +70,6 @@ export interface ResultadoObra {
   funcoes: string[];
   porFuncao: Record<string, CustoMesObra[]>;
   porMes: Soma[];
-  porGrupo: Record<GrupoFuncao, number>;
-  /** pessoa-mês por grupo de função (para a % indireta) */
-  pessoaMesPorGrupo: Record<GrupoFuncao, number>;
   total: Soma;
 }
 
@@ -195,22 +192,12 @@ export function calcularObra(
   const porMes = Array.from({ length: n }, (_, i) =>
     somar(comEfetivo.map((f) => porFuncao[f.id]![i]!)),
   );
-  const porGrupo: Record<GrupoFuncao, number> = { direta: 0, indireta: 0, adm: 0 };
-  const pessoaMesPorGrupo: Record<GrupoFuncao, number> = { direta: 0, indireta: 0, adm: 0 };
-  for (const f of comEfetivo)
-    for (const c of porFuncao[f.id]!) {
-      porGrupo[f.grupo] += c.total;
-      pessoaMesPorGrupo[f.grupo] += c.x;
-    }
-
   return {
     n,
     movimentos: mov,
     funcoes: comEfetivo.map((f) => f.id),
     porFuncao,
     porMes,
-    porGrupo,
-    pessoaMesPorGrupo,
     total: somar(porMes),
   };
 }
@@ -224,20 +211,16 @@ export interface Indicadores {
   encargosPct: number;
   /** (VT + benef) ÷ remun, 0–100 */
   beneficiosPct: number;
-  /** PM (indireta + adm) ÷ PM total, 0–100 */
-  indiretaPct: number;
 }
 
 const razao = (a: number, b: number) => (b ? a / b : 0);
 
 export function indicadores(r: ResultadoObra): Indicadores {
   const t = r.total;
-  const pm = r.pessoaMesPorGrupo;
   return {
     porDiaComTaxa: razao(t.total, t.dias),
     porDiaSemTaxa: razao(t.remun, t.dias),
     encargosPct: razao(t.enc + t.prov + t.nf, t.remun) * 100,
     beneficiosPct: razao(t.vt + t.benef, t.remun) * 100,
-    indiretaPct: razao(pm.indireta + pm.adm, pm.direta + pm.indireta + pm.adm) * 100,
   };
 }

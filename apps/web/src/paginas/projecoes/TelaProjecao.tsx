@@ -36,7 +36,6 @@ const mesmoResumo = (a: ResumoProjecao, b: ResumoProjecao) =>
   a.total === b.total &&
   a.pico === b.pico &&
   a.pessoa_mes === b.pessoa_mes &&
-  a.indireta_pct === b.indireta_pct &&
   a.vigente === b.vigente;
 
 /** Detalhe da projeção (protótipo `telaProjecao`): ‹ › e seletor, situação, ações e resultado. */

@@ -297,13 +297,9 @@ async function preparar(pasta: string, c: Contexto9): Promise<Preparo> {
         ...Object.entries(FUNCOES_NOVAS)
           .filter(([id]) => !c.funcoesIds.has(id))
           .map(([id, f]) => ({
-            ...c.cadastro.funcoes.find(
-              (x) =>
-                x.id === (f.grupo === "direta" ? "ped" : f.grupo === "adm" ? "admin" : "encar"),
-            )!,
+            ...c.cadastro.funcoes.find((x) => x.id === f.modelo)!,
             id,
-            grupo: f.grupo,
-            escalaArea: f.grupo === "direta",
+            escalaArea: f.escalaArea,
           })),
       ],
     };
@@ -496,7 +492,7 @@ async function carregar(pasta: string, api: Api, usuario: string, forcar: boolea
       await api.rpc("criar_funcao", {
         p_id: id,
         p_nome: f.nome,
-        p_grupo: f.grupo,
+        p_escala_area: f.escalaArea,
         p_sinonimo: null,
       });
       console.log(`função criada: ${f.nome}`);

@@ -62,7 +62,6 @@ describe("funcaoDoBanco", () => {
     const f = funcaoDoBanco({
       id: "ped",
       nome: "Pedreiro",
-      grupo: "direta",
       conta_pc: "04.03.01",
       escala_area: true,
       vinculo: "clt",

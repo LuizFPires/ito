@@ -12,15 +12,8 @@ export type Encargo = T["data_base_encargos"]["Row"];
 export type Beneficio = T["beneficios"]["Row"];
 export type Parametros = T["parametros"]["Row"];
 export type FeriadoEmpresa = T["feriados_empresa"]["Row"];
-export type GrupoFuncao = Database["public"]["Enums"]["grupo_funcao"];
 export type TipoRubrica = Database["public"]["Enums"]["tipo_rubrica"];
 export type ComponenteRubrica = Database["public"]["Enums"]["componente_rubrica"];
-
-export const NOME_GRUPO: Record<GrupoFuncao, string> = {
-  direta: "Direta",
-  indireta: "Indireta",
-  adm: "Administrativa",
-};
 
 export const NOME_COMPONENTE: Record<ComponenteRubrica, string> = {
   sal: "Salário",
@@ -277,12 +270,12 @@ export function useCriarFuncao(
   sucesso = "Função criada com o salário de oficial. Ajuste em Parâmetros → Salários.",
 ) {
   return useGravar(
-    (f: { id: string; nome: string; grupo: GrupoFuncao; sinonimo?: string }) =>
+    (f: { id: string; nome: string; escalaArea?: boolean; sinonimo?: string }) =>
       ok(
         supabase.rpc("criar_funcao", {
           p_id: f.id,
           p_nome: f.nome,
-          p_grupo: f.grupo,
+          p_escala_area: f.escalaArea ?? true,
           p_sinonimo: f.sinonimo,
         }),
       ),
