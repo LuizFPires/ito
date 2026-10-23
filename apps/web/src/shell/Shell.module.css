@@ -1,15 +1,80 @@
-/* Shell do ITO 2.0: menu lateral fixo (232px) + coluna de conteúdo. */
+/* Shell do ITO 2.0: menu lateral (232px, ou 72px recolhido só com ícones) + conteúdo na
+   largura toda da tela. */
 
 .app {
-  padding: 16px 16px 56px;
+  padding: 16px 20px 56px;
 }
 .shell {
-  max-width: 1480px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);
-  gap: 24px;
+  gap: 20px;
   align-items: start;
+  transition: grid-template-columns 0.18s ease;
+}
+.shell[data-recolhido] {
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+.lateralTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding-bottom: 18px;
+}
+.lateralTopo .marca {
+  padding-bottom: 0;
+}
+.recolher {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-pill);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.recolher:hover {
+  color: var(--ink);
+}
+.recolher svg {
+  width: 14px;
+  height: 14px;
+}
+/* recolhido: só os ícones (clicáveis); nomes e títulos de grupo saem da tela, não do leitor */
+.shell[data-recolhido] .lateral {
+  padding: 16px 10px;
+}
+.shell[data-recolhido] .lateralTopo {
+  flex-direction: column;
+  gap: 12px;
+}
+.shell[data-recolhido] .marca {
+  padding: 0;
+}
+.shell[data-recolhido] .marcaPalavra,
+.shell[data-recolhido] .rodape {
+  display: none;
+}
+.shell[data-recolhido] .grupo {
+  font-size: 0;
+  padding: 0;
+  margin: 10px 8px;
+  border-top: 1px solid var(--line);
+}
+.shell[data-recolhido] .item {
+  justify-content: center;
+  padding: 0;
+}
+.shell[data-recolhido] .nomeItem {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .marca {
@@ -228,8 +293,18 @@
 }
 
 @media (max-width: 860px) {
-  .shell {
+  /* tela estreita: o menu vira uma faixa no topo; recolher não se aplica */
+  .shell,
+  .shell[data-recolhido] {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .recolher {
+    display: none;
+  }
+  .lateralTopo,
+  .shell[data-recolhido] .lateralTopo {
+    flex-direction: row;
+    padding-bottom: 0;
   }
   .lateral {
     position: static;

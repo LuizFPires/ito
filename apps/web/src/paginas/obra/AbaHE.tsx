@@ -113,7 +113,7 @@ export function AbaHE({
                 <td className={f.r}>{percentual(p.heAdicionalPct[t], 0)}</td>
                 <td className={f.r}>{percentual(obra.heMixPct?.[t] ?? 0, 0)}</td>
                 <td className={f.r}>{moeda(porTipo[t], 0)}</td>
-                <td className={f.r}>{percentual((porTipo[t] / totTipo) * 100)}</td>
+                <td className={`${f.r} ${s.pct}`}>{percentual((porTipo[t] / totTipo) * 100)}</td>
               </tr>
             ))}
             <tr className="total">
@@ -121,7 +121,7 @@ export function AbaHE({
               <td />
               <td className={f.r}>100%</td>
               <td className={f.r}>{moeda(soma(Object.values(porTipo)), 0)}</td>
-              <td className={f.r}>100%</td>
+              <td className={`${f.r} ${s.pct}`}>100%</td>
             </tr>
           </tbody>
         </table>
