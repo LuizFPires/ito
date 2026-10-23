@@ -154,7 +154,7 @@ export function AbaVisao({
                       {c.n}
                     </td>
                     <td className={`${f.r} ${s.nowrap}`}>{moeda(T[c.k], 0)}</td>
-                    <td className={`${f.r} ${s.nowrap}`}>
+                    <td className={`${f.r} ${s.pct}`}>
                       {percentual(tt ? (T[c.k] / tt) * 100 : 0)}
                     </td>
                   </tr>
@@ -162,7 +162,7 @@ export function AbaVisao({
                 <tr className="total">
                   <td>Total{vista.caixa ? " (caixa)" : ""}</td>
                   <td className={`${f.r} ${s.nowrap}`}>{moeda(tt, 0)}</td>
-                  <td className={f.r}>100%</td>
+                  <td className={`${f.r} ${s.pct}`}>100%</td>
                 </tr>
               </tbody>
             </table>

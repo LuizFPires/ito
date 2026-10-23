@@ -97,6 +97,14 @@
 .nowrap {
   white-space: nowrap;
 }
+/* percentual ao lado de um valor em R$: informação secundária (cinza, menor) e afastada do valor */
+.pct,
+.dados td.pct {
+  color: var(--muted);
+  font-size: 12px;
+  padding-left: 20px;
+  white-space: nowrap;
+}
 .campoMes {
   width: 76px;
   min-height: 32px;
