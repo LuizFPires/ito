@@ -85,6 +85,15 @@ export function EtapaRubricas({ r, mudar, ctx }: PropsEtapa) {
       };
     });
 
+  if (!linhas.length)
+    return (
+      <Cartao aria-label="Rubricas da folha">
+        <p className="sub" style={{ padding: 22, margin: 0 }}>
+          Nenhuma folha lida ainda. Envie a folha na etapa Arquivos para ver as rubricas dela.
+        </p>
+      </Cartao>
+    );
+
   return (
     <Cartao aria-label="Rubricas da folha">
       <div className={f.barra}>

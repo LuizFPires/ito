@@ -207,3 +207,19 @@ test("modelo da folha no layout do ITO para baixar", async ({ page }) => {
   await page.getByRole("button", { name: "Baixar modelo" }).first().click();
   expect((await baixou).suggestedFilename()).toBe("modelo_folha_ito.xlsx");
 });
+
+test("etapas livres: navega sem preencher, mas não grava com pendência", async ({ page }) => {
+  await entrar(page, "dprh@ito.local");
+  await page.goto("/carga");
+  await page.getByRole("button", { name: /^03 Funções/ }).click();
+  await expect(page.getByText("Nenhuma folha lida ainda.")).toBeVisible();
+  await page.getByRole("button", { name: /^04 Rubricas/ }).click();
+  await expect(page.getByText("Nenhuma folha lida ainda.")).toBeVisible();
+  await page.getByRole("button", { name: /^05 Verificação/ }).click();
+  await expect(page.getByText(/Falta no cadastro da obra/)).toContainText(
+    "Informe o nome da obra.",
+  );
+  await expect(page.getByRole("button", { name: "Salvar na base histórica →" })).toBeDisabled();
+  await page.getByRole("button", { name: /^01 Obra/ }).click();
+  await expect(page.getByLabel("Nome da obra")).toBeVisible();
+});
