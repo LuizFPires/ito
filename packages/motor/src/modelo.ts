@@ -61,8 +61,6 @@ export interface Premissas {
   riscoPct: number;
   lucroPct: number;
   tribLucroPct: number;
-  /** histórico: obra fora da sede paga alojamento e viagens */
-  foraDaSede: boolean;
   provisionar: boolean;
   adiantamento: boolean;
   adiantamentoPct: number;
@@ -75,7 +73,6 @@ export const PREMISSAS_PADRAO: Premissas = {
   riscoPct: 0,
   lucroPct: 0,
   tribLucroPct: 0,
-  foraDaSede: false,
   provisionar: true,
   adiantamento: true,
   adiantamentoPct: 40,

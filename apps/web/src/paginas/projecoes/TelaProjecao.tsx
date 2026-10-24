@@ -244,6 +244,18 @@ export function TelaProjecao() {
         )}
       </div>
 
+      {/* referência reaberta (M11): o resultado muda a cada mês lançado nela */}
+      {!manual && refs.some((b) => b.obra.situacao === "andamento") && (
+        <p className={f.aviso} role="status">
+          {refs
+            .filter((b) => b.obra.situacao === "andamento")
+            .map((b) => `“${b.obra.nome}”`)
+            .join(", ")}{" "}
+          foi reaberta e está em andamento: o resultado muda a cada mês lançado nela. Ao editar a
+          projeção, obras em andamento saem das referências.
+        </p>
+      )}
+
       {!calc || !contexto ? (
         <Cartao>
           <p className="sub" style={{ padding: 22, margin: 0 }}>

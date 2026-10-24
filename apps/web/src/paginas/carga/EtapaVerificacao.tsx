@@ -25,24 +25,30 @@ export function EtapaVerificacao({
   existe,
   substituir,
   onSubstituir,
+  mes,
 }: PropsEtapa & {
   prep: Preparada | null;
   existe: boolean;
   substituir: boolean;
   onSubstituir: (v: boolean) => void;
+  /** lançar mês na obra em andamento: o mês (índice da obra) e se refaz um já lançado */
+  mes?: { idx: number; refazer: boolean };
 }) {
   if (!prep)
     return (
       <Cartao>
         <p className="sub" style={{ padding: 22, margin: 0 }}>
-          Envie a folha e informe o período da obra para verificar.
+          {mes
+            ? "Envie a folha do mês para verificar."
+            : "Envie a folha e informe o período da obra para verificar."}
         </p>
       </Cartao>
     );
   const v = prep.verificacao;
   const d = r.dados;
+  // meses contados do início da obra (no lançar mês, a obra da base com o mês encaixado)
   const nomeMes = (i: number) => {
-    const m = anoMes(d.inicio, i);
+    const m = anoMes(prep.montagem.obra.inicio, i);
     return mesAno(m.ano, m.mes);
   };
   const escolher = (p: Partial<typeof r.escolhas>) =>
@@ -248,17 +254,22 @@ export function EtapaVerificacao({
             {d.tipologia && <span>{d.tipologia}</span>}
             <span>{cidade?.nome ?? "Sem cidade"}</span>
             <span>{numero(d.area)} m²</span>
-            <span>
-              {nomeMes(0)} a {mesAno(fim.ano, fim.mes)}
-            </span>
+            {mes ? (
+              <span>
+                {mes.refazer ? "Refaz" : "Lança"} {nomeMes(mes.idx)} ({numero(mes.idx + 1)}º mês)
+              </span>
+            ) : (
+              <span>
+                {nomeMes(0)} a {mesAno(fim.ano, fim.mes)}
+              </span>
+            )}
             <span>CCT {d.dataBase}</span>
             {trocas.length > 0 && <span>{trocas.join(" · ")}</span>}
-            <span>{d.premissas.foraDaSede ? "Com alojamento" : "Sem alojamento"}</span>
             <span>
               {numero(v.payload.lancamentos.length)} lançamentos · pessoa-mês{" "}
               {numero(
                 Object.values(prep.montagem.obra.equivalente)
-                  .flat()
+                  .map((serie) => (mes ? (serie[mes.idx] ?? 0) : serie.reduce((a, b) => a + b, 0)))
                   .reduce((a, b) => a + b, 0),
                 1,
               )}

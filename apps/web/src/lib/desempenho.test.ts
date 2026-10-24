@@ -37,7 +37,6 @@ function obraSintetica(k: number): ObraBanco {
       provisionar: true,
       adiantamento: true,
       adiantamento_pct: 40,
-      fora_da_sede: false,
       rotatividade_pct: 4,
       he_mix_util: 70,
       he_mix_sabado: 20,

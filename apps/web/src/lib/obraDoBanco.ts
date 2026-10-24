@@ -93,7 +93,6 @@ export function obraDoBanco(b: ObraBanco): { obra: Obra; movimentos: Movimentos 
         riscoPct: Number(o.risco_pct),
         lucroPct: Number(o.lucro_pct),
         tribLucroPct: Number(o.trib_lucro_pct),
-        foraDaSede: o.fora_da_sede,
         provisionar: o.provisionar,
         adiantamento: o.adiantamento,
         adiantamentoPct: Number(o.adiantamento_pct),

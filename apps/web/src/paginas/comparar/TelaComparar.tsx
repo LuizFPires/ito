@@ -7,9 +7,10 @@ import { useContextoCarga } from "../../dados/carga";
 import { carregarObrasBanco, useListaObras } from "../../dados/obras";
 import { inicioDe } from "../../lib/obraDoBanco";
 import { juntarASelecao, MAX_COMPARAR, useSelecaoObras } from "../../lib/selecao";
+import { emAndamento } from "../../lib/situacao";
 import { MENU } from "../../shell/rotas";
 import { BarraComposicao, BarrasMensais, Legenda } from "../../ui/BarrasMensais";
-import { Botao, Cartao, Segmento } from "../../ui/componentes";
+import { Badge, Botao, Cartao, Segmento } from "../../ui/componentes";
 import { SeletorComBusca } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import { Linhas } from "../../ui/Linhas";
@@ -38,8 +39,8 @@ export function TelaComparar() {
   }, [daUrl, setBusca]);
 
   const porId = useMemo(() => new Map((lista.data ?? []).map((o) => [o.id, o])), [lista.data]);
-  // só obras que existem na base (obra excluída sai), até 4
-  const validas = lista.data ? sel.filter((id) => porId.has(id)) : [];
+  // só obras que existem na base (obra excluída sai) e com mês lançado, até 4
+  const validas = lista.data ? sel.filter((id) => (porId.get(id)?.meses ?? 0) > 0) : [];
   const ids = validas.slice(0, MAX_COMPARAR);
   const ctx = contexto.data;
   // uma consulta por obra: incluir ou tirar uma não baixa as outras de novo
@@ -59,13 +60,13 @@ export function TelaComparar() {
         .map((b) => compararObra(b!, ctx.ctx, ctx.tabelas, ctx.vigente));
 
   const opcoes = (lista.data ?? [])
-    .filter((o) => !ids.includes(o.id))
+    .filter((o) => !ids.includes(o.id) && o.meses > 0)
     .map((o) => {
       const ini = inicioDe(o.inicio);
       // nome + cliente + início: diferencia obras de nomes iguais
       return {
         valor: o.id,
-        texto: `${o.nome} · ${o.cliente || "Sem cliente"} · ${mesAno(ini.ano, ini.mes)}`,
+        texto: `${o.nome} · ${o.cliente || "Sem cliente"} · ${mesAno(ini.ano, ini.mes)}${emAndamento(o) ? " · em andamento" : ""}`,
       };
     });
   const vigente = ctx?.vigente;
@@ -96,7 +97,11 @@ export function TelaComparar() {
 
   const linhas: [string, (o: ObraComparada) => string][] = [
     ["Área (m²)", (o) => numero(o.area)],
-    ["Duração", (o) => `${numero(o.dias)} dias · ${numero(o.meses)} meses`],
+    [
+      "Duração",
+      (o) =>
+        `${numero(o.dias)} dias · ${numero(o.meses)} meses${porId.get(o.id)?.situacao === "andamento" ? " até agora (em andamento)" : ""}`,
+    ],
     ["Data-base", (o) => `CCT ${o.dataBase}`],
     ["Pico de efetivo", (o) => `${numero(o.ind.pico, 1)} pessoas`],
     ["Pessoa-mês / 1.000 m²", (o) => numero(o.ind.pmPorMil, 1)],
@@ -130,6 +135,7 @@ export function TelaComparar() {
                 <Link to={`/obras/${id}`} className={s.nome}>
                   {porId.get(id)?.nome ?? id}
                 </Link>
+                {porId.get(id)?.situacao === "andamento" && <Badge tom="ambar">em andamento</Badge>}
                 <button
                   type="button"
                   aria-label={`Tirar ${porId.get(id)?.nome ?? id} da comparação`}

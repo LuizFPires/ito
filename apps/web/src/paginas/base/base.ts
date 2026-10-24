@@ -21,10 +21,23 @@ export type ChaveBase = "nome" | "area" | "periodo" | "pico" | "pm" | "he" | "ep
 /** Linha da lista com o resumo que vale agora (o do banco ou o recalculado na tela). */
 export type LinhaBase = ObraLista & { cidade: string };
 
-export function filtrar(obras: readonly LinhaBase[], grupo: Grupo, q: string): LinhaBase[] {
+export const SITUACOES = [
+  { valor: "todas", texto: "Todas" },
+  { valor: "concluida", texto: "Concluídas" },
+  { valor: "andamento", texto: "Em andamento" },
+] as const;
+export type FiltroSituacao = (typeof SITUACOES)[number]["valor"];
+
+export function filtrar(
+  obras: readonly LinhaBase[],
+  grupo: Grupo,
+  q: string,
+  situacao: FiltroSituacao = "todas",
+): LinhaBase[] {
   return obras.filter(
     (o) =>
       (grupo === "todas" || o.grupo === grupo) &&
+      (situacao === "todas" || o.situacao === situacao) &&
       contemTermos(`${o.nome} ${o.cliente} ${o.tipologia} ${o.cidade}`, q),
   );
 }
@@ -63,6 +76,8 @@ export function mediana(xs: number[]): number {
 
 export interface Indicadores {
   obras: number;
+  /** obras em andamento no filtro (fora da duração e das médias) */
+  andamento: number;
   duracaoMedianaDias: number;
   duracaoMedianaMeses: number;
   picoMedio: number;
@@ -72,13 +87,18 @@ export interface Indicadores {
   custoM2Mediana: number;
 }
 
-/** Indicadores do filtro (protótipo): obras sem resumo ficam fora das médias de resumo. */
-export function indicadores(obras: readonly LinhaBase[]): Indicadores {
+/**
+ * Indicadores do filtro (protótipo): obras sem resumo ficam fora das médias de resumo; obras em
+ * andamento contam na quantidade, mas não na duração nem nas médias (o período ainda não fechou).
+ */
+export function indicadores(todas: readonly LinhaBase[]): Indicadores {
+  const obras = todas.filter((o) => o.situacao === "concluida");
   const com = obras.filter((o) => o.resumo);
   const pm = com.map((o) => (o.resumo!.pessoa_mes / o.area_m2) * 1000);
   const cm = com.map((o) => o.resumo!.custo_atual / o.area_m2);
   return {
-    obras: obras.length,
+    obras: todas.length,
+    andamento: todas.length - obras.length,
     duracaoMedianaDias: mediana(obras.map((o) => diasDoPeriodo(o.inicio, o.meses))),
     duracaoMedianaMeses: mediana(obras.map((o) => o.meses)),
     picoMedio: media(com.map((o) => o.resumo!.pico)),

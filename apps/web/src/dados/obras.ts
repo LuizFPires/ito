@@ -3,10 +3,12 @@
  * recálculo dos resumos desatualizados (obra editada, tabela vigente nova, versão do cálculo).
  */
 import { useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { MesParaGravar } from "@ito/carga";
 import type { ContextoCarga } from "./carga";
 import type { ObraBanco, Resumo } from "../lib/obraDoBanco";
 import { resumoDaObra, VERSAO_RESUMO } from "../lib/obraDoBanco";
+import type { Situacao } from "../lib/situacao";
 import { supabase } from "../lib/supabase";
 import type { Database, Json } from "../lib/tipos-banco";
 
@@ -40,10 +42,13 @@ export interface ObraLista {
   inicio: string;
   meses: number;
   data_base: number;
+  situacao: Situacao;
+  prazo_previsto: number | null;
   resumo: Resumo | null;
 }
 
-const COLUNAS = "id, nome, cliente, tipologia, grupo, cidade_id, area_m2, inicio, meses, data_base";
+const COLUNAS =
+  "id, nome, cliente, tipologia, grupo, cidade_id, area_m2, inicio, meses, data_base, situacao, prazo_previsto";
 
 export const chavesObras = {
   lista: ["obras", "lista"] as const,
@@ -312,3 +317,39 @@ export const edicao = {
   removerFeriado: (id: string, data: string) =>
     okLinhas(supabase.from("obra_feriados").delete().eq("obra_id", id).eq("data", data).select()),
 };
+
+// ── obra em andamento (M11): lançar mês, concluir e reabrir (quem carrega; regra no banco) ──
+
+function useAoGravarObra() {
+  const qc = useQueryClient();
+  return () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ["obras"] }),
+      qc.invalidateQueries({ queryKey: ["carga"] }),
+      qc.invalidateQueries({ queryKey: ["funcoes"] }),
+      qc.invalidateQueries({ queryKey: ["rubricas"] }),
+    ]);
+}
+
+export function useLancarMes() {
+  const aoGravar = useAoGravarObra();
+  return useMutation({
+    mutationFn: async (p: MesParaGravar) =>
+      ok(supabase.rpc("lancar_mes", { p: p as unknown as Json })),
+    onSettled: aoGravar,
+  });
+}
+
+export function useDefinirSituacao() {
+  const aoGravar = useAoGravarObra();
+  return useMutation({
+    mutationFn: async ({ id, situacao }: { id: string; situacao: Situacao }) => {
+      const { error } = await supabase.rpc("definir_situacao_obra", {
+        p_id: id,
+        p_situacao: situacao,
+      });
+      if (error) throw error;
+    },
+    onSettled: aoGravar,
+  });
+}

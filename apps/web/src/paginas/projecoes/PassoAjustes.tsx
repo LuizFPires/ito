@@ -352,14 +352,6 @@ export function PassoAjustes({
                 onSalvar={(v) => up({ rotatividadePct: v })}
               />
             </div>
-            {!cid && (
-              <Interruptor
-                rotulo="Obra fora da sede"
-                texto="Obra fora da sede: alojamento/república e viagens periódicas"
-                ligado={pr.foraDaSede}
-                onChange={(v) => upPrem({ foraDaSede: v })}
-              />
-            )}
             <Interruptor
               rotulo="Provisionar férias, 1/3, 13º e GRRF"
               texto="Provisionar férias, 1/3, 13º e GRRF (custo por competência)"

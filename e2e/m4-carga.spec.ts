@@ -183,9 +183,15 @@ test("rascunho salvo sozinho: recarregar a página e continuar de onde parou", a
   await page.getByLabel("Nome da obra").fill("Rascunho E2E");
   await expect(page.getByText(/^Rascunho salvo /)).toBeVisible();
   await page.reload();
-  const lista = page.getByRole("region", { name: "Rascunhos salvos" });
-  await expect(lista).toContainText("Rascunho E2E");
-  await lista.getByRole("button", { name: "Continuar" }).click();
+  // rascunhos numa gaveta lateral, aberta pelo ícone (M11)
+  await page.getByRole("button", { name: /^Rascunhos salvos/ }).click();
+  const gaveta = page.getByRole("dialog", { name: "Rascunhos salvos" });
+  await expect(gaveta).toContainText("Rascunho E2E");
+  await gaveta
+    .getByRole("button", { name: /Rascunho E2E/ })
+    .first()
+    .click();
+  await expect(gaveta).toBeHidden();
   await expect(page.getByLabel("Nome da obra")).toHaveValue("Rascunho E2E");
 });
 

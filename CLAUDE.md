@@ -273,6 +273,28 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Sem classificação de funções** (decisão do usuário): o ITO não divide mais as funções em direta, indireta e administrativa — saíram os filtros Todas/Direta/Indireta/Adm., os subtotais por grupo, os indicadores "Direta · indireta · adm." e "% MO indireta", a coluna e o filtro do cadastro de Funções, a coluna "Grupo" do .xlsx e o campo no banco (`funcoes.grupo`, `obra_resumo.indireta_pct`). O custo não muda: crescer com a área continua no campo **escala com a área** de cada função; função nova nasce escalando com a área (como a antiga "direta"), ajustável no cadastro. Tabelas listam as funções em ordem alfabética.
 - **Menu lateral recolhível** (só ícones, clicáveis, lembrado no navegador) e conteúdo na largura toda da tela; percentuais ao lado de valores em R$ em cinza, menores e afastados.
 
+### M11 — Obras em andamento (24/10/2026)
+- **Obra acompanhada mês a mês** (usuário): a obra pode começar no ITO e receber folha, ponto, VT, notas e ERP a cada competência; a carga da obra inteira continua.
+- **Situação da obra** em andamento ou concluída; as obras já carregadas ficam concluídas. (auto — recomendado)
+- **Lançamento mensal** no detalhe da obra, com as mesmas conferências da carga, uma competência por vez; refazer um mês substitui só aquele mês, sem perder premissas e ausências. (auto — recomendado)
+- **Projeções usam só obras concluídas** como referência (curva completa); base e Comparar mostram as duas com filtro e selo. (auto — recomendado)
+- **Quem lança o mês** = quem carrega (DP/RH, controladoria, admin). (auto — recomendado)
+- **Sem "obra fora da sede (alojamento)"** (usuário): alojamento e viagens dependem de cada função, não da obra; na projeção continuam pela origem de cada função.
+- **Rascunhos da carga em painel lateral** aberto por ícone (usuário).
+- **Um mês por vez, sem pular:** lança-se o mês seguinte ao último ou refaz-se um já lançado. Concluir fecha o período no último mês lançado; reabrir volta a receber meses. (auto — recomendado)
+- **Rotatividade e mix de HE** da obra em andamento são recalculados com todos os meses a cada mês lançado (são quantidades da folha); edição nas premissas vale até o próximo lançamento. (auto — recomendado)
+- **Começar em andamento:** início e prazo previsto (opcional, informativo); a folha dos meses que já passaram é opcional e o período vai do início à última competência dela. (auto — recomendado)
+- **Lançar mês** é uma tela própria (`/obras/:id/lancar`) com as etapas da carga, sem rascunho (refaz-se enviando de novo); notas fiscais enviadas no lançamento são do mês; a verificação confere só o mês, sobre a obra inteira. (auto — recomendado)
+- **Base histórica:** obras em andamento contam na quantidade, mas ficam fora da duração e das médias; filtro de situação aparece quando há obra em andamento. Comparar aceita obra em andamento com mês lançado, com selo. (auto — recomendado)
+- Aceito: tirar o S/P de uma função no lançamento não tira o S/P da obra (faz-se nas premissas).
+- Revisão do M11 (24/10/2026), corrigido:
+  - **Lançar ou refazer é explícito** no pedido: se outra pessoa lançou o mês no meio, o banco recusa ("Atualize a página") em vez de trocar a folha calada.
+  - **Refazer um mês parte as realocações de vários meses** (da carga inteira ou de obra reaberta); o saldo de VT fica na primeira parte.
+  - Resumos das obras que tinham "fora da sede" ficam velhos na migração (o custo delas mudou). Lançar mês grava só os feriados municipais do próprio mês; com 120 meses, a tela abre no último mês.
+  - Projeção com referência reaberta mostra aviso; editar a projeção avisa que a obra em andamento saiu das referências.
+- Aceito sem correção: a verificação do mês usa o mix de HE do próprio mês (o banco grava o de todos os meses; o detalhe recalcula); NF de outra competência enviada no lançamento entra no mês; desmarcar S/P no lançamento não tira o S/P da obra (faz-se nas premissas); troca de tabela entra pelas premissas depois do mês lançado (refaça o mês se ela valer para ele).
+- Fica para depois: acompanhar o realizado contra a projeção aprovada da própria obra.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

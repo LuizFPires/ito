@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import type { ErroLeitura, Leituras, TipoArquivo } from "@ito/carga";
-import { lerErp, lerFolha, lerNotasFiscais, lerPonto, lerVt, periodoDaFolha } from "@ito/carga";
+import { lerErp, lerFolha, lerNotasFiscais, lerPonto, lerVt } from "@ito/carga";
 import { moeda, numero } from "@ito/formato";
 import { baixarModelo, decodificarTexto, planilhaDe } from "../../lib/arquivos";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
@@ -9,6 +9,7 @@ import u from "../../ui/ui.module.css";
 import { useToast } from "../../ui/toast";
 import type { PropsEtapa } from "./Assistente";
 import s from "./carga.module.css";
+import { periodoComFolha } from "./estado";
 
 interface Slot {
   tipo: TipoArquivo;
@@ -129,12 +130,8 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
         // erros dos demais arquivos entram na verificação (a folha traz os seus)
         if (tipo !== "folha")
           leituras.errosArquivos = { ...x.leituras?.errosArquivos, [tipo]: erros };
-        let dados = x.dados;
-        // sem datas na etapa Obra: o período sai das competências da folha
-        if (parcial.folha && dados.meses < 1) {
-          const per = periodoDaFolha(parcial.folha);
-          if (per) dados = { ...dados, ...per };
-        }
+        // sem datas na etapa Obra (ou obra em andamento): o período sai das competências da folha
+        const dados = parcial.folha ? periodoComFolha(x.dados, parcial.folha) : x.dados;
         return {
           ...x,
           dados,
@@ -154,7 +151,13 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
       const arquivos = { ...x.arquivos };
       delete arquivos[tipo];
       if (tipo === "folha")
-        return { ...x, arquivos, leituras: x.leituras && { ...x.leituras, folha: FOLHA_VAZIA } };
+        return {
+          ...x,
+          // em andamento, o período vinha da folha: volta a nenhum mês
+          dados: x.dados.situacao === "andamento" ? { ...x.dados, meses: 0, trocas: [] } : x.dados,
+          arquivos,
+          leituras: x.leituras && { ...x.leituras, folha: FOLHA_VAZIA },
+        };
       const chave = tipo === "nf" ? "notas" : tipo;
       const errosArquivos = { ...x.leituras?.errosArquivos };
       delete errosArquivos[tipo];

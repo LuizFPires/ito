@@ -149,7 +149,7 @@ describe("revisão do M5", () => {
   it("conversão leva premissas, regime, trocas (época) e feriados do banco", () => {
     const b: ObraBanco = {
       ...base,
-      obra: { ...base.obra, grat_premios_pct: 7, fora_da_sede: true, provisionar: false },
+      obra: { ...base.obra, grat_premios_pct: 7, provisionar: false },
       regime: [{ funcao_id: "serv", regime: "sp" }],
       trocas: [{ mes_idx: 1, data_base: 2026, motivo: "" }],
       feriados: [{ data: "2025-04-21", nome: "Tiradentes" }],
@@ -157,7 +157,6 @@ describe("revisão do M5", () => {
     const { obra } = obraDoBanco(b);
     expect(obra.premissas).toMatchObject({
       gratPremiosPct: 7,
-      foraDaSede: true,
       provisionar: false,
     });
     expect(obra.regime).toEqual({ serv: "sp" });

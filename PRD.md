@@ -7,7 +7,7 @@
 
 ## 1. Visão
 
-O ITO guarda, em forma de dados, a história da mão de obra de cada obra concluída: quantas pessoas de cada função trabalharam em cada mês, quanto custaram e por quê (salário, adicionais, horas extras, encargos, provisões, benefícios, exames, rescisões, tributos). Com essa base, projeta o **histograma** e o **custo mensal de mão de obra** de obras futuras.
+O ITO guarda, em forma de dados, a história da mão de obra de cada obra (concluída ou acompanhada mês a mês, em andamento): quantas pessoas de cada função trabalharam em cada mês, quanto custaram e por quê (salário, adicionais, horas extras, encargos, provisões, benefícios, exames, rescisões, tributos). Com essa base, projeta o **histograma** e o **custo mensal de mão de obra** de obras futuras.
 
 A regra que organiza o produto:
 
@@ -65,7 +65,7 @@ O menu tem três grupos:
 Há também uma busca global, aberta com ⌘K.
 
 ### 3.1 Base histórica
-- Lista de obras com filtro por grupo (Mart Minas, Galpões, Academias…) e busca por nome, cliente ou cidade.
+- Lista de obras com filtro por grupo (Mart Minas, Galpões, Academias…), por situação (concluídas, em andamento) e busca por nome, cliente ou cidade. Obra em andamento tem selo e "3 de 14 meses previstos" no período, e fica fora da duração e das médias dos indicadores.
 - Indicadores do filtro: nº de obras, duração mediana, pico médio, pessoa-mês por 1.000 m² e custo de MO por m² a valores vigentes.
 - Tabela sem rolagem lateral a partir de 1.280 px, com as colunas:
   - Obra (com cidade e CCT);
@@ -105,7 +105,7 @@ Todas as abas alternam entre **Época** (tabela da data-base em que a obra foi f
 9. **MDO realocada:** pessoas cedidas a outras obras ou recebidas de outras obras, com período, saldo de VT transferido e custo. O custo fica onde a pessoa trabalhou.
 10. **Premissas:**
     - gratificações e prêmios %, transferência %, risco, lucro, tributos s/ lucro, rotatividade e adiantamento %;
-    - interruptores: obra fora da sede, provisionar, caixa com adiantamento;
+    - interruptores: provisionar, caixa com adiantamento;
     - regime por função (CLT ou prestador S/P) e transferência por função;
     - distribuição das HE por tipo;
     - trocas de tabela no meio da obra;
@@ -157,7 +157,7 @@ Duas abas, pensadas para dezenas de CCTs e centenas de cidades.
 - **Cidades** (busca, filtro por CCT, paginação de 15): CCT que vale, tarifa local, conduções, passagem vindo de BH (com o VT diário calculado), ISS e feriados municipais recorrentes.
 
 ### 3.6 Carga de dados (assistente em 5 etapas)
-1. **Obra:** nome, cliente, tipologia, cidade, área, datas de início e fim, data-base, troca de tabela no meio da obra (mês + nova tabela) e obra fora da sede.
+1. **Obra:** situação (concluída ou em andamento), nome, cliente, tipologia, cidade, área, datas de início e fim (em andamento: início e prazo previsto), data-base e troca de tabela no meio da obra (mês + nova tabela). Obra em andamento pode começar sem folha ("Começar a obra sem folha").
 2. **Arquivos:**
    - folha com rubricas (obrigatório);
    - cartão de ponto;
@@ -176,6 +176,12 @@ Duas abas, pensadas para dezenas de CCTs e centenas de cidades.
    - calendário do período;
    - **MDO realocada** (escolher a obra de destino);
    - apropriação × ERP com justificativa.
+
+### 3.6.1 Obra em andamento (M11)
+- A obra começa no ITO e recebe, a cada competência, a folha, o ponto, o VT, as notas e o realizado do ERP; quando termina, é concluída e vira base histórica.
+- No detalhe da obra, a barra "em andamento" mostra os meses lançados e os botões **Lançar <mês> →**, **Refazer um mês** e **Concluir obra**. Obra concluída ganha **Reabrir obra**.
+- **Lançar mês** (`/obras/:id/lancar`): competência (o próximo mês ou refazer um já lançado), arquivos, funções, rubricas e verificação, como na carga. Refazer substitui só aquele mês; os outros meses e as premissas ficam.
+- Só obra concluída é referência de projeção ("Usar como referência" some na obra em andamento). Quem lança e conclui: DP/RH, controladoria e admin.
 
 ### 3.7 Parâmetros (tabela da empresa, por data-base)
 - Salários por função por data-base.
