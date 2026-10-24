@@ -6,6 +6,7 @@ import { Protegida } from "./auth/Protegida";
 import { SessaoProvider } from "./auth/sessao";
 import { veioDoConvite } from "./lib/supabase";
 import { MENU } from "./shell/rotas";
+import { ErroRota } from "./ui/ErroRota";
 import { ToastProvider } from "./ui/toast";
 
 const queryClient = new QueryClient({
@@ -43,89 +44,92 @@ const TELAS: Record<string, () => Promise<{ Component: () => React.ReactNode }>>
 };
 
 // O shell e as telas carregam sob demanda: a tela de login fica leve.
-const router = createBrowserRouter([
-  { path: "/entrar", element: <Login /> },
-  // link do convite (M10): a sessão vem no endereço; a pessoa define a senha
-  {
-    path: "/definir-senha",
-    hydrateFallbackElement: null,
-    lazy: async () => ({ Component: (await import("./auth/DefinirSenha")).DefinirSenha }),
-  },
-  // resumo para imprimir (PDF): fora do shell, sem menu
-  {
-    path: "/projecoes/:id/imprimir",
-    hydrateFallbackElement: null,
-    lazy: async () => {
-      const { ImprimirProjecao } = await import("./paginas/projecoes/ImprimirProjecao");
-      return {
-        element: (
-          <Protegida>
-            <ImprimirProjecao />
-          </Protegida>
-        ),
-      };
+const router = createBrowserRouter(
+  [
+    { path: "/entrar", element: <Login /> },
+    // link do convite (M10): a sessão vem no endereço; a pessoa define a senha
+    {
+      path: "/definir-senha",
+      hydrateFallbackElement: null,
+      lazy: async () => ({ Component: (await import("./auth/DefinirSenha")).DefinirSenha }),
     },
-  },
-  {
-    path: "/",
-    hydrateFallbackElement: null,
-    element: (
-      <Protegida>
-        <ShellPreguicoso />
-      </Protegida>
-    ),
-    children: [
-      {
-        index: true,
-        element: <Navigate to={veioDoConvite ? "/definir-senha" : "/base"} replace />,
+    // resumo para imprimir (PDF): fora do shell, sem menu
+    {
+      path: "/projecoes/:id/imprimir",
+      hydrateFallbackElement: null,
+      lazy: async () => {
+        const { ImprimirProjecao } = await import("./paginas/projecoes/ImprimirProjecao");
+        return {
+          element: (
+            <Protegida>
+              <ImprimirProjecao />
+            </Protegida>
+          ),
+        };
       },
-      ...MENU.map((d) => ({
-        path: d.caminho.slice(1),
-        lazy:
-          TELAS[d.caminho] ??
-          (async () => {
-            const { TelaDoMenu } = await import("./paginas/telas");
-            return { element: <TelaDoMenu caminho={d.caminho} /> };
+    },
+    {
+      path: "/",
+      hydrateFallbackElement: null,
+      element: (
+        <Protegida>
+          <ShellPreguicoso />
+        </Protegida>
+      ),
+      children: [
+        {
+          index: true,
+          element: <Navigate to={veioDoConvite ? "/definir-senha" : "/base"} replace />,
+        },
+        ...MENU.map((d) => ({
+          path: d.caminho.slice(1),
+          lazy:
+            TELAS[d.caminho] ??
+            (async () => {
+              const { TelaDoMenu } = await import("./paginas/telas");
+              return { element: <TelaDoMenu caminho={d.caminho} /> };
+            }),
+        })),
+        {
+          path: "obras/:id",
+          lazy: async () => ({ Component: (await import("./paginas/obra/TelaObra")).TelaObra }),
+        },
+        {
+          path: "obras/:id/lancar",
+          lazy: async () => ({
+            Component: (await import("./paginas/obra/LancarMes")).TelaLancarMes,
           }),
-      })),
-      {
-        path: "obras/:id",
-        lazy: async () => ({ Component: (await import("./paginas/obra/TelaObra")).TelaObra }),
-      },
-      {
-        path: "obras/:id/lancar",
-        lazy: async () => ({
-          Component: (await import("./paginas/obra/LancarMes")).TelaLancarMes,
-        }),
-      },
-      {
-        path: "projecoes/nova",
-        lazy: async () => ({
-          Component: (await import("./paginas/projecoes/Assistente")).TelaNovaProjecao,
-        }),
-      },
-      {
-        path: "projecoes/comparar",
-        lazy: async () => ({
-          Component: (await import("./paginas/projecoes/CompararProjecoes")).CompararProjecoes,
-        }),
-      },
-      {
-        path: "projecoes/:id",
-        lazy: async () => ({
-          Component: (await import("./paginas/projecoes/TelaProjecao")).TelaProjecao,
-        }),
-      },
-      {
-        path: "projecoes/:id/editar",
-        lazy: async () => ({
-          Component: (await import("./paginas/projecoes/Assistente")).TelaEditarProjecao,
-        }),
-      },
-      { path: "*", element: <Navigate to="/base" replace /> },
-    ],
-  },
-]);
+        },
+        {
+          path: "projecoes/nova",
+          lazy: async () => ({
+            Component: (await import("./paginas/projecoes/Assistente")).TelaNovaProjecao,
+          }),
+        },
+        {
+          path: "projecoes/comparar",
+          lazy: async () => ({
+            Component: (await import("./paginas/projecoes/CompararProjecoes")).CompararProjecoes,
+          }),
+        },
+        {
+          path: "projecoes/:id",
+          lazy: async () => ({
+            Component: (await import("./paginas/projecoes/TelaProjecao")).TelaProjecao,
+          }),
+        },
+        {
+          path: "projecoes/:id/editar",
+          lazy: async () => ({
+            Component: (await import("./paginas/projecoes/Assistente")).TelaEditarProjecao,
+          }),
+        },
+        { path: "*", element: <Navigate to="/base" replace /> },
+      ],
+    },
+    // erro em qualquer tela (inclusive arquivo da versão anterior depois de publicar)
+  ].map((r) => ({ errorElement: <ErroRota />, ...r })),
+);
 
 const Shell = lazy(() => import("./shell/Shell").then((m) => ({ default: m.Shell })));
 function ShellPreguicoso() {
