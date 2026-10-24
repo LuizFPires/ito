@@ -117,9 +117,9 @@ test("obra em andamento: começa sem folha, recebe três meses, refaz um e é co
   await continuar(page);
   await continuar(page);
   await expect(
-    page.getByRole("region", { name: "Verificação antes de salvar" }).locator(
-      '[data-verificacao="periodo"]',
-    ),
+    page
+      .getByRole("region", { name: "Verificação antes de salvar" })
+      .locator('[data-verificacao="periodo"]'),
   ).toContainText("envie a folha só de mar/26");
   await page.getByRole("button", { name: /^01 Arquivos/ }).click();
   await lancar(page, "03/2026", 1, /^Lançar mar\/26 →/);
