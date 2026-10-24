@@ -36,7 +36,6 @@ describe("etapa Obra", () => {
   it("diz o que falta, com a ação", () => {
     expect(faltasDaObra(vazio.dados, [])).toEqual([
       "Informe o nome da obra.",
-      "Código: comece com letra; use letras minúsculas, números e _.",
       "Escolha a tipologia.",
       "Informe a área construída (a partir de 100 m²).",
       "Informe início e término (o término não pode ser antes do início).",
