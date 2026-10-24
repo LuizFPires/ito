@@ -6,11 +6,13 @@ import { lerRascunho, useApagarRascunho, useContextoCarga, useRascunhos } from "
 import { podeCarregar } from "../../lib/permissoes";
 import { MENU } from "../../shell/rotas";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
+import { Gaveta } from "../../ui/Gaveta";
 import f from "../../ui/formulario.module.css";
 import { useToast } from "../../ui/toast";
 import { Pagina } from "../Pagina";
 import { Assistente } from "./Assistente";
 import { ETAPAS, rascunhoVazio } from "./estado";
+import s from "./carga.module.css";
 
 interface Aberto {
   id: string | null;
@@ -29,6 +31,7 @@ export function TelaCarga() {
   const [aberto, setAberto] = useState<Aberto | null>(null);
   // nova carga: chave muda para remontar o assistente do zero
   const [chave, setChave] = useState(0);
+  const [gaveta, setGaveta] = useState(false);
 
   const resumo =
     "O ITO lê a folha com todas as rubricas, o ponto, o VT, as notas de prestadores e o realizado do ERP de uma obra concluída, traduz funções e rubricas e só grava na base depois da sua conferência.";
@@ -70,56 +73,72 @@ export function TelaCarga() {
 
   return (
     <Pagina grupo={d.grupo} titulo={d.nome} resumo={resumo} milestone={d.milestone}>
-      {outros.length > 0 && (
-        <Cartao aria-label="Rascunhos salvos">
-          <div className={f.barra}>
-            <span className="rotulo">Rascunhos salvos</span>
-            <span className="sub">Cada etapa é salva sozinha; continue de onde parou.</span>
-          </div>
-          <table className={f.tabela}>
-            <thead>
-              <tr>
-                <th>Obra</th>
-                <th>Etapa</th>
-                <th>Atualizado</th>
-                <th className={f.r}>Ação</th>
-              </tr>
-            </thead>
-            <tbody>
-              {outros.map((x) => (
-                <tr key={x.id}>
-                  <td className={f.forte}>
-                    {x.titulo || "Carga sem nome"} {!x.meu && <Badge>de outro usuário</Badge>}
-                  </td>
-                  <td>
-                    {x.etapa} · {ETAPAS[x.etapa - 1]?.nome}
-                  </td>
-                  <td className="sub">{dataHora(x.atualizado_em)}</td>
-                  <td className={f.r}>
-                    <span className={f.linha} style={{ justifyContent: "flex-end" }}>
-                      {x.meu && (
-                        <Botao pequeno variante="escuro" onClick={() => continuar(x.id)}>
-                          Continuar
-                        </Botao>
-                      )}
-                      <Botao
-                        pequeno
-                        variante="fantasma"
-                        onClick={() => {
-                          if (confirm(`Apagar o rascunho “${x.titulo || "Carga sem nome"}”?`))
-                            apagar.mutate(x.id);
-                        }}
-                      >
-                        Apagar
-                      </Botao>
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Cartao>
-      )}
+      <div className={f.linha} style={{ justifyContent: "flex-end", marginBottom: -8 }}>
+        <Botao
+          pequeno
+          onClick={() => setGaveta(true)}
+          aria-label={`Rascunhos salvos (${outros.length})`}
+          title="Rascunhos salvos"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden="true"
+          >
+            <path d="M4 2.5h6l2.5 2.5v8.5H4z" />
+            <path d="M10 2.5V5h2.5M6 8h4.5M6 10.5h4.5" />
+          </svg>
+          Rascunhos
+          {outros.length > 0 && <Badge tom="ambar">{outros.length}</Badge>}
+        </Botao>
+      </div>
+      <Gaveta
+        aberta={gaveta}
+        titulo="Rascunhos salvos"
+        subtitulo="Cada etapa é salva sozinha. Escolha um rascunho para continuar de onde parou."
+        onFechar={() => setGaveta(false)}
+      >
+        {!outros.length ? (
+          <p className="sub">Nenhum outro rascunho salvo.</p>
+        ) : (
+          <ul className={s.rascunhos}>
+            {outros.map((x) => (
+              <li key={x.id}>
+                <button
+                  type="button"
+                  className={s.rascunho}
+                  disabled={!x.meu}
+                  onClick={() => {
+                    setGaveta(false);
+                    void continuar(x.id);
+                  }}
+                >
+                  <span className={f.forte}>{x.titulo || "Carga sem nome"}</span>
+                  <span className="sub">
+                    Etapa {x.etapa} · {ETAPAS[x.etapa - 1]?.nome} · {dataHora(x.atualizado_em)}
+                  </span>
+                  {!x.meu && <Badge>de outro usuário</Badge>}
+                </button>
+                <Botao
+                  pequeno
+                  variante="fantasma"
+                  aria-label={`Apagar o rascunho ${x.titulo || "Carga sem nome"}`}
+                  onClick={() => {
+                    if (confirm(`Apagar o rascunho “${x.titulo || "Carga sem nome"}”?`))
+                      apagar.mutate(x.id);
+                  }}
+                >
+                  Apagar
+                </Botao>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Gaveta>
 
       {!ctx ? (
         <Cartao>
