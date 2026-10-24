@@ -68,6 +68,7 @@
   height: 20px;
   border-radius: 999px;
   background: var(--surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
   transition: left 0.15s;
 }
 .toggle[aria-checked="true"] {
@@ -75,7 +76,8 @@
 }
 .toggle[aria-checked="true"]::after {
   left: 21px;
-  background: var(--amber);
+  /* ligado = trilho grafite com bolinha clara (no escuro, o inverso): o âmbar fica para ação */
+  background: var(--active-fg);
 }
 .toggle:disabled {
   opacity: 0.5;

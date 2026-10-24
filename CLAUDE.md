@@ -300,6 +300,7 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Cores:
   - âmbar `#F2B705` = **ação** (botão primário, destaque);
   - grafite `#1F2226` = **estado ativo** (chip ou aba selecionada, toggles ligados);
+  - interruptor ligado = trilho grafite com bolinha branca (no escuro, trilho claro com bolinha escura); o âmbar fica só para ação (usuário, 24/10/2026);
   - texto âmbar sobre claro: `#8A6400`.
 - Tipografia: **Geist** no texto e **Geist Mono** nos rótulos, em caixa alta espaçada.
 - Formas: pills (`999px`) para botões, chips e segmentos; cartões com raio de 20 px.
