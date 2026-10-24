@@ -6,6 +6,7 @@ import type { ContextoCarga, RascunhoCarga } from "../../dados/carga";
 import { RascunhoApagado, salvarRascunho, useGravarCarga } from "../../dados/carga";
 import { mensagemErroCarga } from "../../dados/erros";
 import { Botao } from "../../ui/componentes";
+import f from "../../ui/formulario.module.css";
 import { useToast } from "../../ui/toast";
 import s from "./carga.module.css";
 import { EtapaArquivos } from "./EtapaArquivos";
@@ -115,14 +116,6 @@ export function Assistente({
   // a etapa Arquivos aceita a obra sem datas: a folha preenche o período
   const faltasSemPeriodo = faltasDaObra(r.dados, ctx.obras, false);
   const temFolha = !!r.arquivos.folha && !!r.leituras;
-  const liberada = (n: number) =>
-    n === 1 || (n === 2 ? faltasSemPeriodo.length === 0 : faltas.length === 0 && temFolha);
-  const podeSeguir =
-    etapa === 1
-      ? faltasSemPeriodo.length === 0
-      : etapa === 2
-        ? temFolha && faltas.length === 0
-        : true;
   const existe = ctx.obras.some((o) => o.id === r.dados.id);
   const substituir = existe && substituirId === r.dados.id;
   const bloqueia =
@@ -163,7 +156,6 @@ export function Assistente({
                 type="button"
                 className={s.etapa}
                 aria-current={etapa === n ? "step" : undefined}
-                disabled={!liberada(n)}
                 onClick={() => irPara(n)}
               >
                 <span className={`${s.ponto} ${etapa === n ? s.agora : n < etapa ? s.feita : ""}`}>
@@ -185,6 +177,11 @@ export function Assistente({
         <EtapaFuncoes {...props} pendentes={prep?.montagem.pendencias.funcoes ?? []} />
       )}
       {etapa === 4 && <EtapaRubricas {...props} />}
+      {etapa === 5 && faltas.length > 0 && (
+        <p className={f.aviso} role="status">
+          Falta no cadastro da obra (etapa Obra): {faltas.join(" ")}
+        </p>
+      )}
       {etapa === 5 && (
         <EtapaVerificacao
           {...props}
@@ -217,7 +214,7 @@ export function Assistente({
             {gravar.isPending ? "Gravando…" : "Começar a obra sem folha →"}
           </Botao>
         ) : etapa < 5 ? (
-          <Botao variante="escuro" disabled={!podeSeguir} onClick={() => irPara(etapa + 1)}>
+          <Botao variante="escuro" onClick={() => irPara(etapa + 1)}>
             Continuar →
           </Botao>
         ) : (

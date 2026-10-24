@@ -148,7 +148,6 @@ function LancarMes({
     () => (etapa >= 2 ? prepararMes(r, d, mes, ctx) : null),
     [r, d, mes, ctx, etapa],
   );
-  const temFolha = !!r.arquivos.folha && !!r.leituras;
   const bloqueia = !prep || prep.verificacao.bloqueia;
   const props: PropsEtapa = { r, mudar, ctx };
 
@@ -205,7 +204,6 @@ function LancarMes({
                 type="button"
                 className={c.etapa}
                 aria-current={etapa === n ? "step" : undefined}
-                disabled={n > 1 && !temFolha}
                 onClick={() => setEtapa(n)}
               >
                 <span className={`${c.ponto} ${etapa === n ? c.agora : n < etapa ? c.feita : ""}`}>
@@ -252,7 +250,7 @@ function LancarMes({
         </span>
         <span />
         {etapa < 4 ? (
-          <Botao variante="escuro" disabled={!temFolha} onClick={() => setEtapa(etapa + 1)}>
+          <Botao variante="escuro" onClick={() => setEtapa(etapa + 1)}>
             Continuar →
           </Botao>
         ) : (
