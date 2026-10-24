@@ -36,6 +36,7 @@ import { GRUPOS, mediana } from "../base/base";
 import { soma } from "../obra/comum";
 import { Pagina } from "../Pagina";
 import { PassoAjustes } from "./PassoAjustes";
+import { PassoHistograma } from "./PassoHistograma";
 import { TIPOLOGIAS } from "../carga/estado";
 import { manualValido, rotulosMeses } from "./projecoes";
 import { Resultado } from "./Resultado";
@@ -44,7 +45,9 @@ import s from "./projecoes.module.css";
 const PASSOS = [
   ["Obra", "nome, área, prazo, cidade"],
   ["Referências", "obras da base"],
-  ["Ajustes", "quantidades e premissas"],
+  ["Histograma", "pessoas por função e mês"],
+  ["Origem da MO", "local, diária, alojada"],
+  ["Premissas", "custo, regime, reajuste, HE"],
   ["Resultado", "revisar e salvar"],
 ] as const;
 const MAX_CANDIDATAS = 60;
@@ -143,13 +146,6 @@ function Assistente({
       precos && ctx ? calcularProjecao(e, e.referencias.length ? refs : [], precos, ctx) : null,
     [e, refs, precos, ctx],
   );
-  const daRefs = useMemo(() => {
-    if (passo !== 3 || !precos || !ctx || !refs.length) return null;
-    const x = calcularProjecao({ ...e, quantidadesManuais: null }, refs, precos, ctx);
-    return x.r
-      ? Object.fromEntries(Object.entries(x.r.obra.equivalente).map(([k, v]) => [k, [...v]]))
-      : null;
-  }, [passo, e, refs, precos, ctx]);
 
   const titulo = e.nome.trim() || (id ? "Editar projeção" : "Nova projeção");
   const grupo = (
@@ -202,7 +198,7 @@ function Assistente({
     <Pagina grupo={grupo} titulo={titulo} resumo="" milestone="M7">
       <div className={f.linha} style={{ justifyContent: "flex-end", marginTop: -12 }}>
         <Botao onClick={() => navegar(id ? `/projecoes/${id}` : "/projecoes")}>Cancelar</Botao>
-        {passo === 4 && (
+        {passo === 6 && (
           <Botao variante="primario" disabled={!r || salvando || carregandoRefs} onClick={salvar}>
             Salvar projeção →
           </Botao>
@@ -244,7 +240,7 @@ function Assistente({
         </Cartao>
       )}
 
-      {passo < 4 && r && (
+      {passo < 6 && r && (
         <div className={f.kpis} aria-label="Resumo da projeção">
           <Kpi
             rotulo="Custo total"
@@ -302,24 +298,27 @@ function Assistente({
           }}
         />
       )}
-      {passo === 3 && calc && contexto && precos && (
+      {passo === 3 && calc && contexto && (
+        <PassoHistograma e={e} up={up} calc={calc} contexto={contexto} />
+      )}
+      {(passo === 4 || passo === 5) && calc && contexto && precos && (
         <PassoAjustes
+          parte={passo === 4 ? "origem" : "premissas"}
           e={e}
           up={up}
           calc={calc}
-          daRefs={daRefs}
           contexto={contexto}
           precos={precos}
           cidades={cidades}
           cctNome={cct?.nome ?? null}
         />
       )}
-      {passo === 4 && calc && contexto && (
+      {passo === 6 && calc && contexto && (
         <Resultado
           e={e}
           calc={calc}
           contexto={contexto}
-          referencias={manual ? [] : refs}
+          referencias={refs}
           cidade={precos?.cidade?.nome ?? null}
           cct={cct ? nomeCurtoCct(cct.nome) : null}
           origem={precos?.cidadeOrigem?.nome ?? null}
@@ -330,7 +329,7 @@ function Assistente({
         <Botao disabled={passo === 1} onClick={() => setPasso(passo - 1)}>
           ← Voltar
         </Botao>
-        {passo < 4 ? (
+        {passo < 6 ? (
           <Botao
             variante="escuro"
             disabled={!liberado(passo + 1)}

@@ -267,7 +267,7 @@ export function TelaProjecao() {
           e={e}
           calc={calc}
           contexto={contexto}
-          referencias={manual ? [] : refs}
+          referencias={refs}
           cidade={cidade}
           cct={cct ? nomeCurtoCct(cct.nome) : null}
           origem={precos?.cidadeOrigem?.nome ?? null}

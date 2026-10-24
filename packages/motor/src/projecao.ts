@@ -68,7 +68,7 @@ export interface EntradaProjecao {
   area: number;
   referencias: readonly Obra[];
   estatistica: Estatistica;
-  /** ajuste por função, −30 a +30 (%) */
+  /** mais ou menos gente por função, −100 a +100 (%); vale também sobre as quantidades informadas */
   ajustesPct?: Readonly<Record<string, number>>;
   /** substitui tudo quando todas as séries têm `prazo` meses */
   quantidadesManuais?: Readonly<Record<string, readonly number[]>> | null;
@@ -111,6 +111,16 @@ export interface ResultadoProjecao {
   total: number;
 }
 
+/**
+ * Pessoas por mês sempre inteiras (decisão do usuário, SPEC §5): até ,2 arredonda para baixo; de
+ * ,3 em diante, para cima (1,2 → 1; 1,3 → 2). Tolerância para o ruído do ponto flutuante.
+ */
+export function pessoasInteiras(x: number): number {
+  if (!(x > 0)) return 0;
+  const base = Math.floor(x + 1e-9);
+  return x - base <= 0.2 + 1e-9 ? base : base + 1;
+}
+
 function manualValido(e: EntradaProjecao): Readonly<Record<string, readonly number[]>> | null {
   const m = e.quantidadesManuais;
   if (!m) return null;
@@ -134,7 +144,8 @@ export function projetar(
   for (const f of ctx.funcoes) {
     const k = f.id;
     if (manual) {
-      q[k] = (manual[k] ?? Array(N).fill(0)).map((v) => Math.max(0, Math.round(Number(v) || 0)));
+      const ajm = 1 + (e.ajustesPct?.[k] ?? 0) / 100;
+      q[k] = (manual[k] ?? Array(N).fill(0)).map((v) => pessoasInteiras((Number(v) || 0) * ajm));
       pmPorMilM2[k] = null;
       continue;
     }
@@ -150,7 +161,7 @@ export function projetar(
           return n ? c / n : 0;
         }),
       );
-      q[k] = Array(N).fill(Math.round(m * aj));
+      q[k] = Array(N).fill(pessoasInteiras(m * aj));
       pmPorMilM2[k] = null;
       continue;
     }
@@ -163,7 +174,7 @@ export function projetar(
       .filter((c) => soma(c) > 0)
       .map((c) => shares(c, N));
     const shm = Array.from({ length: N }, (_, j) => media(curvas.map((c) => c[j]!)));
-    q[k] = shm.map((s) => Math.round(((pm * e.area) / 1000) * s));
+    q[k] = shm.map((s) => pessoasInteiras(((pm * e.area) / 1000) * s));
     pmPorMilM2[k] = pm;
   }
 

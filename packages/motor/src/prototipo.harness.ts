@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ItemEncargo } from "./encargos";
 import type { Beneficio, Contexto, Funcao, Obra, ParametrosObra, Tabela } from "./modelo";
+import { pessoasInteiras } from "./projecao";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- o protótipo é JS sem tipos */
 type Qualquer = any;
@@ -42,7 +43,23 @@ export function carregarPrototipo(): Prototipo {
   const a = html.indexOf("/* ================= utilidades");
   const b = html.indexOf("/* ================= componentes visuais");
   if (a < 0 || b < 0) throw new Error("Trechos do protótipo não encontrados");
-  const corpo = html.slice(a, b);
+  // decisão do usuário (24/10/2026): a projeção nunca sugere pessoas fracionadas; até ,2 para
+  // baixo, de ,3 em diante para cima. O protótipo arredondava de ,5 para cima: troca-se aqui.
+  const trocas: [string, string][] = [
+    ["map(v => Math.max(0, Math.round(Number(v) || 0)))", "map(v => __pessoas(Number(v) || 0))"],
+    ["Array(N).fill(Math.round(media * aj))", "Array(N).fill(__pessoas(media * aj))"],
+    [
+      "shm.map(s => Math.round(mhk * p.area / 1000 * s))",
+      "shm.map(s => __pessoas(mhk * p.area / 1000 * s))",
+    ],
+  ];
+  let corpo = html.slice(a, b);
+  for (const [de, para] of trocas) {
+    if (corpo.split(de).length !== 2)
+      throw new Error(`Trecho da projeção do protótipo mudou: ${de}`);
+    corpo = corpo.replace(de, para);
+  }
+  corpo = `const __pessoas = ${pessoasInteiras.toString()};\n${corpo}`;
   const fn = new Function(
     "localStorage",
     `${corpo}\nreturn { D, S, calc, custoFun, movimentos, projetar, pObra, pVig, pProj, RUBGEN, BEN, HEF, HEMIX0 };`,

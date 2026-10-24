@@ -78,14 +78,18 @@ test("golden pela tela: reajuste da CCT em mai/27 e VT de quem vem de BH todo di
   await page.getByRole("button", { name: "Informar quantidades →" }).click();
   for (const m of ["mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov"])
     await numeroCampo(page, `Pedreiro em ${m}/27`, "5");
-  await expect(page.getByRole("region", { name: "Reajuste e calendário no prazo" })).toContainText(
-    "Ela cai em mai/27: os meses seguintes saem com 6,0% de reajuste estimado",
-  );
+  // passo 4: origem da mão de obra
+  await page.getByRole("button", { name: "Continuar →" }).click();
   const origem = page.getByRole("region", { name: "Origem da mão de obra" });
   const pedreiro = origem.getByRole("row", { name: /Pedreiro/ });
   await expect(pedreiro).toContainText("R$ 11,00");
   await pedreiro.getByRole("button", { name: "Vem de BH todo dia" }).click();
   await expect(pedreiro).toContainText("R$ 24,80");
+  // passo 5: premissas, com o reajuste da CCT no prazo
+  await page.getByRole("button", { name: "Continuar →" }).click();
+  await expect(page.getByRole("region", { name: "Reajuste e calendário no prazo" })).toContainText(
+    "Ela cai em mai/27: os meses seguintes saem com 6,0% de reajuste estimado",
+  );
 
   await page.getByRole("button", { name: "Continuar →" }).click();
   await expect(page.getByRole("region", { name: "Premissas aplicadas" })).toContainText(
@@ -124,8 +128,23 @@ test("referências da base, lista, situação, duplicar e comparar", async ({ pa
   const sel = page.getByRole("region", { name: "Referências selecionadas" });
   await expect(sel).toContainText("Selecionadas (2)");
   await page.getByRole("button", { name: "Continuar →" }).click();
-  await expect(page.getByRole("table", { name: "Ajustes por função" })).toContainText("Pedreiro");
-  await page.getByRole("button", { name: "Continuar →" }).click();
+  // passo 3: lançar à mão é o padrão, já preenchido pelas referências; o ajuste em % é a opção
+  await expect(page.getByRole("table", { name: "Pessoas por função e mês" })).toContainText(
+    "Pedreiro",
+  );
+  // régua e mês digitado na mesma tabela
+  const tabela = page.getByRole("table", { name: "Pessoas por função e mês" });
+  const pedreiroAntes = await tabela.getByRole("row", { name: /^Pedreiro/ }).textContent();
+  await page.getByRole("slider", { name: "Mais ou menos Pedreiro" }).fill("20");
+  await expect(tabela.getByRole("row", { name: /^Pedreiro/ })).toContainText("+20%");
+  expect(await tabela.getByRole("row", { name: /^Pedreiro/ }).textContent()).not.toBe(
+    pedreiroAntes,
+  );
+  const celula = page.getByRole("textbox", { name: /^Pedreiro em / }).first();
+  await celula.fill("9");
+  await expect(celula).toHaveValue("9");
+  await expect(tabela.getByRole("row", { name: /^Pedreiro/ })).toContainText("0%");
+  for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Continuar →" }).click();
   await expect(page.getByRole("table", { name: "Projeção e obras de referência" })).toContainText(
     "Projeção E2E Ref B",
   );

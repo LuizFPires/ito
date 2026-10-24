@@ -227,9 +227,10 @@ Para cada função `f` com referências `R` e estatística `agg` (média ou medi
 - **Escala com área:**
   - `PMk = agg(PM_f(r) ÷ área(r) × 1.000) × (1 + ajuste_f)`;
   - a distribuição no tempo é a média das curvas **das referências que tiveram a função** (PM > 0), normalizadas por sobreposição de frações do prazo (`shares`, soma 1). Referência sem a função entra com 0 no PMk, mas não achata a curva. *(Decisão M3: o protótipo fazia a média de todas as referências.)*
-  - `q_f(j) = round(PMk × área/1.000 × share(j))`.
-- **Fixo por mês:** `q_f(j) = round(agg(média mensal de cabeças) × (1 + ajuste_f))`. Sem cabeças na referência, vale o teto do equivalente de cada mês.
-- **Quantidades manuais:** substituem tudo.
+  - `q_f(j) = pessoas(PMk × área/1.000 × share(j))`.
+- **Fixo por mês:** `q_f(j) = pessoas(agg(média mensal de cabeças) × (1 + ajuste_f))`. Sem cabeças na referência, vale o teto do equivalente de cada mês.
+- **Quantidades manuais:** substituem o cálculo pelas referências; `q_f(j) = pessoas(informado_f(j) × (1 + ajuste_f))` (a régua "Mais ou menos", −100% a +100%, vale também sobre elas).
+- **Pessoas sempre inteiras** *(decisão do usuário, 24/10/2026)*: `pessoas(x)` = parte inteira de `x` se a fração for até 0,2; senão, a parte inteira + 1 (1,2 → 1; 1,3 → 2; 3,2 → 3; 3,3 → 4). O índice PM/1.000 m² continua com decimais.
 - **Premissas:** cada uma usa o valor informado ou, na falta dele, `agg` das referências:
   - HE, absenteísmo e rotatividade;
   - mix de HE (média das referências);
