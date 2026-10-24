@@ -219,10 +219,10 @@ Ordem dos itens (um commit cada): 1. auditoria (banco + tela + histórico nos de
 O ITO deixa de servir só para obras concluídas: uma obra pode começar no ITO e receber os dados mês a mês (folha, ponto, VT, notas, ERP); quando termina, vira base histórica. A carga da obra inteira continua.
 - [x] Sem "obra fora da sede (alojamento)": sai o interruptor da carga, das premissas da obra e dos ajustes da projeção, e o campo do banco; alojamento e viagens na projeção continuam pela origem de cada função (local, diária, alojada).
 - [x] Rascunhos da carga num painel lateral (ícone), não no topo da tela; escolher um rascunho traz os dados para o formulário.
-- [ ] Situação da obra: **em andamento** ou **concluída**; as obras já carregadas ficam concluídas; base histórica e Comparar mostram as duas, com filtro e selo "em andamento"; projeções usam só concluídas como referência.
-- [ ] Começar uma obra em andamento: a carga cria a obra com o cadastro (nome, cliente, tipologia, cidade, área, início, prazo previsto, data-base), sem exigir a folha.
-- [ ] Lançar mês: no detalhe da obra em andamento, os mesmos arquivos e conferências da carga para uma competência; refazer um mês substitui só aquele mês; premissas e ausências editadas ficam.
-- [ ] Concluir obra (e reabrir): o período fecha no último mês lançado.
+- [x] Situação da obra: **em andamento** ou **concluída**; as obras já carregadas ficam concluídas; base histórica e Comparar mostram as duas, com filtro e selo "em andamento"; projeções usam só concluídas como referência.
+- [x] Começar uma obra em andamento: a carga cria a obra com o cadastro (nome, cliente, tipologia, cidade, área, início, prazo previsto, data-base), sem exigir a folha.
+- [x] Lançar mês: no detalhe da obra em andamento, os mesmos arquivos e conferências da carga para uma competência; refazer um mês substitui só aquele mês; premissas e ausências editadas ficam.
+- [x] Concluir obra (e reabrir): o período fecha no último mês lançado.
 
 **Aceite:** uma obra criada em andamento recebe três meses, um por vez (com um mês refeito), aparece na base com o selo, não entra como referência de projeção, é concluída e passa a entrar; a carga de obra inteira continua igual.
 

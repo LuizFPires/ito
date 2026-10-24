@@ -281,6 +281,12 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Quem lança o mês** = quem carrega (DP/RH, controladoria, admin). (auto — recomendado)
 - **Sem "obra fora da sede (alojamento)"** (usuário): alojamento e viagens dependem de cada função, não da obra; na projeção continuam pela origem de cada função.
 - **Rascunhos da carga em painel lateral** aberto por ícone (usuário).
+- **Um mês por vez, sem pular:** lança-se o mês seguinte ao último ou refaz-se um já lançado. Concluir fecha o período no último mês lançado; reabrir volta a receber meses. (auto — recomendado)
+- **Rotatividade e mix de HE** da obra em andamento são recalculados com todos os meses a cada mês lançado (são quantidades da folha); edição nas premissas vale até o próximo lançamento. (auto — recomendado)
+- **Começar em andamento:** início e prazo previsto (opcional, informativo); a folha dos meses que já passaram é opcional e o período vai do início à última competência dela. (auto — recomendado)
+- **Lançar mês** é uma tela própria (`/obras/:id/lancar`) com as etapas da carga, sem rascunho (refaz-se enviando de novo); notas fiscais enviadas no lançamento são do mês; a verificação confere só o mês, sobre a obra inteira. (auto — recomendado)
+- **Base histórica:** obras em andamento contam na quantidade, mas ficam fora da duração e das médias; filtro de situação aparece quando há obra em andamento. Comparar aceita obra em andamento com mês lançado, com selo. (auto — recomendado)
+- Aceito: tirar o S/P de uma função no lançamento não tira o S/P da obra (faz-se nas premissas).
 - Fica para depois: acompanhar o realizado contra a projeção aprovada da própria obra.
 
 ## Design system "Canteiro" (ITO)

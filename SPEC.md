@@ -44,10 +44,10 @@ Cidade        { id, nome/UF, cct_id, tarifa_local, conducoes_por_trajeto, iss_pc
 
 ```
 Obra          { id, nome, cliente, grupo, tipologia, cidade_id, area_m2, inicio (1º dia do mês), meses,
-                data_base, trocas_tabela: [ { mes_idx, data_base, motivo } ],
+                situacao: andamento|concluida, prazo_previsto, data_base, trocas_tabela: [ { mes_idx, data_base, motivo } ],
                 feriados_municipais: [ {data, nome} ],
                 premissas: { grat_premios_pct, transf_pct, funcoes_transferidas[], risco_pct, lucro_pct,
-                             trib_lucro_pct, fora_da_sede, provisionar, adiantamento: bool, adiantamento_pct },
+                             trib_lucro_pct, provisionar, adiantamento: bool, adiantamento_pct },
                 regime: { funcao: clt|sp }, rotatividade_pct_mes,
                 he_mix: { util, sabado, intervalo, feriado },  -- soma 100%
                 erp_diferenca[mes], justificativas{mes} }
@@ -62,6 +62,8 @@ Realocacao    (obra) { tipo: cedida|recebida, funcao, mes_ini, mes_fim, qtd, out
 > **Implementação (M4):** `obras` (período por competência: `inicio` no 1º dia do mês + `meses`; a fração do 1º e do último mês vem dos dias de vínculo da folha; `grupo` deduzido de cliente e tipologia; premissas em colunas), `obra_trocas_tabela`, `obra_feriados`, `obra_regime` (só S/P), `competencias` (+ `ito_apropriado`, `erp_realizado`, `justificativa` da lista `justificativas_erp`), `efetivo_mes` (+ `admissoes`, `desligamentos`; derivado dos lançamentos na gravação, sem a MDO realocada), `lancamentos` (+ `faltas_horas`, `licenca_dias`, `ferias_dias`, `admitido`, `vt_valor`, `realocada_para`) com `lancamento_rubricas` (`referencia`, `valor`), `realocacoes`, `notas_fiscais` (só CNPJ), `erp_realizado` (mês × conta) e `carga_rascunhos`. `rubricas.tipo_he` diz o tipo de cada rubrica de HE. Escrita só por `gravar_carga(jsonb)` e `excluir_obra`; todo mês do payload é conferido contra o período. Lançamentos e rubricas por matrícula só são lidos por quem carrega (DP/RH, controladoria, admin); os demais perfis leem os agregados.
 
 > **Implementação (M5):** `obra_resumo` (cache da lista: pico, pessoa-mês, HE/pessoa ponderada, custo época e atualizado, histograma), gravado por `gravar_resumos` (só se calculado sobre a `revisao` atual da obra) e invalidado (`versao = 0`) quando a obra é editada; guarda a impressão digital dos parâmetros usados (`contexto`), e qualquer cadastro editado o torna velho; recalculado no navegador quando a tabela vigente ou a versão do cálculo mudam. Premissas, ausências, regime, trocas e feriados da obra editáveis por quem carrega (RLS). Época = data-base da obra com as trocas; atualizado = tabela vigente (§3).
+
+> **Implementação (M11):** `obras.situacao` (`andamento` | `concluida`; as obras carregadas antes ficam concluídas) e `prazo_previsto` (informativo). Em andamento, `meses` = meses lançados (pode ser 0: só o cadastro); concluída tem ao menos um. `lancar_mes(jsonb)` grava um mês (o seguinte ao último ou um já lançado, que é substituído) com as mesmas verificações bloqueantes da carga (`validar_carga`) e recalcula rotatividade e mix de HE com todos os meses; `definir_situacao_obra` conclui (o período fecha no último mês lançado) e reabre. Só obras concluídas são referência de projeção. Sai `fora_da_sede`.
 
 ### 1.3 Projeção
 
@@ -175,8 +177,8 @@ VTbruto = pres × vtDia × dias_trabalhados(i)          (CLT e estágio; 0 para 
 VTdesc  = min(VTbruto, 6% × bruto)                    (0 para estágio)
 VT      = VTbruto − VTdesc
 
-benef = Σ x × beneficio_b    CLT: todos; alojamento e viagens só se origem(f)=aloj (projeção)
-                              ou obra fora da sede (histórico); estágio: só seguro
+benef = Σ x × beneficio_b    CLT: todos; alojamento e viagens só se origem(f)=aloj (projeção;
+                              sem "obra fora da sede" desde o M11); estágio: só seguro
 exames = adm × admissoes + dem × desligamentos + x × per_anual / 12      (só CLT)
 resc   = desligamentos × s × fator_rescisao                               (só CLT)
 ferr   = pres × ferramentas_mes(f)                                         (não para estágio)
@@ -274,6 +276,14 @@ Verificações (`verificarCarga`); **pendente** bloqueia a gravação:
 - apropriação × ERP: caixa do ITO (época) × Σ contas do ERP por mês (o banco soma as linhas do ERP; não usa o total enviado pela tela); diferença ≥ R$ 1 sem justificativa → pendente;
 - ponto × folha acima de 1%, VT ausente sem confirmação → alerta;
 - conferência rubricas × custo (§6.1) com os **valores reais** da folha (descontos negativos) × `remun + resc + ferr` do motor na tabela da época → alerta quando não confere.
+
+### 6.5 Lançar mês na obra em andamento (M11)
+A folha de uma competência é montada como uma obra de 1 mês que começa nela (mesmas fórmulas do §6.4; folha de outra competência → pendente "envie a folha só de <mês>") e encaixada na obra no índice do mês (`encaixarMes`): as séries ganham o mês, os outros meses e as premissas ficam. As verificações rodam sobre a obra inteira (o caixa do mês depende dos anteriores), mas conferem só o mês lançado (`verificarCarga(…, { meses: [i] })`). Notas fiscais enviadas no lançamento são do mês. Depois de gravar, o banco recalcula com todos os meses:
+```
+rotatividade  = Σ_{i≥1,f} mín(adm, dem) ÷ Σ_{i≥1,f} cabeças
+mix de HE     = horas por tipo ÷ horas totais (sem estágio e sem MDO realocada)
+```
+Uma obra lançada mês a mês tem o mesmo efetivo, HE média e absenteísmo da carga da obra inteira com a mesma folha (teste em `packages/carga/src/mes.test.ts`).
 
 ---
 
