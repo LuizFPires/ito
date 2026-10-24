@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { moeda, mesAno, numero } from "@ito/formato";
-import { anoMes } from "@ito/motor";
+import { moeda, numero } from "@ito/formato";
 import { useSessao } from "../../auth/sessao";
 import { useContextoCarga } from "../../dados/carga";
 import type { Resumo } from "../../lib/obraDoBanco";
-import { diasDoPeriodo, impressaoContexto, inicioDe } from "../../lib/obraDoBanco";
+import { diasDoPeriodo, impressaoContexto } from "../../lib/obraDoBanco";
+import { emAndamento, textoAndamento, textoPeriodo } from "../../lib/situacao";
 import {
   atualizarResumos,
   desatualizado,
@@ -17,14 +17,14 @@ import type { Ordem } from "../../lib/lista";
 import { podeCarregar, podeEditarConfig } from "../../lib/permissoes";
 import { MAX_COMPARAR, useSelecaoObras } from "../../lib/selecao";
 import { MENU } from "../../shell/rotas";
-import { Botao, Cartao, Chip } from "../../ui/componentes";
+import { Badge, Botao, Cartao, Chip, Segmento } from "../../ui/componentes";
 import { CampoBusca, Kpi, Paginacao, ThOrdem } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import u from "../../ui/ui.module.css";
 import { MiniHistograma } from "../../ui/MiniHistograma";
 import { Pagina } from "../Pagina";
-import type { ChaveBase, Grupo, LinhaBase } from "./base";
-import { filtrar, GRUPOS, indicadores, ordenarBase } from "./base";
+import type { ChaveBase, FiltroSituacao, Grupo, LinhaBase } from "./base";
+import { filtrar, GRUPOS, indicadores, ordenarBase, SITUACOES } from "./base";
 import s from "./base.module.css";
 
 const POR_PAGINA = 25;
@@ -41,6 +41,7 @@ export function TelaBase() {
   const navegar = useNavigate();
 
   const [grupo, setGrupo] = useState<Grupo>("todas");
+  const [situacao, setSituacao] = useState<FiltroSituacao>("todas");
   const [q, setQ] = useState("");
   const [ordem, setOrdem] = useState<Ordem<ChaveBase>>({ chave: "periodo", dir: -1 });
   const [pagina, setPagina] = useState(1);
@@ -70,7 +71,8 @@ export function TelaBase() {
   );
 
   const presentes = new Set(linhas.map((o) => o.grupo));
-  const filtradas = ordenarBase(filtrar(linhas, grupo, q), ordem);
+  const temAndamento = linhas.some(emAndamento);
+  const filtradas = ordenarBase(filtrar(linhas, grupo, q, situacao), ordem);
   const k = indicadores(filtradas);
   const pg = paginar(filtradas, pagina, POR_PAGINA);
   const vigente = ctx?.vigente;
@@ -81,8 +83,9 @@ export function TelaBase() {
     () => (ctx ? impressaoContexto(ctx.ctx, ctx.tabelas, ctx.vigente) : ""),
     [ctx],
   );
+  // obra em andamento sem mês lançado não tem resumo
   const alvo = (gravaResumo ? linhas : pg.itens)
-    .filter((o) => ctx && desatualizado(o.resumo, ctx.vigente, impressao))
+    .filter((o) => ctx && o.meses > 0 && desatualizado(o.resumo, ctx.vigente, impressao))
     .map((o) => o.id);
   // candidatas (desatualizadas); o efeito tira as já tratadas
   const chaveAlvo = alvo.join(",");
@@ -130,31 +133,35 @@ export function TelaBase() {
   };
   const alternar = (id: string) =>
     definir(sel.includes(id) ? sel.filter((y) => y !== id) : [...sel, id]);
-  const periodo = (o: LinhaBase) => {
-    const ini = inicioDe(o.inicio);
-    const fim = anoMes(ini, o.meses - 1);
-    return `${mesAno(ini.ano, ini.mes)} – ${mesAno(fim.ano, fim.mes)}`;
-  };
-
   return (
     <Pagina
       grupo={d.grupo}
       titulo={d.nome}
-      resumo="Mão de obra das obras concluídas, no nível da folha: efetivo equivalente por função, rubricas, encargos, provisões, benefícios, admissões e desligamentos, mês a mês. Selecione obras parecidas para comparar ou projetar."
+      resumo="Mão de obra das obras concluídas e em andamento, no nível da folha: efetivo equivalente por função, rubricas, encargos, provisões, benefícios, admissões e desligamentos, mês a mês. Selecione obras parecidas para comparar ou projetar."
       milestone={d.milestone}
     >
       <div className={f.linha} style={{ justifyContent: "space-between" }}>
-        <div className={u.segmento} role="group" aria-label="Grupo de obras">
-          {GRUPOS.filter((g) => g.id === "todas" || presentes.has(g.id)).map((g) => (
-            <Chip
-              key={g.id}
-              ativo={grupo === g.id}
-              onClick={() => mudarFiltro(() => setGrupo(g.id))}
-            >
-              {g.nome}
-            </Chip>
-          ))}
-        </div>
+        <span className={f.linha}>
+          <div className={u.segmento} role="group" aria-label="Grupo de obras">
+            {GRUPOS.filter((g) => g.id === "todas" || presentes.has(g.id)).map((g) => (
+              <Chip
+                key={g.id}
+                ativo={grupo === g.id}
+                onClick={() => mudarFiltro(() => setGrupo(g.id))}
+              >
+                {g.nome}
+              </Chip>
+            ))}
+          </div>
+          {(temAndamento || situacao !== "todas") && (
+            <Segmento
+              rotulo="Situação da obra"
+              opcoes={SITUACOES}
+              valor={situacao}
+              onChange={(v) => mudarFiltro(() => setSituacao(v))}
+            />
+          )}
+        </span>
         <span className={f.linha}>
           <CampoBusca
             rotulo="Filtrar obras"
@@ -187,9 +194,11 @@ export function TelaBase() {
             rotulo="Obras na seleção"
             valor={numero(k.obras)}
             sub={
-              k.obras === 1
-                ? filtradas[0]!.tipologia
-                : `filtro: ${GRUPOS.find((g) => g.id === grupo)!.nome}`
+              k.andamento
+                ? `${numero(k.andamento)} em andamento (fora das médias)`
+                : k.obras === 1
+                  ? filtradas[0]!.tipologia
+                  : `filtro: ${GRUPOS.find((g) => g.id === grupo)!.nome}`
             }
           />
           <Kpi
@@ -277,6 +286,7 @@ export function TelaBase() {
                   onClick={() =>
                     mudarFiltro(() => {
                       setGrupo("todas");
+                      setSituacao("todas");
                       setQ("");
                     })
                   }
@@ -340,6 +350,12 @@ export function TelaBase() {
                         <Link className={s.obra} to={`/obras/${o.id}`}>
                           {o.nome}
                         </Link>
+                        {emAndamento(o) && (
+                          <>
+                            {" "}
+                            <Badge tom="ambar">em andamento</Badge>
+                          </>
+                        )}
                         <div className="sub">
                           {o.cidade || o.cliente || "Sem cliente"} · CCT {o.data_base}
                         </div>
@@ -351,8 +367,12 @@ export function TelaBase() {
                       </td>
                       <td className={f.r}>{numero(o.area_m2)}</td>
                       <td className={s.nowrap}>
-                        {periodo(o)}
-                        <div className="sub">{numero(diasDoPeriodo(o.inicio, o.meses))} dias</div>
+                        {textoPeriodo(o)}
+                        <div className="sub">
+                          {emAndamento(o)
+                            ? textoAndamento(o)
+                            : `${numero(diasDoPeriodo(o.inicio, o.meses))} dias`}
+                        </div>
                       </td>
                       <td className={s.hist}>{r && <MiniHistograma valores={r.histograma} />}</td>
                       <td className={f.r}>{r ? numero(r.pico, 1) : "—"}</td>

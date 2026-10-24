@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ContextoCarga } from "./carga";
 import type { ObraBanco, Resumo } from "../lib/obraDoBanco";
 import { resumoDaObra, VERSAO_RESUMO } from "../lib/obraDoBanco";
+import type { Situacao } from "../lib/situacao";
 import { supabase } from "../lib/supabase";
 import type { Database, Json } from "../lib/tipos-banco";
 
@@ -40,10 +41,13 @@ export interface ObraLista {
   inicio: string;
   meses: number;
   data_base: number;
+  situacao: Situacao;
+  prazo_previsto: number | null;
   resumo: Resumo | null;
 }
 
-const COLUNAS = "id, nome, cliente, tipologia, grupo, cidade_id, area_m2, inicio, meses, data_base";
+const COLUNAS =
+  "id, nome, cliente, tipologia, grupo, cidade_id, area_m2, inicio, meses, data_base, situacao, prazo_previsto";
 
 export const chavesObras = {
   lista: ["obras", "lista"] as const,

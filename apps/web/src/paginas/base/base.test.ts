@@ -14,6 +14,8 @@ const obra = (id: string, p: Partial<LinhaBase> = {}): LinhaBase => ({
   inicio: "2025-03-01",
   meses: 2,
   data_base: 2025,
+  situacao: "concluida",
+  prazo_previsto: null,
   resumo: {
     obra_id: id,
     vigente: 2026,
@@ -58,5 +60,19 @@ describe("base histórica", () => {
     // custo/m²: 120 e 60
     expect(k.custoM2Medio).toBe(90);
     expect(mediana([3, 1, 2, 10])).toBe(2.5);
+  });
+
+  it("obra em andamento: filtro por situação e fora da duração e das médias", () => {
+    const comAndamento = [
+      ...lista,
+      obra("d", { situacao: "andamento", meses: 30, resumo: { ...lista[0]!.resumo!, pico: 90 } }),
+    ];
+    expect(filtrar(comAndamento, "todas", "", "andamento").map((o) => o.id)).toEqual(["d"]);
+    expect(filtrar(comAndamento, "todas", "", "concluida")).toHaveLength(3);
+    const k = indicadores(comAndamento);
+    expect(k.obras).toBe(4);
+    expect(k.andamento).toBe(1);
+    expect(k.duracaoMedianaDias).toBe(61);
+    expect(k.picoMedio).toBe(10);
   });
 });

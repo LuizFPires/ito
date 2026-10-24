@@ -17,6 +17,7 @@ import {
 } from "../../dados/projecoes";
 import { contemTermos } from "../../lib/lista";
 import { podeProjetar } from "../../lib/permissoes";
+import { emAndamento } from "../../lib/situacao";
 import type { Entradas } from "../../lib/projecaoDoBanco";
 import {
   calcularProjecao,
@@ -119,6 +120,12 @@ function Assistente({
   const lista = useListaObras();
   const criar = useCriarProjecao();
   const atualizar = useAtualizarProjecao();
+
+  // só obras concluídas servem de referência (M11): a em andamento vinda da seleção sai
+  const concluidas = useMemo(() => (lista.data ?? []).filter((o) => !emAndamento(o)), [lista.data]);
+  const andamento = (lista.data ?? []).filter(emAndamento).map((o) => o.id);
+  if (e.referencias.some((r) => andamento.includes(r)))
+    setE((x) => ({ ...x, referencias: x.referencias.filter((r) => !andamento.includes(r)) }));
 
   const refs = useMemo(
     () => (refsQ.data ?? []).filter((b) => e.referencias.includes(b.obra.id)),
@@ -261,7 +268,7 @@ function Assistente({
         <PassoReferencias
           e={e}
           up={up}
-          lista={lista.data ?? []}
+          lista={concluidas}
           vigente={contexto?.vigente}
           cidades={cidades}
           onManual={() => {
