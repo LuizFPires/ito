@@ -11,6 +11,8 @@ import type { CargaParaGravar, Montagem } from "./montagem";
 export interface MesParaGravar {
   obra_id: string;
   mes_idx: number;
+  /** refaz um mês já lançado (sem isso, o banco recusa se outra pessoa lançou o mês no meio) */
+  refazer: boolean;
   sinonimos: CargaParaGravar["sinonimos"];
   rubricas_novas: CargaParaGravar["rubricas_novas"];
   regime: CargaParaGravar["regime"];
@@ -109,14 +111,22 @@ export function encaixarMes(
 }
 
 /** O que `lancar_mes` grava, a partir do payload verificado (com a apropriação × ERP). */
-export function mesParaGravar(obraId: string, mes: number, p: CargaParaGravar): MesParaGravar {
+export function mesParaGravar(
+  obraId: string,
+  mes: number,
+  p: CargaParaGravar,
+  refazer: boolean,
+  /** "aaaa-mm" da competência: só os feriados municipais do mês vão para a obra */
+  competencia: string,
+): MesParaGravar {
   return {
     obra_id: obraId,
     mes_idx: mes,
+    refazer,
     sinonimos: p.sinonimos,
     rubricas_novas: p.rubricas_novas,
     regime: p.regime,
-    feriados: p.feriados,
+    feriados: p.feriados.filter((f) => f.data.startsWith(competencia)),
     competencias: p.competencias.filter((c) => c.mes_idx === mes),
     lancamentos: p.lancamentos,
     realocacoes: p.realocacoes,

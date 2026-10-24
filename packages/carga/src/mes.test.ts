@@ -63,7 +63,21 @@ describe("lançar mês na obra em andamento", () => {
     const v = verificarCarga(m, { folha: so(4) }, escolhas, CADASTRO, CTX, TABELA, { meses: [1] });
     expect(v.conferencia.map((c) => c.mesIdx)).toEqual([1]);
     expect(v.itens.find((x) => x.id === "periodo")).toBeUndefined();
-    const p = mesParaGravar("obra_teste", 1, v.payload);
+    const p = mesParaGravar(
+      "obra_teste",
+      1,
+      {
+        ...v.payload,
+        feriados: [
+          { data: "2025-04-21", nome: "X" },
+          { data: "2025-05-01", nome: "Y" },
+        ],
+      },
+      false,
+      "2025-04",
+    );
+    expect(p.feriados.map((f) => f.data)).toEqual(["2025-04-21"]);
+    expect(p.refazer).toBe(false);
     expect(p.competencias.map((c) => c.mes_idx)).toEqual([1]);
     expect(p.lancamentos.every((l) => l.mes_idx === 1)).toBe(true);
   });

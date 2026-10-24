@@ -18,6 +18,9 @@ comment on table public.obras is
   'Obra da base histórica (SPEC §1.2): concluída ou em andamento (recebe a folha mês a mês). Premissas em 0–100.';
 
 -- decisão do usuário (M11): sem "obra fora da sede"; alojamento vem só da origem da MO
+-- o custo dessas obras muda (sem alojamento e viagens): o resumo em cache fica velho
+update public.obra_resumo set versao = 0
+  where obra_id in (select id from public.obras where fora_da_sede);
 revoke update (fora_da_sede) on public.obras from authenticated;
 alter table public.obras drop column fora_da_sede;
 grant update (prazo_previsto) on public.obras to authenticated;

@@ -37,7 +37,7 @@ export function mensagemErroCarga(e: unknown): string {
   const err = (e ?? {}) as { code?: string; message?: string };
   const msg = err.message ?? "";
   if (
-    /etapa|verificação|período|substituição|Já existe uma obra|Lance |Reabra|Envie a folha/i.test(
+    /etapa|verificação|período|substituição|Já existe uma obra|Lance |Reabra|Envie a folha|Outra pessoa/i.test(
       msg,
     )
   )

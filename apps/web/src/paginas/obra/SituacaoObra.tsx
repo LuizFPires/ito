@@ -95,7 +95,7 @@ export function BotaoReabrir({ d }: { d: DetalheObra }) {
       onClick={async () => {
         if (
           !window.confirm(
-            `Reabrir “${d.obra.nome}”? A obra volta a receber meses e sai das referências de projeção até ser concluída de novo.`,
+            `Reabrir “${d.obra.nome}”? A obra volta a receber meses e sai das referências de novas projeções até ser concluída de novo (as projeções que já a usam mostram um aviso).`,
           )
         )
           return;

@@ -123,9 +123,15 @@ function Assistente({
 
   // só obras concluídas servem de referência (M11): a em andamento vinda da seleção sai
   const concluidas = useMemo(() => (lista.data ?? []).filter((o) => !emAndamento(o)), [lista.data]);
-  const andamento = (lista.data ?? []).filter(emAndamento).map((o) => o.id);
-  if (e.referencias.some((r) => andamento.includes(r)))
-    setE((x) => ({ ...x, referencias: x.referencias.filter((r) => !andamento.includes(r)) }));
+  const andamento = (lista.data ?? []).filter(emAndamento);
+  const [tiradas, setTiradas] = useState<string[]>([]);
+  if (e.referencias.some((r) => andamento.some((o) => o.id === r))) {
+    setTiradas(andamento.filter((o) => e.referencias.includes(o.id)).map((o) => o.nome));
+    setE((x) => ({
+      ...x,
+      referencias: x.referencias.filter((r) => !andamento.some((o) => o.id === r)),
+    }));
+  }
 
   const refs = useMemo(
     () => (refsQ.data ?? []).filter((b) => e.referencias.includes(b.obra.id)),
@@ -202,6 +208,12 @@ function Assistente({
           </Botao>
         )}
       </div>
+      {tiradas.length > 0 && (
+        <p className={f.aviso} role="status">
+          {tiradas.map((n) => `“${n}”`).join(", ")} saiu das referências: só obras concluídas servem
+          de referência. Conclua a obra para usá-la de novo.
+        </p>
+      )}
       <ol className={s.passos} aria-label="Passos">
         {PASSOS.map(([nome, sub], i) => (
           <li key={nome}>

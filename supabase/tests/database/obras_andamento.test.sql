@@ -1,5 +1,5 @@
 begin;
-select plan(27);
+select plan(33);
 
 -- M11: obra em andamento recebe a folha mês a mês; refazer substitui só o mês; concluir e reabrir
 select has_column('public', 'obras', 'situacao', 'obras têm situação');
@@ -44,6 +44,15 @@ select is((select row(situacao, meses, prazo_previsto)::text from public.obras w
 select throws_ok($$select public.definir_situacao_obra('teste_andamento', 'concluida')$$, '22023', null,
   'sem mês lançado não conclui');
 
+-- engenharia e diretoria não lançam nem concluem
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+select throws_ok($$select public.lancar_mes((select p0 from m))$$, '42501', null, 'engenharia não lança mês');
+select throws_ok($$select public.definir_situacao_obra('teste_andamento', 'concluida')$$, '42501', null,
+  'engenharia não conclui');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}', true);
+select throws_ok($$select public.lancar_mes((select p0 from m))$$, '42501', null, 'diretoria não lança mês');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}', true);
+
 -- mês a mês
 select throws_ok($$select public.lancar_mes((select p1 from m))$$, '22023', null, 'não pula mês');
 select is(public.lancar_mes((select p0 from m)), 0, 'lança o 1º mês');
@@ -51,6 +60,8 @@ select is(public.lancar_mes((select p1 || '{"feriados": [{"data": "2026-02-02", 
   1, 'lança o 2º mês');
 select is((select count(*)::int from public.obra_feriados where obra_id = 'teste_andamento'), 1,
   'feriado municipal do ano do mês');
+select throws_ok($$select public.lancar_mes((select p1 from m))$$, '22023', null,
+  'lançar um mês que outra pessoa já lançou não vira refazer');
 select is((select meses from public.obras where id = 'teste_andamento'), 2, 'período com 2 meses');
 select is((select equivalente from public.efetivo_mes where obra_id = 'teste_andamento' and funcao_id = 'ped' and mes_idx = 1),
   2::numeric, 'pessoa-mês do pedreiro no 2º mês');
@@ -65,7 +76,7 @@ select throws_ok($$select public.lancar_mes('{"obra_id": "teste_andamento", "mes
 
 -- premissa editada fica; refazer o 1º mês substitui só ele
 update public.obras set grat_premios_pct = 7 where id = 'teste_andamento';
-select is(public.lancar_mes(jsonb_set((select p0 from m), '{lancamentos}',
+select is(public.lancar_mes(jsonb_set((select p0 || '{"refazer": true}' from m), '{lancamentos}',
   '[{"mes_idx": 0, "matricula": "2001", "funcao_id": "ped", "equivalente": 0.5,
      "rubricas": [{"codigo": 1, "referencia": 110, "valor": 750}]}]')), 0, 'refaz o 1º mês');
 select is((select count(*)::int from public.lancamentos where obra_id = 'teste_andamento' and mes_idx = 0), 1,
@@ -83,7 +94,18 @@ select is((select he_mix_sabado from public.obras where id = 'teste_andamento'),
 select lives_ok($$select public.definir_situacao_obra('teste_andamento', 'concluida')$$, 'conclui');
 select throws_ok($$select public.lancar_mes((select p1 from m))$$, '22023', null, 'concluída não recebe mês');
 select lives_ok($$select public.definir_situacao_obra('teste_andamento', 'andamento')$$, 'reabre');
-select is(public.lancar_mes((select p1 from m)), 1, 'reaberta, refaz o último mês');
+select is(public.lancar_mes((select p1 || '{"refazer": true}' from m)), 1, 'reaberta, refaz o último mês');
+
+-- realocação de vários meses (carga inteira): refazer o mês do meio parte o período
+reset role;
+insert into public.realocacoes (obra_id, tipo, funcao_id, mes_ini, mes_fim, qtd, outra_obra, saldo_vt)
+  values ('teste_andamento', 'cedida', 'serv', 0, 2, 1, 'Obra B', 90);
+update public.obras set meses = 3 where id = 'teste_andamento';
+set local role authenticated;
+select is(public.lancar_mes((select p1 || '{"refazer": true}' from m)), 1, 'refaz o mês do meio');
+select is((select string_agg(mes_ini || '-' || mes_fim || ':' || saldo_vt, ' ' order by mes_ini)
+  from public.realocacoes where obra_id = 'teste_andamento'), '0-0:90.00 2-2:0.00',
+  'a realocação de 3 meses perde só o mês refeito');
 
 select * from finish();
 rollback;

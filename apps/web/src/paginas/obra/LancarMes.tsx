@@ -59,7 +59,7 @@ export function TelaLancarMes() {
       titulo={titulo}
       resumo={
         d
-          ? "A folha de uma competência, com as mesmas leituras e conferências da carga. Os outros meses e as premissas da obra ficam como estão."
+          ? "A folha de uma competência, com as mesmas leituras e conferências da carga. Os outros meses e as premissas da obra ficam; rotatividade e mix de HE são recalculados com todos os meses lançados."
           : ""
       }
       milestone="M11"
@@ -101,7 +101,10 @@ export function TelaLancarMes() {
     );
 
   const lido = Number(busca.get("mes") ?? NaN);
-  const mes = Number.isInteger(lido) && lido >= 0 && lido <= d.obra.meses ? lido : d.obra.meses;
+  const mes =
+    Number.isInteger(lido) && lido >= 0 && lido <= Math.min(d.obra.meses, 119)
+      ? lido
+      : Math.min(d.obra.meses, 119);
   const nome = nomeDoMes(d, mes);
   return pagina(
     mes < d.obra.meses ? `Refazer ${nome}` : `Lançar ${nome}`,
@@ -152,7 +155,16 @@ function LancarMes({
   async function gravar() {
     if (!prep || bloqueia) return;
     try {
-      await lancar.mutateAsync(mesParaGravar(d.obra.id, mes, prep.verificacao.payload));
+      const { ano, mes: m } = r.dados.inicio;
+      await lancar.mutateAsync(
+        mesParaGravar(
+          d.obra.id,
+          mes,
+          prep.verificacao.payload,
+          refazer,
+          `${ano}-${String(m).padStart(2, "0")}`,
+        ),
+      );
       avisar(`${nome} ${refazer ? "refeito" : "lançado"} na obra`);
       navegar(`/obras/${d.obra.id}`);
     } catch (e) {
