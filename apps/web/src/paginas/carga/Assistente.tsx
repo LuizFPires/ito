@@ -13,7 +13,7 @@ import { EtapaFuncoes } from "./EtapaFuncoes";
 import { EtapaObra } from "./EtapaObra";
 import { EtapaRubricas } from "./EtapaRubricas";
 import { EtapaVerificacao } from "./EtapaVerificacao";
-import { ETAPAS, faltasDaObra, preparar } from "./estado";
+import { cargaSemFolha, ETAPAS, faltasDaObra, preparar } from "./estado";
 
 export type Mudar = (f: (r: RascunhoCarga) => RascunhoCarga) => void;
 
@@ -128,17 +128,21 @@ export function Assistente({
   const bloqueia =
     faltas.length > 0 || !prep || prep.verificacao.bloqueia || (existe && !substituir);
 
+  // obra em andamento sem folha: começa só com o cadastro (os meses entram no detalhe da obra)
+  const andamento = r.dados.situacao === "andamento";
+  const semFolha = andamento && etapa === 2 && !temFolha;
+
   async function salvarNaBase() {
-    if (!prep) return;
+    const payload = semFolha
+      ? cargaSemFolha(r, ctx)
+      : prep && { ...prep.verificacao.payload, substituir };
+    if (!payload) return;
     parado.current = true;
     try {
       // espera o autossalvamento em andamento para não recriar o rascunho depois de gravar
       await fila.current;
-      const obra = await gravar.mutateAsync({
-        payload: { ...prep.verificacao.payload, substituir },
-        rascunho: id.current,
-      });
-      avisar("Obra gravada na base histórica");
+      const obra = await gravar.mutateAsync({ payload, rascunho: id.current });
+      avisar(andamento ? "Obra em andamento começada" : "Obra gravada na base histórica");
       navegar(`/obras/${obra}`);
     } catch (e) {
       parado.current = false;
@@ -203,13 +207,26 @@ export function Assistente({
         <span className={s.salvoEm} aria-live="polite">
           {salvoEm ? `Rascunho salvo ${dataHora(salvoEm)}` : ""}
         </span>
-        {etapa < 5 ? (
+        {semFolha ? (
+          <Botao
+            variante="primario"
+            disabled={faltas.length > 0 || existe || gravar.isPending}
+            title={existe ? "Já existe uma obra com esse nome. Use outro nome." : undefined}
+            onClick={salvarNaBase}
+          >
+            {gravar.isPending ? "Gravando…" : "Começar a obra sem folha →"}
+          </Botao>
+        ) : etapa < 5 ? (
           <Botao variante="escuro" disabled={!podeSeguir} onClick={() => irPara(etapa + 1)}>
             Continuar →
           </Botao>
         ) : (
           <Botao variante="primario" disabled={bloqueia || gravar.isPending} onClick={salvarNaBase}>
-            {gravar.isPending ? "Gravando…" : "Salvar na base histórica →"}
+            {gravar.isPending
+              ? "Gravando…"
+              : andamento
+                ? "Começar a obra em andamento →"
+                : "Salvar na base histórica →"}
           </Botao>
         )}
       </div>

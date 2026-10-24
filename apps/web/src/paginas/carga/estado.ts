@@ -2,8 +2,14 @@
  * Estado do assistente de carga (puro): rascunho vazio, código da obra, período e a preparação
  * (montagem + verificações de @ito/carga) a partir do rascunho e dos cadastros.
  */
-import type { DadosObra, Montagem, ResultadoVerificacao } from "@ito/carga";
-import { ESCOLHAS_VAZIAS, montarCarga, verificarCarga } from "@ito/carga";
+import type {
+  CargaParaGravar,
+  DadosObra,
+  LeituraFolha,
+  Montagem,
+  ResultadoVerificacao,
+} from "@ito/carga";
+import { ESCOLHAS_VAZIAS, montarCarga, periodoDaFolha, verificarCarga } from "@ito/carga";
 import type { InicioObra, ParametrosObra } from "@ito/motor";
 import { anoMes, feriadosDaCidade, parametrosEpoca } from "@ito/motor";
 import type { ContextoCarga, RascunhoCarga } from "../../dados/carga";
@@ -89,14 +95,33 @@ export function faltasDaObra(
   else if (!/^[a-z][a-z0-9_]{0,47}$/.test(d.id)) f.push("Informe o nome da obra com letras.");
   if (!d.tipologia) f.push("Escolha a tipologia.");
   if (!(d.area >= 100)) f.push("Informe a área construída (a partir de 100 m²).");
-  if (comPeriodo && d.meses < 1)
+  // em andamento, o período cresce com a folha de cada mês: basta o início
+  if (comPeriodo && d.meses < 1 && d.situacao !== "andamento")
     f.push("Informe início e término (o término não pode ser antes do início).");
   if (d.meses > 120) f.push("A obra pode ter até 120 meses.");
+  if (
+    d.situacao === "andamento" &&
+    d.prazoPrevisto != null &&
+    !(d.prazoPrevisto >= 1 && d.prazoPrevisto <= 120)
+  )
+    f.push("O prazo previsto vai de 1 a 120 meses.");
   const outra = obras.find(
     (o) => o.id !== d.id && o.nome.trim().toLowerCase() === d.nome.trim().toLowerCase(),
   );
   if (outra) f.push(`Já existe a obra “${outra.nome}” com esse nome. Use outro nome.`);
   return f;
+}
+
+/**
+ * Período depois de ler a folha: a obra concluída sem datas usa as competências da folha; a em
+ * andamento vai do início informado até a última competência da folha.
+ */
+export function periodoComFolha(d: DadosObra, folha: LeituraFolha): DadosObra {
+  const per = periodoDaFolha(folha);
+  if (!per) return d;
+  if (d.situacao === "andamento")
+    return { ...d, meses: Math.max(1, mesesEntre(d.inicio, fimDe(per.inicio, per.meses))) };
+  return d.meses < 1 ? { ...d, ...per } : d;
 }
 
 /** Dados prontos para a montagem: feriados da cidade em cada ano do período. */
@@ -132,6 +157,20 @@ export function preparar(r: RascunhoCarga, ctx: ContextoCarga): Preparada | null
     parametros,
   );
   return { montagem, verificacao };
+}
+
+const FOLHA_VAZIA = { rubricas: [], pessoas: [], resumo: [], erros: [] };
+
+/** Obra em andamento começada só com o cadastro (sem folha): nenhum mês lançado. */
+export function cargaSemFolha(r: RascunhoCarga, ctx: ContextoCarga): CargaParaGravar {
+  const dados = { ...r.dados, situacao: "andamento" as const, meses: 0, trocas: [] };
+  return montarCarga(
+    dados,
+    { folha: FOLHA_VAZIA },
+    ctx.cadastro,
+    ESCOLHAS_VAZIAS,
+    parametrosDaObra(dados, ctx),
+  ).payload;
 }
 
 /**

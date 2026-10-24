@@ -2,11 +2,24 @@ import { useId } from "react";
 import { mesAno, numero } from "@ito/formato";
 import { anoMes } from "@ito/motor";
 import type { DadosObra } from "@ito/carga";
-import { Cartao, CartaoCorpo } from "../../ui/componentes";
+import { Cartao, CartaoCorpo, Segmento } from "../../ui/componentes";
 import { Campo, CampoNumero, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import type { PropsEtapa } from "./Assistente";
-import { codigoDaObra, doCampoMes, fimDe, mesesEntre, paraCampoMes, TIPOLOGIAS } from "./estado";
+import {
+  codigoDaObra,
+  doCampoMes,
+  fimDe,
+  mesesEntre,
+  paraCampoMes,
+  periodoComFolha,
+  TIPOLOGIAS,
+} from "./estado";
+
+const SITUACOES = [
+  { valor: "concluida", texto: "Concluída" },
+  { valor: "andamento", texto: "Em andamento" },
+] as const;
 
 export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: string[] }) {
   const d = r.dados;
@@ -23,12 +36,32 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
   const cidade = ctx.cidades.find((c) => c.id === d.cidadeId);
   const fim = d.meses > 0 ? fimDe(d.inicio, d.meses) : null;
   const outras = ctx.datasBase.filter((a) => a !== d.dataBase);
+  const andamento = d.situacao === "andamento";
+  // em andamento, o período vai do início à última competência da folha enviada (se houver)
+  const comFolha = (x: DadosObra) => (r.leituras ? periodoComFolha(x, r.leituras.folha) : x);
 
   return (
     <Cartao aria-label="Cadastro da obra">
       <CartaoCorpo>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <span className="rotulo">Cadastro da obra concluída</span>
+          <div className={f.linha} style={{ justifyContent: "space-between" }}>
+            <span className="rotulo">
+              Cadastro da obra {andamento ? "em andamento" : "concluída"}
+            </span>
+            <Segmento
+              rotulo="Situação da obra"
+              opcoes={SITUACOES}
+              valor={d.situacao ?? "concluida"}
+              onChange={(v) => {
+                const x = comFolha({ ...d, situacao: v, meses: v === "andamento" ? 0 : d.meses });
+                setPeriodo({
+                  situacao: v,
+                  meses: x.meses,
+                  prazoPrevisto: v === "andamento" ? (d.prazoPrevisto ?? null) : null,
+                });
+              }}
+            />
+          </div>
           <div className={f.form}>
             <Campo rotulo="Nome da obra">
               <input
@@ -88,27 +121,46 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
               <input
                 className={f.input}
                 type="month"
-                value={d.meses > 0 ? paraCampoMes(d.inicio) : ""}
+                value={d.meses > 0 || andamento ? paraCampoMes(d.inicio) : ""}
                 onChange={(e) => {
                   const ini = doCampoMes(e.target.value);
                   if (!ini) return;
+                  if (andamento) {
+                    setPeriodo({
+                      inicio: ini,
+                      meses: comFolha({ ...d, inicio: ini, meses: 0 }).meses,
+                    });
+                    return;
+                  }
                   const n = fim ? mesesEntre(ini, fim) : 1;
                   setPeriodo({ inicio: ini, meses: Math.max(0, n) });
                 }}
               />
             </Campo>
-            <Campo rotulo="Término da obra">
-              <input
-                className={f.input}
-                type="month"
-                value={fim ? paraCampoMes(fim) : ""}
-                onChange={(e) => {
-                  const fm = doCampoMes(e.target.value);
-                  if (!fm) return;
-                  setPeriodo({ meses: Math.max(0, mesesEntre(d.inicio, fm)) });
-                }}
+            {andamento ? (
+              <CampoNumero
+                rotulo="Prazo previsto"
+                sufixo="meses"
+                valor={d.prazoPrevisto ?? 0}
+                casas={0}
+                max={120}
+                dica="0 = sem prazo previsto"
+                onSalvar={(v) => set({ prazoPrevisto: v || null })}
               />
-            </Campo>
+            ) : (
+              <Campo rotulo="Término da obra">
+                <input
+                  className={f.input}
+                  type="month"
+                  value={fim ? paraCampoMes(fim) : ""}
+                  onChange={(e) => {
+                    const fm = doCampoMes(e.target.value);
+                    if (!fm) return;
+                    setPeriodo({ meses: Math.max(0, mesesEntre(d.inicio, fm)) });
+                  }}
+                />
+              </Campo>
+            )}
             <Campo rotulo="Data-base salarial">
               <Selecao
                 value={d.dataBase}
@@ -177,9 +229,11 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
           </p>
           <div className={f.linha} style={{ justifyContent: "space-between" }}>
             <span className="sub">
-              {d.meses > 0
-                ? `${numero(d.meses)} ${d.meses === 1 ? "competência" : "competências"} · o primeiro e o último mês entram pela fração de dias de vínculo de cada pessoa (aba Pessoas da folha).`
-                : "Sem datas: ao ler a folha, início e término saem das competências dela."}
+              {andamento
+                ? `Em andamento: a folha de cada mês é lançada depois, no detalhe da obra. Envie agora a folha dos meses que já passaram ou comece a obra sem folha.${d.meses > 0 ? ` A folha enviada vai até o ${numero(d.meses)}º mês.` : ""}`
+                : d.meses > 0
+                  ? `${numero(d.meses)} ${d.meses === 1 ? "competência" : "competências"} · o primeiro e o último mês entram pela fração de dias de vínculo de cada pessoa (aba Pessoas da folha).`
+                  : "Sem datas: ao ler a folha, início e término saem das competências dela."}
             </span>
           </div>
           {faltas.length > 0 && (

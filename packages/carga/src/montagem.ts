@@ -72,6 +72,10 @@ export interface DadosObra {
   tipologia: string;
   cidadeId: string | null;
   area: number;
+  /** M11: obra em andamento recebe a folha mês a mês (sem o campo: concluída) */
+  situacao?: "andamento" | "concluida";
+  /** prazo previsto em meses da obra em andamento */
+  prazoPrevisto?: number | null;
   inicio: InicioObra;
   meses: number;
   dataBase: number;
@@ -568,6 +572,8 @@ export function montarCarga(
       nome: dados.nome.trim(),
       cliente: dados.cliente.trim(),
       tipologia: dados.tipologia.trim(),
+      situacao: dados.situacao ?? "concluida",
+      prazo_previsto: dados.situacao === "andamento" ? (dados.prazoPrevisto ?? null) : null,
       cidade_id: dados.cidadeId,
       area_m2: dados.area,
       inicio: `${dados.inicio.ano}-${String(dados.inicio.mes).padStart(2, "0")}-01`,

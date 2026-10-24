@@ -6,6 +6,7 @@ import {
   fimDe,
   mesesEntre,
   paraCampoMes,
+  periodoComFolha,
   rascunhoVazio,
 } from "./estado";
 
@@ -53,5 +54,51 @@ describe("etapa Obra", () => {
     expect(faltasDaObra({ ...ok, meses: 0 }, [])).toHaveLength(1);
     expect(faltasDaObra(ok, [])).toEqual([]);
     expect(faltasDaObra(ok, [{ id: "outra", nome: "obra x" }])[0]).toContain("Já existe");
+  });
+});
+
+describe("obra em andamento (M11)", () => {
+  const base = {
+    ...rascunhoVazio(2025, new Date(2026, 0, 10)).dados,
+    nome: "Obra Y",
+    id: "obra_y",
+    tipologia: "Comercial",
+    area: 1000,
+    situacao: "andamento" as const,
+  };
+  const linha = (ano: number, mes: number) => ({
+    comp: { ano, mes },
+    matricula: "1",
+    funcao: "PEDREIRO",
+    construtora: "classica" as const,
+    codigo: 1,
+    descricao: "SALARIO",
+    referencia: 220,
+    valor: 1500,
+  });
+  const folha = (...meses: [number, number][]) =>
+    ({ rubricas: meses.map(([a, m]) => linha(a, m)), pessoas: [], resumo: [], erros: [] }) as never;
+
+  it("basta o início; o prazo previsto vai de 1 a 120 meses", () => {
+    expect(faltasDaObra(base, [])).toEqual([]);
+    expect(faltasDaObra({ ...base, prazoPrevisto: 14 }, [])).toEqual([]);
+    expect(faltasDaObra({ ...base, prazoPrevisto: 200 }, [])).toEqual([
+      "O prazo previsto vai de 1 a 120 meses.",
+    ]);
+  });
+
+  it("período do início informado até a última competência da folha", () => {
+    // obra começou em jan/26; a folha enviada traz fev e mar
+    expect(periodoComFolha(base, folha([2026, 2], [2026, 3])).meses).toBe(3);
+    expect(periodoComFolha(base, folha([2026, 2], [2026, 3])).inicio).toEqual({
+      ano: 2026,
+      mes: 1,
+    });
+    // concluída sem datas: período da folha
+    const concl = { ...base, situacao: "concluida" as const };
+    expect(periodoComFolha(concl, folha([2026, 2], [2026, 3]))).toMatchObject({
+      inicio: { ano: 2026, mes: 2 },
+      meses: 2,
+    });
   });
 });
