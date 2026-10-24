@@ -47,7 +47,11 @@ export function carregarPrototipo(): Prototipo {
     "localStorage",
     `${corpo}\nreturn { D, S, calc, custoFun, movimentos, projetar, pObra, pVig, pProj, RUBGEN, BEN, HEF, HEMIX0 };`,
   );
-  return fn({ getItem: () => null, setItem() {} }) as Prototipo;
+  const P = fn({ getItem: () => null, setItem() {} }) as Prototipo;
+  // decisão M11: o ITO não tem mais "obra fora da sede" (alojamento e viagens são da origem de
+  // cada função, só na projeção); as obras de exemplo do protótipo rodam sem ele dos dois lados
+  for (const o of P.D.obras as { prem?: { aloj?: boolean } }[]) if (o.prem) o.prem.aloj = false;
+  return P;
 }
 
 // ── conversões protótipo → motor ─────────────────────────────────────────────
@@ -157,7 +161,6 @@ export function obraDe(P: Prototipo, o: Qualquer): Obra {
       ...(pr.risco !== undefined && { riscoPct: pr.risco || 0 }),
       ...(pr.lucro !== undefined && { lucroPct: pr.lucro || 0 }),
       ...(pr.tribLucro !== undefined && { tribLucroPct: pr.tribLucro || 0 }),
-      ...(pr.aloj !== undefined && { foraDaSede: !!pr.aloj }),
       ...(pr.provisionar !== undefined && { provisionar: pr.provisionar !== false }),
       ...(pr.adiant !== undefined && { adiantamento: !!pr.adiant }),
       ...(pr.adiantPct !== undefined && { adiantamentoPct: pr.adiantPct ?? 40 }),

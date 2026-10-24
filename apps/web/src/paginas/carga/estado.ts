@@ -40,7 +40,7 @@ export function rascunhoVazio(vigente: number, hoje = new Date()): RascunhoCarga
       dataBase: vigente,
       trocas: [],
       feriados: [],
-      premissas: { foraDaSede: false },
+      premissas: {},
       regime: {},
     },
     arquivos: {},

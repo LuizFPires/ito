@@ -253,7 +253,6 @@ export function EtapaVerificacao({
             </span>
             <span>CCT {d.dataBase}</span>
             {trocas.length > 0 && <span>{trocas.join(" · ")}</span>}
-            <span>{d.premissas.foraDaSede ? "Com alojamento" : "Sem alojamento"}</span>
             <span>
               {numero(v.payload.lancamentos.length)} lançamentos · pessoa-mês{" "}
               {numero(

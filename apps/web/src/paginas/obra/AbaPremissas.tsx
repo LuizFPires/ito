@@ -116,11 +116,7 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
       onSalvar={(v) => premissa({ [campo]: v } as Partial<LinhaObra>)}
     />
   );
-  const interruptor = (
-    campo: "fora_da_sede" | "provisionar" | "adiantamento",
-    rotulo: string,
-    desc: string,
-  ) => (
+  const interruptor = (campo: "provisionar" | "adiantamento", rotulo: string, desc: string) => (
     <div
       className={f.linha}
       style={{
@@ -172,11 +168,6 @@ export function AbaPremissas({ dados }: { dados: DadosAba }) {
               {numeroCampo("adiantamento_pct", "Adiantamento salarial", "% no dia 20", 0)}
             </div>
             <div>
-              {interruptor(
-                "fora_da_sede",
-                "Obra fora da sede",
-                "Inclui alojamento/república e viagens periódicas nos benefícios",
-              )}
               {interruptor(
                 "provisionar",
                 "Provisionar férias, 1/3, 13º e GRRF",

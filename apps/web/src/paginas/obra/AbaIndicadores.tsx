@@ -80,7 +80,7 @@ export function AbaIndicadores({ dados }: { dados: DadosAba; setVista: SetVista 
         <Kpi
           rotulo="Benefícios sobre a remuneração"
           valor={percentual(ind.beneficiosPct)}
-          sub={`VT, refeição, cesta, seguro${d.obra.fora_da_sede ? ", alojamento" : ""}`}
+          sub="VT, refeição, café, cesta e seguro"
         />
         <Kpi
           rotulo="HE média"

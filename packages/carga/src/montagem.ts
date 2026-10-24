@@ -573,7 +573,6 @@ export function montarCarga(
       inicio: `${dados.inicio.ano}-${String(dados.inicio.mes).padStart(2, "0")}-01`,
       meses: N,
       data_base: dados.dataBase,
-      fora_da_sede: pr.foraDaSede ?? false,
       grat_premios_pct: pr.gratPremiosPct,
       transf_pct: pr.transfPct,
       funcoes_transferidas: pr.funcoesTransferidas ?? [],

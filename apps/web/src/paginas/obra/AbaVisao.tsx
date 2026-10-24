@@ -89,7 +89,6 @@ export function AbaVisao({
         ? `${numero(nSp)} função(ões) por prestador S/P, demais CLT`
         : "Todas as funções em folha CLT",
     ],
-    ["Alojamento fora da sede", o.fora_da_sede ? "Sim" : "Não"],
     ["Provisões", o.provisionar ? "Provisiona férias, 1/3, 13º e GRRF" : "Não provisiona"],
     [
       "Risco + lucro + tributos s/ lucro",

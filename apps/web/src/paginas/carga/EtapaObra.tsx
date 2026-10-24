@@ -3,7 +3,7 @@ import { mesAno, numero } from "@ito/formato";
 import { anoMes } from "@ito/motor";
 import type { DadosObra } from "@ito/carga";
 import { Cartao, CartaoCorpo } from "../../ui/componentes";
-import { Campo, CampoNumero, Interruptor, Selecao } from "../../ui/formulario";
+import { Campo, CampoNumero, Selecao } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
 import type { PropsEtapa } from "./Assistente";
 import { codigoDaObra, doCampoMes, fimDe, mesesEntre, paraCampoMes, TIPOLOGIAS } from "./estado";
@@ -181,12 +181,6 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                 ? `${numero(d.meses)} ${d.meses === 1 ? "competência" : "competências"} · o primeiro e o último mês entram pela fração de dias de vínculo de cada pessoa (aba Pessoas da folha).`
                 : "Sem datas: ao ler a folha, início e término saem das competências dela."}
             </span>
-            <Interruptor
-              rotulo="Obra fora da sede (alojamento)"
-              texto="Obra fora da sede (alojamento)"
-              ligado={!!d.premissas.foraDaSede}
-              onChange={(v) => set({ premissas: { ...d.premissas, foraDaSede: v } })}
-            />
           </div>
           {faltas.length > 0 && (
             <p className={f.aviso} role="status">

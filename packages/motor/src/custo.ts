@@ -136,7 +136,8 @@ export function custoFuncaoMes(
     regime === "estagio" ? 0 : regime === "sp" ? T[g].sp : T[g].clt;
 
   const x = op.x ?? o.equivalente[f.id]?.[i] ?? 0;
-  const fora = o.origem ? o.origem[f.id] === "aloj" : pr.foraDaSede;
+  // alojamento e viagens: só a MO alojada (origem de cada função), decisão M11
+  const fora = o.origem?.[f.id] === "aloj";
   const vtDiaria = o.vtDiariaPorFuncao?.[f.id] ?? p.vtDiaria;
   const { dsrPct, diasTrabalhados } = diasDoMes(o, i, p, ctx);
   const dsrF = dsrPct / 100;
