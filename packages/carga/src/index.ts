@@ -7,3 +7,4 @@ export * from "./layout";
 export * from "./leitores";
 export * from "./montagem";
 export * from "./verificacoes";
+export * from "./mes";

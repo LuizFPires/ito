@@ -1,15 +1,17 @@
 import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
-import { mesAno, moeda, numero, percentual } from "@ito/formato";
+import { moeda, numero, percentual } from "@ito/formato";
 import type { CustoMes, Soma } from "@ito/motor";
-import { anoMes, calcularObra } from "@ito/motor";
+import { calcularObra } from "@ito/motor";
 import { useSessao } from "../../auth/sessao";
 import { useFuncoes } from "../../dados/cadastros";
 import { useContextoCarga } from "../../dados/carga";
+import type { DetalheObra } from "../../dados/obras";
 import { useObra } from "../../dados/obras";
-import { diasDoPeriodo, inicioDe, obraDoBanco, parametrosDe } from "../../lib/obraDoBanco";
+import { diasDoPeriodo, obraDoBanco, parametrosDe } from "../../lib/obraDoBanco";
 import { podeCarregar } from "../../lib/permissoes";
 import { compararCom } from "../../lib/selecao";
+import { emAndamento, textoPeriodo } from "../../lib/situacao";
 import { Cartao, Segmento } from "../../ui/componentes";
 import { Kpi } from "../../ui/formulario";
 import f from "../../ui/formulario.module.css";
@@ -30,6 +32,7 @@ import type { Aba, DadosAba, FuncaoInfo, Vista } from "./comum";
 import { ABAS, porNome, rotulosDe } from "./comum";
 import { HistoricoAlteracoes } from "../Auditoria";
 import s from "./obra.module.css";
+import { BarraAndamento, BotaoReabrir } from "./SituacaoObra";
 
 /** Abas que alternam época × atualizado (como no protótipo); as demais ficam na época. */
 const USA_VISAO: readonly Aba[] = ["visao", "custos", "he", "ind"];
@@ -66,7 +69,8 @@ export function TelaObra() {
   const ctx = contexto.data;
   // o motor roda quando a obra ou os cadastros mudam, não a cada alternância de tela
   const calculo = useMemo(() => {
-    if (!d || !ctx) return null;
+    // obra em andamento sem mês lançado não tem o que calcular
+    if (!d || !ctx || d.obra.meses < 1) return null;
     try {
       const { obra, movimentos } = obraDoBanco(d);
       const calc = (v: Vista["visao"]) =>
@@ -149,6 +153,35 @@ export function TelaObra() {
         </Cartao>
       </Pagina>
     );
+  const migalha = (cliente: string) => (
+    <>
+      <Link to="/base" className={s.migalha}>
+        Base histórica
+      </Link>{" "}
+      · {cliente || "Sem cliente"}
+    </>
+  );
+  // obra em andamento recém-começada: só o cadastro, à espera do 1º mês
+  if (d && ctx && d.obra.meses < 1)
+    return (
+      <Pagina
+        grupo={migalha(d.obra.cliente)}
+        titulo={d.obra.nome}
+        resumo={metaDe(d, ctx.cidades.find((c) => c.id === d.obra.cidade_id)?.nome ?? "")}
+        milestone="M11"
+      >
+        <BarraAndamento d={d} pode={pode} />
+        <Cartao>
+          <p className="sub" style={{ padding: 22, margin: 0 }}>
+            Nenhum mês lançado ainda.{" "}
+            {pode
+              ? "Lance a folha do primeiro mês para ver o histograma, os custos e os indicadores."
+              : "DP/RH ou a controladoria lançam a folha de cada mês."}
+          </p>
+        </Cartao>
+        <HistoricoAlteracoes modulo="obras" refId={d.obra.id} />
+      </Pagina>
+    );
   if (!dados)
     return (
       <Pagina grupo="Base histórica · Obra" titulo="Obra" resumo="" milestone="M5">
@@ -161,33 +194,16 @@ export function TelaObra() {
     );
 
   const o = dados.d.obra;
-  const ini = inicioDe(o.inicio);
-  const fim = anoMes(ini, o.meses - 1);
-  const trocas = dados.d.trocas.map((t) => t.data_base);
-  const meta = [
-    o.tipologia,
-    dados.cidade,
-    `${numero(Number(o.area_m2))} m²`,
-    `${mesAno(ini.ano, ini.mes)} – ${mesAno(fim.ano, fim.mes)}`,
-    `CCT ${o.data_base}${trocas.length ? ` → ${trocas.join(" → ")}` : ""}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const andamento = emAndamento(o);
 
   return (
     <Pagina
-      grupo={
-        <>
-          <Link to="/base" className={s.migalha}>
-            Base histórica
-          </Link>{" "}
-          · {o.cliente || "Sem cliente"}
-        </>
-      }
+      grupo={migalha(o.cliente)}
       titulo={o.nome}
-      resumo={meta}
+      resumo={metaDe(dados.d, dados.cidade)}
       milestone="M5"
     >
+      {andamento && <BarraAndamento d={dados.d} pode={pode} />}
       <div className={f.linha} style={{ justifyContent: "space-between" }}>
         <div className={s.abas} role="tablist" aria-label="Abas da obra">
           {ABAS.map(([k, nome]) => (
@@ -220,6 +236,7 @@ export function TelaObra() {
           ))}
         </div>
         <span className={f.linha}>
+          {!andamento && pode && <BotaoReabrir d={dados.d} />}
           <BotaoExportarObra dados={dados} />
           <Link
             className={`${u.botao} ${u.pequeno}`}
@@ -229,13 +246,16 @@ export function TelaObra() {
           >
             Comparar com…
           </Link>
-          <Link
-            className={`${u.botao} ${u.pequeno} ${u.primario}`}
-            to={`/projecoes/nova?refs=${o.id}`}
-            style={{ textDecoration: "none" }}
-          >
-            Usar como referência →
-          </Link>
+          {/* só obra concluída é referência de projeção (M11) */}
+          {!andamento && (
+            <Link
+              className={`${u.botao} ${u.pequeno} ${u.primario}`}
+              to={`/projecoes/nova?refs=${o.id}`}
+              style={{ textDecoration: "none" }}
+            >
+              Usar como referência →
+            </Link>
+          )}
         </span>
       </div>
 
@@ -283,6 +303,21 @@ export function TelaObra() {
   );
 }
 
+/** Linha abaixo do título: tipologia, cidade, área, período e data-base (com as trocas). */
+function metaDe(d: DetalheObra, cidade: string): string {
+  const o = d.obra;
+  const trocas = d.trocas.map((t) => t.data_base);
+  return [
+    o.tipologia,
+    cidade,
+    `${numero(Number(o.area_m2))} m²`,
+    textoPeriodo(o),
+    `CCT ${o.data_base}${trocas.length ? ` → ${trocas.join(" → ")}` : ""}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 function KpisObra({ dados }: { dados: DadosAba }) {
   const { r, epoca, atual, V, d } = dados;
   const area = Number(d.obra.area_m2);
@@ -319,7 +354,7 @@ function KpisObra({ dados }: { dados: DadosAba }) {
       <Kpi
         rotulo="Duração"
         valor={`${numero(diasDoPeriodo(d.obra.inicio, d.obra.meses))} dias`}
-        sub={`${numero(d.obra.meses)} competências`}
+        sub={`${numero(d.obra.meses)} competências${emAndamento(d.obra) ? " até agora" : ""}`}
       />
     </div>
   );

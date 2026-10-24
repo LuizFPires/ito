@@ -87,9 +87,12 @@ export function verificarCarga(
   cadastro: Cadastro,
   ctx: Contexto,
   parametros: ParametrosObra,
+  /** meses conferidos (lançar mês: só o lançado; padrão: todos) */
+  opcoes: { meses?: readonly number[] } = {},
 ): ResultadoVerificacao {
   const { obra, payload } = m;
   const N = obra.meses!;
+  const conferir = opcoes.meses ?? Array.from({ length: N }, (_, i) => i);
   const nomeMes = (i: number) => {
     const { ano, mes } = anoMes(obra.inicio, i);
     return mesAno(ano, mes);
@@ -206,9 +209,7 @@ export function verificarCarga(
       faF[l.mes_idx]! += l.faltas_horas;
     }
     const fora = (a: number, b: number) => Math.abs(a - b) > Math.max(0.01 * Math.max(a, b), 0.5);
-    const meses = Array.from({ length: N }, (_, i) => i).filter(
-      (i) => fora(he[i]!, heF[i]!) || fora(fa[i]!, faF[i]!),
-    );
+    const meses = conferir.filter((i) => fora(he[i]!, heF[i]!) || fora(fa[i]!, faF[i]!));
     add(
       meses.length
         ? {
@@ -267,7 +268,11 @@ export function verificarCarga(
       id: "periodo",
       estado: "erro",
       titulo: "Folha com competência fora do período da obra",
-      detalhe: `${lista(m.pendencias.foraDoPeriodo.map((c) => mesAno(c.ano, c.mes)))}: ajuste início e fim da obra na etapa Obra.`,
+      detalhe: `${lista(m.pendencias.foraDoPeriodo.map((c) => mesAno(c.ano, c.mes)))}: ${
+        opcoes.meses
+          ? `envie a folha só de ${lista(opcoes.meses.map(nomeMes))}.`
+          : "ajuste início e fim da obra na etapa Obra."
+      }`,
     });
 
   // 7. VT ausente
@@ -285,7 +290,7 @@ export function verificarCarga(
         .filter((l) => l.vt_valor !== null)
         .map((l) => `${l.mes_idx}|${l.matricula}`),
     );
-    for (let i = 0; i < N; i++) {
+    for (const i of conferir) {
       const ms = payload.lancamentos
         .filter(
           (l) =>
@@ -398,7 +403,7 @@ export function verificarCarga(
     id: "lidos",
     estado: m.semAbaPessoas ? "aviso" : "ok",
     titulo: "Lidos da folha por competência",
-    detalhe: `${plural(N, "competência", "competências")} · ${plural(payload.lancamentos.length, "lançamento", "lançamentos")} · ${plural(matriculas, "matrícula", "matrículas")} · ${plural(rubs, "rubrica", "rubricas")}.${
+    detalhe: `${plural(conferir.length, "competência", "competências")} · ${plural(payload.lancamentos.length, "lançamento", "lançamentos")} · ${plural(matriculas, "matrícula", "matrículas")} · ${plural(rubs, "rubrica", "rubricas")}.${
       categorias.length ? ` Lidos: ${lista(categorias, 9)}.` : ""
     } HE: ${numero(heT.util, 1)} h úteis, ${numero(heT.sabado, 1)} h sábado, ${numero(heT.intervalo, 1)} h intervalo, ${numero(heT.feriado, 1)} h domingos e feriados.${
       m.semAbaPessoas
@@ -409,7 +414,7 @@ export function verificarCarga(
 
   // 10. calendário
   let ferUteis = 0;
-  for (let i = 0; i < N; i++) {
+  for (const i of conferir) {
     const { ano, mes } = anoMes(obra.inicio, i);
     ferUteis += calendarioMes(
       ano,
@@ -486,16 +491,19 @@ export function verificarCarga(
       detalhe: "A apropriação desta obra não será conferida com o realizado.",
     });
   else if (resultado) {
-    for (let i = 0; i < N; i++) {
+    for (const i of conferir) {
       const ito = r2(resultado.porMes[i]!.caixa);
       const real = r2(erp.filter((e) => e.mes_idx === i).reduce((s, e) => s + e.valor, 0));
       const justificativa = escolhas.justificativas[i] || null;
       apropriacao.push({ mesIdx: i, ito, erp: real, diferenca: r2(real - ito), justificativa });
-      Object.assign(competencias[i]!, {
-        ito_apropriado: ito,
-        erp_realizado: real,
-        justificativa,
-      });
+      Object.assign(
+        competencias.find((c) => c.mes_idx === i)!,
+        {
+          ito_apropriado: ito,
+          erp_realizado: real,
+          justificativa,
+        },
+      );
     }
     const abertas = apropriacao.filter((a) => Math.abs(a.diferenca) >= 1 && !a.justificativa);
     const difs = apropriacao.filter((a) => Math.abs(a.diferenca) >= 1);
@@ -534,7 +542,7 @@ export function verificarCarga(
         rub[l.mes_idx]! += c.tipo === "desconto" ? -Math.abs(r.valor) : r.valor;
       }
     }
-    for (let i = 0; i < N; i++) {
+    for (const i of conferir) {
       const s = resultado.porMes[i]!;
       const custo = r2(s.remun + s.resc + s.ferr);
       const diferenca = r2(rub[i]! - custo);

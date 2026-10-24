@@ -36,7 +36,12 @@ export function mensagemErroBanco(e: unknown): string {
 export function mensagemErroCarga(e: unknown): string {
   const err = (e ?? {}) as { code?: string; message?: string };
   const msg = err.message ?? "";
-  if (/etapa|verificação|período|substituição|Já existe uma obra/i.test(msg)) return msg;
+  if (
+    /etapa|verificação|período|substituição|Já existe uma obra|Lance |Reabra|Envie a folha/i.test(
+      msg,
+    )
+  )
+    return msg;
   switch (err.code) {
     case "23505":
       return /obras_nome/i.test(msg)

@@ -1,5 +1,5 @@
 begin;
-select plan(26);
+select plan(27);
 
 -- M11: obra em andamento recebe a folha mês a mês; refazer substitui só o mês; concluir e reabrir
 select has_column('public', 'obras', 'situacao', 'obras têm situação');
@@ -47,7 +47,10 @@ select throws_ok($$select public.definir_situacao_obra('teste_andamento', 'concl
 -- mês a mês
 select throws_ok($$select public.lancar_mes((select p1 from m))$$, '22023', null, 'não pula mês');
 select is(public.lancar_mes((select p0 from m)), 0, 'lança o 1º mês');
-select is(public.lancar_mes((select p1 from m)), 1, 'lança o 2º mês');
+select is(public.lancar_mes((select p1 || '{"feriados": [{"data": "2026-02-02", "nome": "Feriado municipal"}]}' from m)),
+  1, 'lança o 2º mês');
+select is((select count(*)::int from public.obra_feriados where obra_id = 'teste_andamento'), 1,
+  'feriado municipal do ano do mês');
 select is((select meses from public.obras where id = 'teste_andamento'), 2, 'período com 2 meses');
 select is((select equivalente from public.efetivo_mes where obra_id = 'teste_andamento' and funcao_id = 'ped' and mes_idx = 1),
   2::numeric, 'pessoa-mês do pedreiro no 2º mês');

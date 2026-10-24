@@ -298,6 +298,11 @@ begin
     select v_id, x.funcao_id, x.regime
     from jsonb_populate_recordset(null::public.obra_regime, coalesce(p -> 'regime', '[]')) x
     on conflict (obra_id, funcao_id) do update set regime = excluded.regime;
+  -- feriados municipais do ano do mês (a obra em andamento entra em anos novos)
+  insert into public.obra_feriados (obra_id, data, nome)
+    select v_id, x.data, x.nome
+    from jsonb_populate_recordset(null::public.obra_feriados, coalesce(p -> 'feriados', '[]')) x
+    on conflict (obra_id, data) do nothing;
 
   update public.obras set meses = v_meses where id = v_id;
   perform public.gravar_meses_da_carga(v_id, p);

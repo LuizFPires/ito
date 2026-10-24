@@ -93,6 +93,12 @@ const router = createBrowserRouter([
         lazy: async () => ({ Component: (await import("./paginas/obra/TelaObra")).TelaObra }),
       },
       {
+        path: "obras/:id/lancar",
+        lazy: async () => ({
+          Component: (await import("./paginas/obra/LancarMes")).TelaLancarMes,
+        }),
+      },
+      {
         path: "projecoes/nova",
         lazy: async () => ({
           Component: (await import("./paginas/projecoes/Assistente")).TelaNovaProjecao,
