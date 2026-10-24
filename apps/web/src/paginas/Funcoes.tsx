@@ -78,7 +78,8 @@ export function TelaFuncoes() {
 
   return (
     <Pagina grupo={d.grupo} titulo={d.nome} resumo={d.resumo} milestone={d.milestone}>
-      <div className={f.divisao}>
+      {/* sem função escolhida, a lista usa a largura toda; o detalhe abre ao lado */}
+      <div className={sel ? f.divisao : undefined}>
         <Cartao style={{ overflow: "hidden" }}>
           <div className={f.barra}>
             <CampoBusca
@@ -97,6 +98,11 @@ export function TelaFuncoes() {
               <Botao variante="primario" pequeno onClick={() => setSel("nova")}>
                 Nova função
               </Botao>
+            )}
+            {!sel && (
+              <span className="sub" style={{ marginLeft: "auto" }}>
+                Clique numa função para ver exames, adicionais, ferramentas e os sinônimos da folha.
+              </span>
             )}
           </div>
           {isError ? (
@@ -201,14 +207,7 @@ export function TelaFuncoes() {
             vigente={vigente}
             onFechar={() => setSel(null)}
           />
-        ) : (
-          <Cartao className={f.painel}>
-            <p className="sub" style={{ margin: 0 }}>
-              Escolha uma função na lista para ver exames, adicionais, ferramentas e os sinônimos
-              usados na folha.
-            </p>
-          </Cartao>
-        )}
+        ) : null}
       </div>
     </Pagina>
   );
