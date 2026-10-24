@@ -128,20 +128,13 @@ De 2 a 4 obras lado a lado:
   - projeção × referências.
 
   Ações: situação, duplicar, editar e copiar para Excel.
-- **Assistente** em 4 passos:
+- **Assistente** em 6 passos (ver decisões de 24/10/2026):
   1. **Obra:** nome, cliente, tipologia, **cidade da obra**, início, área e prazo. Mostra o resumo dos preços da cidade: CCT, salário do oficial, gratificações, VT, ISS e data-base.
   2. **Referências:** obras parecidas com busca, grupo e faixa de área; botão "5 mais parecidas"; média ou mediana. Alternativa: **informar o histograma à mão**.
-  3. **Ajustes:**
-     - quantidades (manuais ou das referências);
-     - ajuste por função (−30% a +30%);
-     - HE por pessoa;
-     - premissas de custo;
-     - regime e transferência por função;
-     - **origem da mão de obra por função** (local, vem de outra cidade todo dia, alojada) e a cidade de origem;
-     - **reajuste na data-base** (automático pela CCT ou informado);
-     - licenças e férias;
-     - **HE por tipo**.
-  4. **Resultado:** revisar e salvar.
+  3. **Histograma:** gráfico previsto sempre à vista (lado a lado por padrão, ou empilhado) e as quantidades por função e mês. Uma tabela só, já preenchida com as quantidades das referências: régua **Mais ou menos** por função (−100% a +100%) e cada mês digitável, com "Incluir função" para funções fora da sugestão. Pessoas sempre inteiras.
+  4. **Origem da mão de obra:** por função (local, vem de outra cidade todo dia, alojada) e a cidade de origem.
+  5. **Premissas:** HE por pessoa, premissas de custo, regime e transferência por função, **reajuste na data-base** (automático pela CCT ou informado), licenças e férias, **HE por tipo**.
+  6. **Resultado:** revisar e salvar.
 
 ### 3.5 Cidades e CCTs
 Duas abas, pensadas para dezenas de CCTs e centenas de cidades.

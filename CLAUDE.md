@@ -295,6 +295,11 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Aceito sem correção: a verificação do mês usa o mix de HE do próprio mês (o banco grava o de todos os meses; o detalhe recalcula); NF de outra competência enviada no lançamento entra no mês; desmarcar S/P no lançamento não tira o S/P da obra (faz-se nas premissas); troca de tabela entra pelas premissas depois do mês lançado (refaça o mês se ela valer para ele).
 - Fica para depois: acompanhar o realizado contra a projeção aprovada da própria obra.
 
+### Projeções em 6 passos (24/10/2026, usuário, a partir do protótipo aprovado)
+- O passo Ajustes virou três: **Histograma** (gráfico fixo no topo ao rolar, lado a lado por padrão; quantidades numa tabela só, já preenchidas pelas referências, com a régua **Mais ou menos** por função (−100% a +100%, sobre a linha inteira) e cada mês digitável; digitar um mês fixa a linha e zera a régua dela; "Incluir função" para funções fora da sugestão; as obras de referência continuam no resultado), **Origem da MO** e **Premissas** (custo, regime e transferência, reajuste e calendário, HE). "Ajuste por função" passou a se chamar "Mais ou menos gente".
+- **Pessoas sempre inteiras** nas projeções: até ,2 arredonda para baixo, de ,3 em diante para cima (SPEC §5, `pessoasInteiras` no motor); a validação diferencial aplica a mesma regra ao protótipo. Projeções salvas mudam de número ao serem abertas de novo.
+- Editar uma projeção abre no passo Histograma. Sem digitar nada, a tabela segue as referências; o primeiro número digitado fixa o histograma informado (a régua passa a valer sobre ele). (auto — recomendado)
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

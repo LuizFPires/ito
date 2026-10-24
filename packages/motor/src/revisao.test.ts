@@ -153,3 +153,19 @@ describe("desempenho pelo caminho completo (curvas das referências + cenários 
     expect(ms).toBeLessThan(300);
   });
 });
+
+describe("mais ou menos gente sobre as quantidades informadas (24/10/2026)", () => {
+  it("a régua multiplica o histograma informado, com pessoas inteiras", () => {
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- dados do protótipo */
+    const base = P.D.projecoes.find((p: any) => p.cidade);
+    const e = entradaProjecaoDe(P, { ...base, prazo: 3 });
+    const informado = { ...e, quantidadesManuais: { ped: [4, 10, 3] } };
+    expect(projetar(informado, tabela, ctx)!.obra.equivalente.ped).toEqual([4, 10, 3]);
+    // +20%: 4,8 → 5; 12 → 12; 3,6 → 4
+    const mais = projetar({ ...informado, ajustesPct: { ped: 20 } }, tabela, ctx)!;
+    expect(mais.obra.equivalente.ped).toEqual([5, 12, 4]);
+    // −100%: a função sai do histograma
+    const menos = projetar({ ...informado, ajustesPct: { ped: -100 } }, tabela, ctx)!;
+    expect(menos.obra.equivalente.ped).toEqual([0, 0, 0]);
+  });
+});
