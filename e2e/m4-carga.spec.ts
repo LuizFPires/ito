@@ -95,7 +95,6 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
 
   // 1. Obra
   await page.getByLabel("Nome da obra").fill("Obra E2E Carga");
-  await expect(page.getByLabel("Código da obra")).toHaveValue("obra_e2e_carga");
   await page.getByLabel("Área construída (m²)").fill("2.000");
   await page.getByLabel("Área construída (m²)").blur();
   await page.getByLabel("Tipologia").selectOption("Galpão logístico");
@@ -188,7 +187,6 @@ test("rascunho salvo sozinho: recarregar a página e continuar de onde parou", a
   await expect(lista).toContainText("Rascunho E2E");
   await lista.getByRole("button", { name: "Continuar" }).click();
   await expect(page.getByLabel("Nome da obra")).toHaveValue("Rascunho E2E");
-  await expect(page.getByLabel("Código da obra")).toHaveValue("rascunho_e2e");
 });
 
 test("modelo da folha no layout do ITO para baixar", async ({ page }) => {

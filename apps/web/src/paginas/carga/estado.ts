@@ -85,8 +85,8 @@ export function faltasDaObra(
 ): string[] {
   const f: string[] = [];
   if (!d.nome.trim()) f.push("Informe o nome da obra.");
-  if (!/^[a-z][a-z0-9_]{0,47}$/.test(d.id))
-    f.push("Código: comece com letra; use letras minúsculas, números e _.");
+  // o código sai do nome (codigoDaObra); só fica inválido se o nome estiver vazio
+  else if (!/^[a-z][a-z0-9_]{0,47}$/.test(d.id)) f.push("Informe o nome da obra com letras.");
   if (!d.tipologia) f.push("Escolha a tipologia.");
   if (!(d.area >= 100)) f.push("Informe a área construída (a partir de 100 m²).");
   if (comPeriodo && d.meses < 1)

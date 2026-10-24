@@ -36,17 +36,9 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
                 value={d.nome}
                 onChange={(e) => {
                   const nome = e.target.value;
-                  // o código acompanha o nome enquanto não foi editado à mão
-                  const auto = !d.id || d.id === codigoDaObra(d.nome);
-                  set(auto ? { nome, id: codigoDaObra(nome) } : { nome });
+                  // o código interno da obra (endereço da página) sai do nome
+                  set({ nome, id: codigoDaObra(nome) });
                 }}
-              />
-            </Campo>
-            <Campo rotulo="Código da obra" dica="Identifica a obra no ITO; não muda depois.">
-              <input
-                className={`${f.input} mono`}
-                value={d.id}
-                onChange={(e) => set({ id: e.target.value.toLowerCase() })}
               />
             </Campo>
             <Campo rotulo="Cliente">
@@ -131,7 +123,7 @@ export function EtapaObra({ r, mudar, ctx, faltas }: PropsEtapa & { faltas: stri
               </Selecao>
             </Campo>
             <Campo
-              rotulo="Troca de tabela no meio da obra"
+              rotulo="Troca de tabela"
               dica={outras.length ? undefined : "Só há uma data-base cadastrada"}
             >
               <Selecao

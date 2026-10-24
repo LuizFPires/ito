@@ -226,7 +226,7 @@ export function EtapaVerificacao({
               <Badge tom={substituir ? "ok" : "erro"}>{substituir ? "OK" : "Pendente"}</Badge>
             </div>
             <div className={s.verifTexto}>
-              <strong style={{ fontWeight: 500 }}>Já existe uma obra com o código {d.id}</strong>
+              <strong style={{ fontWeight: 500 }}>Já existe uma obra com o nome “{d.nome}”</strong>
               <label className={f.linha} style={{ fontSize: 13 }}>
                 <input
                   type="checkbox"
