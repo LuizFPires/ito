@@ -604,6 +604,19 @@ function PassoReferencias({
             >
               Selecionar as 5 mais parecidas
             </Botao>
+            {/* todas as obras do filtro (grupo, área e busca), inclusive as que não aparecem na lista */}
+            <Botao
+              pequeno
+              disabled={!cand.length || cand.every((o) => e.referencias.includes(o.id))}
+              onClick={() =>
+                up({
+                  referencias: [...new Set([...e.referencias, ...cand.map((o) => o.id)])],
+                  quantidadesManuais: null,
+                })
+              }
+            >
+              Selecionar todas do filtro ({numero(cand.length)})
+            </Botao>
             <Botao
               pequeno
               variante="fantasma"
