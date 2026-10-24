@@ -1156,7 +1156,6 @@ export type Database = {
           cidade_id: string | null;
           cliente: string;
           data_base: number;
-          fora_da_sede: boolean;
           funcoes_transferidas: string[];
           grat_premios_pct: number;
           grupo: string;
@@ -1169,10 +1168,12 @@ export type Database = {
           lucro_pct: number;
           meses: number;
           nome: string;
+          prazo_previsto: number | null;
           provisionar: boolean;
           revisao: number;
           risco_pct: number;
           rotatividade_pct: number;
+          situacao: Database["public"]["Enums"]["situacao_obra"];
           tipologia: string;
           transf_pct: number;
           trib_lucro_pct: number;
@@ -1187,7 +1188,6 @@ export type Database = {
           cidade_id?: string | null;
           cliente?: string;
           data_base: number;
-          fora_da_sede?: boolean;
           funcoes_transferidas?: string[];
           grat_premios_pct?: number;
           grupo?: string;
@@ -1200,10 +1200,12 @@ export type Database = {
           lucro_pct?: number;
           meses: number;
           nome: string;
+          prazo_previsto?: number | null;
           provisionar?: boolean;
           revisao?: number;
           risco_pct?: number;
           rotatividade_pct?: number;
+          situacao?: Database["public"]["Enums"]["situacao_obra"];
           tipologia?: string;
           transf_pct?: number;
           trib_lucro_pct?: number;
@@ -1217,7 +1219,6 @@ export type Database = {
           cidade_id?: string | null;
           cliente?: string;
           data_base?: number;
-          fora_da_sede?: boolean;
           funcoes_transferidas?: string[];
           grat_premios_pct?: number;
           grupo?: string;
@@ -1230,10 +1231,12 @@ export type Database = {
           lucro_pct?: number;
           meses?: number;
           nome?: string;
+          prazo_previsto?: number | null;
           provisionar?: boolean;
           revisao?: number;
           risco_pct?: number;
           rotatividade_pct?: number;
+          situacao?: Database["public"]["Enums"]["situacao_obra"];
           tipologia?: string;
           transf_pct?: number;
           trib_lucro_pct?: number;
@@ -1569,15 +1572,23 @@ export type Database = {
         Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };
         Returns: undefined;
       };
+      definir_situacao_obra: {
+        Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_obra"] };
+        Returns: undefined;
+      };
       duplicar_cct: { Args: { p_id: string; p_nome: string; p_origem: string }; Returns: string };
       encerrar_sessoes: { Args: { p_id: string }; Returns: number };
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
       gerir_usuario: { Args: { p_autor: string; p_id: string; p_patch: Json }; Returns: number };
+      gravar_cadastros_da_carga: { Args: { p: Json }; Returns: undefined };
       gravar_carga: { Args: { p: Json }; Returns: string };
       gravar_carga_dados: { Args: { p: Json }; Returns: string };
+      gravar_meses_da_carga: { Args: { p: Json; v_id: string }; Returns: undefined };
       gravar_resumos: { Args: { p: Json }; Returns: number };
+      lancar_mes: { Args: { p: Json }; Returns: number };
+      lancar_mes_dados: { Args: { p: Json }; Returns: number };
       listar_usuarios: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1622,6 +1633,7 @@ export type Database = {
       };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       sou_ativo: { Args: Record<PropertyKey, never>; Returns: boolean };
+      validar_carga: { Args: { p: Json; v_meses: number }; Returns: undefined };
     };
     Enums: {
       componente_rubrica:
@@ -1641,6 +1653,7 @@ export type Database = {
       modo_dias: "calendario" | "fixo";
       perfil: "planejamento" | "engenharia" | "dp_rh" | "controladoria" | "diretoria";
       regime: "clt" | "sp";
+      situacao_obra: "andamento" | "concluida";
       situacao_projecao: "rascunho" | "em_analise" | "aprovada";
       tipo_realocacao: "cedida" | "recebida";
       tipo_rubrica: "provento" | "desconto" | "informativo";
@@ -1777,6 +1790,7 @@ export const Constants = {
       modo_dias: ["calendario", "fixo"],
       perfil: ["planejamento", "engenharia", "dp_rh", "controladoria", "diretoria"],
       regime: ["clt", "sp"],
+      situacao_obra: ["andamento", "concluida"],
       situacao_projecao: ["rascunho", "em_analise", "aprovada"],
       tipo_realocacao: ["cedida", "recebida"],
       tipo_rubrica: ["provento", "desconto", "informativo"],
