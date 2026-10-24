@@ -273,6 +273,16 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Sem classificação de funções** (decisão do usuário): o ITO não divide mais as funções em direta, indireta e administrativa — saíram os filtros Todas/Direta/Indireta/Adm., os subtotais por grupo, os indicadores "Direta · indireta · adm." e "% MO indireta", a coluna e o filtro do cadastro de Funções, a coluna "Grupo" do .xlsx e o campo no banco (`funcoes.grupo`, `obra_resumo.indireta_pct`). O custo não muda: crescer com a área continua no campo **escala com a área** de cada função; função nova nasce escalando com a área (como a antiga "direta"), ajustável no cadastro. Tabelas listam as funções em ordem alfabética.
 - **Menu lateral recolhível** (só ícones, clicáveis, lembrado no navegador) e conteúdo na largura toda da tela; percentuais ao lado de valores em R$ em cinza, menores e afastados.
 
+### M11 — Obras em andamento (24/10/2026)
+- **Obra acompanhada mês a mês** (usuário): a obra pode começar no ITO e receber folha, ponto, VT, notas e ERP a cada competência; a carga da obra inteira continua.
+- **Situação da obra** em andamento ou concluída; as obras já carregadas ficam concluídas. (auto — recomendado)
+- **Lançamento mensal** no detalhe da obra, com as mesmas conferências da carga, uma competência por vez; refazer um mês substitui só aquele mês, sem perder premissas e ausências. (auto — recomendado)
+- **Projeções usam só obras concluídas** como referência (curva completa); base e Comparar mostram as duas com filtro e selo. (auto — recomendado)
+- **Quem lança o mês** = quem carrega (DP/RH, controladoria, admin). (auto — recomendado)
+- **Sem "obra fora da sede (alojamento)"** (usuário): alojamento e viagens dependem de cada função, não da obra; na projeção continuam pela origem de cada função.
+- **Rascunhos da carga em painel lateral** aberto por ícone (usuário).
+- Fica para depois: acompanhar o realizado contra a projeção aprovada da própria obra.
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
