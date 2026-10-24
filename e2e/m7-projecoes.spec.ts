@@ -196,3 +196,16 @@ test("diretoria aprova; aprovada não é editada", async ({ page }) => {
     page.getByRole("group", { name: "Situação" }).getByRole("button", { name: "Em análise" }),
   ).toBeDisabled();
 });
+
+test("referências: selecionar todas as obras do filtro de uma vez", async ({ page }) => {
+  await entrar(page);
+  await page.goto("/projecoes/nova");
+  await passoObra(page, "E2E Todas do filtro");
+  await page.getByRole("button", { name: "Continuar →" }).click();
+  await page.getByRole("searchbox", { name: "Buscar obra de referência" }).fill("Projeção E2E Ref");
+  await page.getByRole("button", { name: "Selecionar todas do filtro (2)" }).click();
+  await expect(page.getByRole("region", { name: "Referências selecionadas" })).toContainText(
+    "Selecionadas (2)",
+  );
+  await expect(page.getByRole("button", { name: /^Selecionar todas do filtro/ })).toBeDisabled();
+});
