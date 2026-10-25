@@ -1,96 +1,96 @@
 {
-  "medidoEm": "2026-10-25T01:54:07.259Z",
+  "medidoEm": "2026-10-25T20:21:46.447Z",
   "node": "v24.18.1",
   "linhas": [
     {
       "caso": "projeção 9 meses · 5 referências",
-      "mediana": 2.1,
-      "p95": 3.8
+      "mediana": 1.9,
+      "p95": 2.6
     },
     {
       "caso": "cenários de origem 9 meses · 5 referências",
-      "mediana": 7.5,
-      "p95": 10.7
+      "mediana": 6.6,
+      "p95": 7.3
     },
     {
       "caso": "projeção 9 meses · 23 referências",
-      "mediana": 2.4,
-      "p95": 3.7
+      "mediana": 1.8,
+      "p95": 2.4
     },
     {
       "caso": "cenários de origem 9 meses · 23 referências",
-      "mediana": 8.1,
-      "p95": 8.8
-    },
-    {
-      "caso": "projeção 9 meses · 100 referências",
-      "mediana": 2.9,
-      "p95": 3.2
-    },
-    {
-      "caso": "cenários de origem 9 meses · 100 referências",
-      "mediana": 11.1,
-      "p95": 13
-    },
-    {
-      "caso": "projeção 9 meses · 1000 referências",
-      "mediana": 13.7,
-      "p95": 14.1
-    },
-    {
-      "caso": "cenários de origem 9 meses · 1000 referências",
-      "mediana": 60.1,
-      "p95": 64.5
-    },
-    {
-      "caso": "projeção 36 meses · 5 referências",
-      "mediana": 6.4,
+      "mediana": 6.7,
       "p95": 7.4
     },
     {
+      "caso": "projeção 9 meses · 100 referências",
+      "mediana": 2,
+      "p95": 3
+    },
+    {
+      "caso": "cenários de origem 9 meses · 100 referências",
+      "mediana": 8.1,
+      "p95": 10.2
+    },
+    {
+      "caso": "projeção 9 meses · 1000 referências",
+      "mediana": 7.1,
+      "p95": 7.6
+    },
+    {
+      "caso": "cenários de origem 9 meses · 1000 referências",
+      "mediana": 29.4,
+      "p95": 47
+    },
+    {
+      "caso": "projeção 36 meses · 5 referências",
+      "mediana": 6.9,
+      "p95": 8.4
+    },
+    {
       "caso": "cenários de origem 36 meses · 5 referências",
-      "mediana": 24.3,
-      "p95": 32.2
+      "mediana": 24.9,
+      "p95": 26.9
     },
     {
       "caso": "projeção 36 meses · 23 referências",
-      "mediana": 6.5,
-      "p95": 7
+      "mediana": 6.2,
+      "p95": 7.1
     },
     {
       "caso": "cenários de origem 36 meses · 23 referências",
-      "mediana": 27.8,
-      "p95": 58.3
+      "mediana": 24.7,
+      "p95": 50.4
     },
     {
       "caso": "projeção 36 meses · 100 referências",
-      "mediana": 16.5,
-      "p95": 21.2
+      "mediana": 18.8,
+      "p95": 28.3
     },
     {
       "caso": "cenários de origem 36 meses · 100 referências",
-      "mediana": 75.2,
-      "p95": 94.9
+      "mediana": 67.4,
+      "p95": 93.6
     },
     {
       "caso": "projeção 36 meses · 1000 referências",
-      "mediana": 95.3,
-      "p95": 106.7
+      "mediana": 41.5,
+      "p95": 51.5
     },
     {
       "caso": "cenários de origem 36 meses · 1000 referências",
-      "mediana": 251.2,
-      "p95": 316.2
+      "mediana": 133.3,
+      "p95": 152.7
     },
     {
       "caso": "obra 9 meses (calcularObra)",
-      "mediana": 3.3,
-      "p95": 6.5
+      "mediana": 5.1,
+      "p95": 10
     },
     {
       "caso": "obra 36 meses (calcularObra)",
-      "mediana": 12.5,
-      "p95": 23.8
+      "mediana": 14.4,
+      "p95": 27.5
     }
   ]
 }

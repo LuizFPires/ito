@@ -1,5 +1,5 @@
 begin;
-select plan(22);
+select plan(27);
 
 select has_table('public', 'projecoes', 'tabela projecoes');
 select is((select relrowsecurity from pg_class where oid = 'public.projecoes'::regclass), true, 'RLS ligada');
@@ -35,14 +35,30 @@ select is((select nome from public.projecoes where id = '11111111-1111-4111-8111
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
 update public.projecoes set resumo = '{"total": 1}' where id = '11111111-1111-4111-8111-111111111111';
 
--- diretoria aprova (mas não edita) com os números que está vendo
+-- M14 · S05: pela API ninguém aprova; só a Edge Function (chave de serviço) com o cálculo dela
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}', true);
-select throws_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'aprovada')$$, '22023', null,
-  'aprovar exige o resumo da tela');
-select lives_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'aprovada', '{"total": 5000, "pico": 3}')$$,
-  'diretoria aprova');
+select throws_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'aprovada')$$, '42501', null,
+  'diretoria não aprova pela API');
+select throws_ok($$select public.aprovar_projecao('00000000-0000-4000-8000-000000000005', '11111111-1111-4111-8111-111111111111',
+  '{"total": 5}', now(), '{}')$$, '42501', null, 'a API não chama a aprovação do servidor');
+reset role;
+select throws_ok($$select public.aprovar_projecao('00000000-0000-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111',
+  '{"total": 5}', (select atualizado_em from public.projecoes where id = '11111111-1111-4111-8111-111111111111'), '{}')$$, '42501', null,
+  'o servidor só aprova em nome de quem aprova');
+select throws_ok($$select public.aprovar_projecao('00000000-0000-4000-8000-000000000005', '11111111-1111-4111-8111-111111111111',
+  '{"total": 5}', now() - interval '1 day', '{}')$$, '40001', null,
+  'projeção mudada durante o cálculo é recusada');
+select lives_ok($$select public.aprovar_projecao('00000000-0000-4000-8000-000000000005', '11111111-1111-4111-8111-111111111111',
+  '{"total": 5000, "pico": 3}', (select atualizado_em from public.projecoes where id = '11111111-1111-4111-8111-111111111111'),
+  '{"entradas": {"nome": "Projeção teste"}, "precos": {}, "versao_calculo": "teste"}')$$,
+  'o servidor aprova com o cálculo dele');
 select is((select resumo ->> 'total' from public.projecoes where id = '11111111-1111-4111-8111-111111111111'), '5000',
-  'o resumo aprovado é o de quem aprovou, não o gravado antes');
+  'o resumo aprovado é o do servidor, não o gravado antes');
+select is((select count(*)::int from public.projecao_aprovacoes where projecao_id = '11111111-1111-4111-8111-111111111111'
+           and versao_calculo = 'teste' and aprovado_por = '00000000-0000-4000-8000-000000000005'),
+  1, 'a aprovação fica no histórico com autor e versão do cálculo');
+select throws_ok($$delete from public.projecao_aprovacoes$$, '42501', null, 'histórico de aprovações não se apaga');
+set local role authenticated;
 select is((select situacao::text from public.projecoes where id = '11111111-1111-4111-8111-111111111111'),
   'aprovada', 'aprovada');
 

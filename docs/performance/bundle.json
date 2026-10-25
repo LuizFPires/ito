@@ -1,18 +1,18 @@
 {
-  "medidoEm": "2026-10-25T01:54:07.458Z",
-  "inicialGzipKb": 197.4,
-  "totalGzipKb": 405,
+  "medidoEm": "2026-10-25T20:22:24.279Z",
+  "inicialGzipKb": 199.3,
+  "totalGzipKb": 434.3,
   "maiores": [
     {
-      "arquivo": "index-BzQvVFw0.js",
-      "kb": 560.4,
-      "gzipKb": 162.2,
+      "arquivo": "index-CbV0pLzw.js",
+      "kb": 566.3,
+      "gzipKb": 164.1,
       "inicial": true
     },
     {
-      "arquivo": "estado-BbwmHDPb.js",
-      "kb": 95.8,
-      "gzipKb": 33.1,
+      "arquivo": "leitura.worker-2m_8xwi1.js",
+      "kb": 127.9,
+      "gzipKb": 41.5,
       "inicial": false
     },
     {
@@ -22,55 +22,55 @@
       "inicial": true
     },
     {
-      "arquivo": "browser-CwYVLbJE.js",
-      "kb": 73.4,
-      "gzipKb": 21,
+      "arquivo": "estado-Bp0-Xpip.js",
+      "kb": 84.1,
+      "gzipKb": 29,
       "inicial": false
     },
     {
-      "arquivo": "EtapaVerificacao-BOB0wiGB.js",
-      "kb": 66.4,
-      "gzipKb": 19.6,
+      "arquivo": "browser-CoxEEl97.js",
+      "kb": 69.1,
+      "gzipKb": 19.1,
       "inicial": false
     },
     {
-      "arquivo": "TelaObra-DZxb5YEH.js",
+      "arquivo": "TelaObra-BM-BQi86.js",
       "kb": 67.3,
       "gzipKb": 17.9,
       "inicial": false
     },
     {
-      "arquivo": "Assistente-DsJf7YIy.js",
-      "kb": 31,
-      "gzipKb": 9.6,
+      "arquivo": "Assistente-UaoFgm9l.js",
+      "kb": 31.4,
+      "gzipKb": 9.8,
       "inicial": false
     },
     {
-      "arquivo": "TelaCidades-CWPANJlx.js",
+      "arquivo": "EtapaVerificacao-9cgNWYsW.js",
+      "kb": 26.5,
+      "gzipKb": 8.6,
+      "inicial": false
+    },
+    {
+      "arquivo": "TelaCidades-BvxrsBHK.js",
       "kb": 26.2,
       "gzipKb": 7.7,
       "inicial": false
     },
     {
-      "arquivo": "Parametros-ZlrKx9Tm.js",
+      "arquivo": "Parametros-B8xCMHpf.js",
       "kb": 24.2,
       "gzipKb": 7.1,
       "inicial": false
     },
     {
-      "arquivo": "carga-ahV-0B_A.js",
-      "kb": 13.6,
-      "gzipKb": 5.6,
-      "inicial": false
-    },
-    {
-      "arquivo": "Resultado-C7bcWbho.js",
+      "arquivo": "Resultado-CNp0ksfO.js",
       "kb": 15.2,
       "gzipKb": 4.9,
       "inicial": false
     },
     {
-      "arquivo": "TelaCarga-QXpRrCCu.js",
+      "arquivo": "TelaCarga-lZl0Dx8R.js",
       "kb": 12.4,
       "gzipKb": 4.7,
       "inicial": false

@@ -178,6 +178,17 @@ export interface Calculo {
   r: ResultadoProjecao | null;
 }
 
+/**
+ * M14: referência convertida uma vez por obra lida (a mesma ObraBanco do cache da tela). O motor
+ * guarda os agregados por Obra; sem isto, cada mexida reconvertia 1.000 obras e perdia o cache.
+ */
+const obraDeReferencia = new WeakMap<ObraBanco, ReturnType<typeof obraDoBanco>["obra"]>();
+const comoReferencia = (b: ObraBanco) => {
+  let o = obraDeReferencia.get(b);
+  if (!o) obraDeReferencia.set(b, (o = obraDoBanco(b).obra));
+  return o;
+};
+
 /** Monta a entrada do motor e calcula. Referências que sumiram da base ficam de fora. */
 export function calcularProjecao(
   e: Entradas,
@@ -193,7 +204,7 @@ export function calcularProjecao(
     inicio: e.inicio,
     prazo: e.prazo,
     area: e.area,
-    referencias: referencias.map((b) => obraDoBanco(b).obra),
+    referencias: referencias.map(comoReferencia),
     estatistica: e.estatistica,
     ajustesPct: e.ajustes,
     quantidadesManuais: e.quantidadesManuais,

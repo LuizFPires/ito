@@ -83,6 +83,7 @@ const ROTAS = () => [
   `/projecoes/${projecao}`,
   "/auditoria",
   "/usuarios",
+  "/desempenho",
 ];
 
 for (const tema of ["claro", "escuro"] as const) {

@@ -15,7 +15,13 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    ```sh
    pnpm exec supabase secrets set ITO_SITE_URL=https://<endereço do site> --project-ref <ref>
    pnpm exec supabase functions deploy usuarios --project-ref <ref>
+   pnpm exec supabase functions deploy projecoes --project-ref <ref>
    ```
+   Na homologação, que atende os previews da Vercel, libere também o CORS deles: `supabase secrets set ITO_PREVIEWS=sim --project-ref <homologação>` (na produção, não).
+
+   **Ordem quando a versão muda a aprovação ou o cálculo:** 1) publique as funções (`projecoes` com o `calculo.gerado.js` novo); 2) aplique as migrações; 3) faça o merge, que publica o site. Ao contrário, alguém pode tentar aprovar com uma função velha (recusada pelo banco) ou com o cálculo antigo.
+
+   A função `projecoes` (M14) aprova as projeções refazendo o cálculo no servidor, com o mesmo código da tela (`supabase/functions/projecoes/calculo.gerado.js`, gerado por `pnpm gen:calculo` e conferido no CI). Publique-a junto com as migrações que mexem no cálculo ou nas tabelas que ele lê.
 3. **Auth:** aplique a configuração. O comando leva os modelos de e-mail em português: convite (`supabase/templates/convite.html`) e troca de senha (`recuperar.html`).
    ```sh
    pnpm exec supabase config diff --project-ref <ref>
@@ -24,8 +30,10 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    Se o push não levar os modelos, cole o HTML em Authentication → Email Templates: "Invite user" com o assunto "Convite para o ITO" e "Reset password" com "Definir senha do ITO".
    - **E-mail de verdade (SMTP), obrigatório em produção:** o envio padrão do Supabase manda pouquíssimos e-mails por hora e só para a equipe do projeto, e o convite pela tela falha com "O convite não foi enviado". Configure um SMTP próprio (o da empresa ou um serviço como Resend, SendGrid, Amazon SES) em Authentication → SMTP Settings, com o remetente do domínio da Clássica, antes do primeiro convite.
    - **Primeira publicação da Edge Function:** confira que convidar, desativar e reativar funcionam. Se o projeto tiver desligado as chaves antigas (JWT), a função pode não receber `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`; nesse caso, guarde a chave secreta como segredo da função (`supabase secrets set`) e ajuste a leitura em `supabase/functions/usuarios/index.ts`.
-4. **Front:** o merge na `main` publica a produção na Vercel. Cada PR gera um preview ligado à homologação.
+4. **Front:** o merge na `main` publica a produção na Vercel. Cada PR gera um preview ligado à homologação. A `main` é protegida (M14): só recebe merge de PR com o CI verde e em dia, sem force push.
+   - **Voltar uma publicação do site:** na Vercel, em Deployments, escolha a publicação anterior e use "Instant Rollback" (volta em segundos, sem build). Se a versão nova veio com migração, confira se a anterior funciona com o banco novo antes de voltar; migração não se desfaz por aqui (crie outra que corrija).
 5. **Confira** depois de cada publicação:
+   - `pnpm db:reset` e depois `pnpm db:conferir homologacao` e `pnpm db:conferir producao`: o catálogo remoto (tabelas, RLS, políticas, funções, grants, gatilhos, restrições, migrações) tem de ser o que as migrações dão. Divergência = migração não aplicada ou mudança feita à mão no painel (refaça como migração). Só lê; mostra nomes de objetos, nunca dados;
    - entrar com um usuário de cada perfil;
    - abrir a base histórica e uma obra;
    - recalcular uma projeção;
@@ -69,6 +77,11 @@ São duas linhas de defesa:
    - O dump traz contas (com o hash da senha) e valores por matrícula, sem nomes. Ficam de fora os segredos do Auth: sessões, tokens, fatores e desafios de MFA, códigos de uso único e logs. Depois de restaurar, cada pessoa entra de novo e quem precisa de MFA se inscreve outra vez. Mesmo cifrado, guarde em local com acesso restrito, nunca no git nem em e-mail.
    - O script cria a pasta só para o dono: no Linux e no Mac, com chmod 700; no Windows, tirando a herança de permissões e deixando só o próprio usuário (icacls). Ele confere a permissão e para se outra conta tiver acesso.
    - **Rotina sugerida:** semanal em produção e antes de cada migração que mexa em dados. Guarde as 8 últimas cópias.
+
+**Metas de recuperação (M14, conferido em 25/10/2026):** backups diários do Supabase presentes nos dois projetos (`supabase backups list`), PITR desligado.
+- **RPO (quanto se pode perder): até 24 horas** com o backup diário; até 7 dias de cópia com o `db:backup` semanal. Para chegar a minutos, contrate o add-on PITR (decisão de custo do usuário).
+- **RTO (quanto tempo para voltar): até 1 hora** pelo painel (Database → Backups → Restore, banco de poucas centenas de MB) e até 4 horas num projeto novo com o `db:backup` (seção 4).
+- Ensaie a restauração a cada 3 meses: `pnpm db:backup producao --cifrar` e `pnpm db:restaurar` no local, conferindo as contagens.
 
 ## 4. Restauração
 
@@ -136,6 +149,9 @@ Medido em 22/10/2026, com 1.000 obras:
 | Projeção de 36 meses (5 referências, 20 funções) | 53 ms | 300 ms |
 
 ## 7. Incidentes
+
+**Proteções ligadas (M14):** SSL obrigatório nas conexões diretas ao banco; no GitHub, varredura de segredos com bloqueio no push, alertas e correções de segurança do Dependabot e Actions fixadas por SHA (o Dependabot abre PR mensal para atualizá-las). Ficam com o dono das contas: MFA no GitHub, na Vercel e no Supabase, e restrição de rede do banco (só se as migrações passarem a sair de um IP fixo).
+
 
 - **Acesso indevido ou pessoa que saiu da empresa:** desative a pessoa na tela de usuários. O efeito é imediato: a sessão é encerrada e a leitura negada.
 - **Chave vazada:**

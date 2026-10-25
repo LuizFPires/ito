@@ -1,0 +1,9 @@
+# M14: as Actions ficam fixadas por SHA; o Dependabot abre PR mensal para atualizá-las.
+# Dependências do pnpm: só as correções de segurança (alertas e PRs automáticos de segurança).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3

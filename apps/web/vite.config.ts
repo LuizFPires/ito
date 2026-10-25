@@ -3,7 +3,14 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
+  // versão do build nas métricas de tela (M14): commit da Vercel ou "local"
+  define: {
+    __VERSAO_SITE__: JSON.stringify((process.env.VERCEL_GIT_COMMIT_SHA ?? "local").slice(0, 7)),
+  },
   server: { port: 5173, strictPort: true },
+  // dependências do worker da carga (M14) otimizadas já na partida do dev: descobertas só ao ler
+  // um arquivo, faziam o Vite recarregar a página e perder o arquivo escolhido (e2e no CI)
+  optimizeDeps: { include: ["read-excel-file/web-worker", "@ito/carga > fast-xml-parser"] },
   // Núcleo (React, Router, Query, supabase-js) ≈ 170 kB gzip; telas já vêm sob demanda.
   build: { chunkSizeWarningLimit: 700 },
   test: {

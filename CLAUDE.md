@@ -324,6 +324,27 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Tela não consulta o banco antes de saber se falta o MFA e relê tudo ao confirmar o código; zerar o MFA recusa a própria conta e grava antes de mexer no Auth; `ITO_SITE_URL` obrigatório fora do local (segredo da função); restauro lê a frase de `.env.supabase.local`; dump aberto apagado mesmo se a cifragem falhar; célula do histograma com até 5 dígitos; grants explícitos das funções dos CHECKs, com teste.
   - Aceito: o limite de 30 abas é conferido depois da leitura (o limite de 50 MB, antes dela, é o que protege o navegador).
 
+### M14 — Segurança e desempenho, o que faltou (25/10/2026)
+- **Tudo o que couber no código e nas ferramentas do projeto** (usuário). Fica com o usuário o que só ele faz: MFA das contas do GitHub, da Vercel e do Supabase; restrição de rede do banco (bloquearia as migrações feitas daqui, de IP variável); plano e add-on de PITR.
+- **Aprovação no servidor:** Edge Function `projecoes` com o mesmo motor e os mesmos carregadores da tela, empacotados por esbuild num arquivo gerado (`supabase/functions/projecoes/calculo.gerado.js`, conferido no CI); cada aprovação fica em `projecao_aprovacoes` com resumo, entradas, preços e versão do cálculo (hash do código); `definir_situacao` não aprova mais. (auto — recomendado)
+- **Monitoramento próprio no banco** em vez do Vercel Speed Insights (dependência e custo): métricas sem dado pessoal, 90 dias. (auto — recomendado)
+- **Ficam para quando o monitoramento da produção pedir:** paginação da base no servidor (G5), cadastros só da tela aberta (G6), cálculo em Web Worker, virtualização e feature flags; voltar uma publicação é pelo "Instant Rollback" da Vercel (documentado). (auto — recomendado)
+- Implementação do M14 (25/10/2026):
+  - **Carregadores sem React** em `apps/web/src/dados/carregar.ts`, recebendo o cliente do Supabase: a tela e a Edge Function usam os mesmos. **Funções Edge testáveis:** a lógica fica em `servidor.ts` (fetch e variáveis entram de fora), testada pelo Vitest (projeto `funcoes`); `index.ts` só liga ao `Deno.serve`. (auto — recomendado)
+  - **Aprovar exige o servidor:** `definir_situacao` não aprova; o gatilho só deixa virar Aprovada dentro de `aprovar_projecao` (chave de serviço), que recusa projeção mudada durante o cálculo. A tela mostra o erro do servidor como veio. (auto — recomendado)
+  - **Limites novos:** linhas por aba até 300 mil; leitura com 2 minutos de tempo-limite e botão Cancelar; até 20 convites por hora por administrador (`usar_cota`, também para as métricas). (auto — recomendado)
+  - **CSP só com os dois projetos Supabase** (produção e homologação, porque os previews usam a homologação). Projeto novo do Supabase = acrescentar o host em `apps/web/vercel.json` (o teste trava o curinga). (auto — recomendado)
+  - **`main` protegida** no GitHub (CI obrigatório e em dia, também para administradores, sem force push, sem revisão obrigatória por haver um só desenvolvedor); varredura de segredos com bloqueio no push; Dependabot só para segurança e para as Actions (fixadas por SHA). (auto — recomendado)
+  - **Dados de cálculo numa chamada** (`dados_calculo_obras`, formato compacto com colunas fixas; um teste de banco falha se `competencias` ou `efetivo_mes` ganharem coluna). (auto — recomendado)
+  - **Monitoramento:** sem usuário nem obra nas métricas (rota com `:id`); tela Desempenho só para administrador; metas do M12 marcadas pelo 75%. (auto — recomendado)
+  - **Celular:** até 860 px, tabela larga rola dentro do cartão (`!important` sobre o `overflow: hidden` dos cartões) e a página nunca rola de lado; o menu já era uma faixa no topo. (auto — recomendado)
+  - **Aviso ao sair** no assistente de projeção e no Lançar mês (a carga já tem rascunho automático). (auto — recomendado)
+  - **SSL obrigatório no banco:** ligado na homologação; na produção depende do OK do usuário (a regra de permissões bloqueou a mudança feita daqui).
+- Revisão do M14 (25/10/2026), corrigido:
+  - **CSP com `worker-src 'self' blob:` e `font-src 'self' data:`:** a biblioteca de zip (fflate, na leitura e na gravação de .xlsx) cria workers de `blob:`, e o build embute fontes pequenas como `data:`. Com `'self'` só, ler uma folha grande travava em produção — já na `main`, reproduzido com o worker do build. `script-src` segue só `'self'`.
+  - Carga lê um arquivo por vez (campos travados durante a leitura) e cancela o worker ao sair da tela; cota de métricas por envio (240 por hora); servidor carrega as referências na mesma ordem da tela; texto de erro nas métricas sem e-mail nem números longos.
+  - CORS dos previews só na homologação (`ITO_PREVIEWS=sim`, só `ito-git-…-luiz-fp-ires`); `ITO_SITE_URL` aceito com ou sem barra no fim; ordem de publicação no OPERACAO (funções, migrações, site).
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

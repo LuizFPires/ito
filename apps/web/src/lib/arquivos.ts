@@ -1,28 +1,9 @@
 /**
- * Arquivos da carga no navegador: .xlsx/.csv → Planilha (para @ito/carga) e o modelo .xlsx do
- * layout do ITO para baixar. O arquivo nunca sobe para o servidor (decisão M4).
+ * Modelo .xlsx do layout do ITO para baixar (a leitura dos arquivos fica em leitura.ts, num
+ * Web Worker). O arquivo nunca sobe para o servidor (decisão M4).
  */
-import type { Celula, Planilha } from "@ito/carga";
-import { lerCsv, MODELOS } from "@ito/carga";
-import readXlsxFile from "read-excel-file/browser";
+import { MODELOS } from "@ito/carga";
 import writeXlsxFile from "write-excel-file/browser";
-
-/** CSV salvo pelo Excel no Brasil costuma vir em Windows-1252: tenta UTF-8 e cai para ele. */
-export function decodificarTexto(bytes: ArrayBuffer): string {
-  try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  } catch {
-    return new TextDecoder("windows-1252").decode(bytes);
-  }
-}
-
-export const ehCsv = (f: File) => /\.(csv|txt)$/i.test(f.name) || f.type === "text/csv";
-
-export async function planilhaDe(f: File): Promise<Planilha> {
-  if (ehCsv(f)) return { [f.name]: lerCsv(decodificarTexto(await f.arrayBuffer())) };
-  const abas = await readXlsxFile(f);
-  return Object.fromEntries(abas.map((a) => [a.sheet, a.data as unknown as Celula[][]]));
-}
 
 /** Modelo .xlsx: uma aba por parte do arquivo (só cabeçalhos) + aba Instruções. */
 export async function baixarModelo(tipo: keyof typeof MODELOS): Promise<void> {

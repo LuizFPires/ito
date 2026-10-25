@@ -115,6 +115,21 @@ export interface ResultadoProjecao {
  * Pessoas por mês sempre inteiras (decisão do usuário, SPEC §5): até ,2 arredonda para baixo; de
  * ,3 em diante, para cima (1,2 → 1; 1,3 → 2). Tolerância para o ruído do ponto flutuante.
  */
+/**
+ * M14 (desempenho): agregados de uma obra de referência que não mudam com as mexidas na
+ * projeção (régua, mês digitado, premissas). A referência é imutável; a chave leva o que mais
+ * entra no cálculo (função, prazo, lista de funções). Mesmos números, sem refazer 1.000 obras.
+ */
+const memoRef = new WeakMap<Obra, Map<string, unknown>>();
+function lembrar<V>(r: Obra, chave: string, calcular: () => V): V {
+  let m = memoRef.get(r);
+  if (!m) memoRef.set(r, (m = new Map()));
+  if (m.has(chave)) return m.get(chave) as V;
+  const v = calcular();
+  m.set(chave, v);
+  return v;
+}
+
 export function pessoasInteiras(x: number): number {
   if (!(x > 0)) return 0;
   const base = Math.floor(x + 1e-9);
@@ -138,6 +153,7 @@ export function projetar(
   const agg = e.estatistica === "mediana" ? mediana : media;
   const N = e.prazo;
   const ids = ctx.funcoes.map((f) => f.id);
+  const chaveIds = ids.join(",");
   const q: Record<string, number[]> = {};
   const pmPorMilM2: Record<string, number | null> = {};
 
@@ -154,12 +170,14 @@ export function projetar(
       // fixo por mês: média (ou mediana) das cabeças mensais das referências
       // sem cabeças na referência, vale o teto do equivalente (como em cabecasMes)
       const m = agg(
-        refs.map((r) => {
-          const n = nMeses(r);
-          let c = 0;
-          for (let i = 0; i < n; i++) c += cabecasMes(r, k, i);
-          return n ? c / n : 0;
-        }),
+        refs.map((r) =>
+          lembrar(r, `cab:${k}`, () => {
+            const n = nMeses(r);
+            let c = 0;
+            for (let i = 0; i < n; i++) c += cabecasMes(r, k, i);
+            return n ? c / n : 0;
+          }),
+        ),
       );
       q[k] = Array(N).fill(pessoasInteiras(m * aj));
       pmPorMilM2[k] = null;
@@ -167,28 +185,35 @@ export function projetar(
     }
     // PM/1.000 m²: todas as referências (quem não teve a função entra com 0)
     const comArea = refs.filter((r) => r.area > 0);
-    const pm = agg(comArea.map((r) => (soma(r.equivalente[k] ?? []) / r.area) * 1000)) * aj;
+    const pm =
+      agg(
+        comArea.map((r) =>
+          lembrar(r, `pm:${k}`, () => (soma(r.equivalente[k] ?? []) / r.area) * 1000),
+        ),
+      ) * aj;
     // curva no tempo: só das referências que tiveram a função (decisão M3, SPEC §5)
     const curvas = comArea
-      .map((r) => r.equivalente[k] ?? [])
-      .filter((c) => soma(c) > 0)
-      .map((c) => shares(c, N));
+      .filter((r) => lembrar(r, `tem:${k}`, () => soma(r.equivalente[k] ?? []) > 0))
+      .map((r) => lembrar(r, `sh:${k}:${N}`, () => shares(r.equivalente[k] ?? [], N)));
     const shm = Array.from({ length: N }, (_, j) => media(curvas.map((c) => c[j]!)));
     q[k] = shm.map((s) => pessoasInteiras(((pm * e.area) / 1000) * s));
     pmPorMilM2[k] = pm;
   }
 
   // premissas: informadas ou agregadas das referências (SPEC §5)
-  const heMediaObra = (r: Obra) => {
-    const t = totaisPorMes(r, ids);
-    const n = soma(t);
-    return n ? soma(t.map((x, i) => x * (r.heMedia[i] ?? 0))) / n : 0;
-  };
-  const absMedio = (r: Obra) => {
-    const t = totaisPorMes(r, ids);
-    const n = soma(t);
-    return n ? soma(t.map((x, i) => x * (r.absenteismoPct[i] ?? 0))) / n : 0;
-  };
+  const totaisRef = (r: Obra) => lembrar(r, `tot:${chaveIds}`, () => totaisPorMes(r, ids));
+  const heMediaObra = (r: Obra) =>
+    lembrar(r, `he:${chaveIds}`, () => {
+      const t = totaisRef(r);
+      const n = soma(t);
+      return n ? soma(t.map((x, i) => x * (r.heMedia[i] ?? 0))) / n : 0;
+    });
+  const absMedio = (r: Obra) =>
+    lembrar(r, `abs:${chaveIds}`, () => {
+      const t = totaisRef(r);
+      const n = soma(t);
+      return n ? soma(t.map((x, i) => x * (r.absenteismoPct[i] ?? 0))) / n : 0;
+    });
   const heAp = e.heMedia ?? (refs.length ? agg(refs.map(heMediaObra)) : 15);
   const absAp = e.absenteismoPct ?? (refs.length ? agg(refs.map(absMedio)) : 3);
   const turnAp = e.rotatividadePct ?? (refs.length ? agg(refs.map((r) => r.rotatividadePct)) : 5);
@@ -205,10 +230,12 @@ export function projetar(
   const taxa = (campo: "licencaPessoaDias" | "feriasPessoaDias") =>
     refs.length
       ? agg(
-          refs.map((r) => {
-            const m = soma(totaisPorMes(r, ids));
-            return m ? soma(r[campo]) / m : 0;
-          }),
+          refs.map((r) =>
+            lembrar(r, `${campo}:${chaveIds}`, () => {
+              const m = soma(totaisRef(r));
+              return m ? soma(r[campo]) / m : 0;
+            }),
+          ),
         )
       : 0;
   const licAp = e.licencaPorPm ?? taxa("licencaPessoaDias");

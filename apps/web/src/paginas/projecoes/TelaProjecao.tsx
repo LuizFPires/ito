@@ -224,12 +224,8 @@ export function TelaProjecao() {
               }
               onClick={() =>
                 x !== p.situacao &&
-                // M13: os números aprovados são os que quem aprova está vendo
-                situacao.gravar({
-                  id: p.id,
-                  situacao: x,
-                  resumo: x === "aprovada" ? (resumo ?? undefined) : undefined,
-                })
+                // M14: aprovar refaz o cálculo no servidor (os números gravados são os dele)
+                situacao.gravar({ id: p.id, situacao: x })
               }
             >
               {NOME_SITUACAO[x]}

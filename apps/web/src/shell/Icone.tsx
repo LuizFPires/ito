@@ -51,6 +51,12 @@ const DESENHOS: Record<Nome, ReactNode> = {
       <path d="M3 14c.6-2.8 2.6-4.3 5-4.3s4.4 1.5 5 4.3" />
     </>
   ),
+  perf: (
+    <>
+      <path d="M2.5 11.5a5.5 5.5 0 1 1 11 0" />
+      <path d="M8 11.5l2.5-3.5" />
+    </>
+  ),
 };
 
 export function Icone({ nome }: { nome: Nome }) {

@@ -1,11 +1,17 @@
+import { useEffect } from "react";
 import { useRouteError } from "react-router";
+import { detalheDoErro, registrar } from "../lib/metricas";
 import { Botao } from "./componentes";
 import { ehVersaoVelha, recarregarUmaVez } from "./versao";
 
 /** Erro de rota: versão velha recarrega sozinha; o resto mostra o que fazer. */
 export function ErroRota() {
   const erro = useRouteError();
-  if (ehVersaoVelha(erro) && recarregarUmaVez()) return null;
+  const velha = ehVersaoVelha(erro);
+  useEffect(() => {
+    if (!velha) registrar({ tipo: "erro", nome: "tela", detalhe: detalheDoErro(erro) });
+  }, [erro, velha]);
+  if (velha && recarregarUmaVez()) return null;
   return (
     <main style={{ padding: 32, maxWidth: 560 }} role="alert">
       <h1 style={{ marginTop: 0 }}>Algo deu errado nesta tela</h1>

@@ -106,6 +106,13 @@
 .cartaoCorpo {
   padding: 20px 22px;
 }
+/* M14 · tela pequena: a tabela rola dentro do cartão, a página não rola de lado (regra 8) */
+@media (max-width: 860px) {
+  .cartao:has(table) {
+    /* vence o overflow: hidden dos cartões (cantos arredondados) só no celular */
+    overflow-x: auto !important;
+  }
+}
 
 .badge {
   display: inline-flex;

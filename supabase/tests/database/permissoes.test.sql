@@ -16,6 +16,10 @@ select public.gravar_carga($j${"obra": {"id": "perm_obra", "nome": "Obra Permiss
   "rubricas": [{"codigo": 1, "referencia": 220, "valor": 1650}]}]}$j$::jsonb);
 insert into public.projecoes (id, nome, inicio, prazo_meses, area_m2)
   values ('00000000-0000-4000-8000-0000000000bb', 'Projeção Permissões', '2027-01-01', 3, 1000);
+-- M14: aprovada pelo caminho do servidor; quem aprova, pela API, só desfaz a aprovação
+select public.aprovar_projecao('00000000-0000-4000-8000-000000000001',
+  '00000000-0000-4000-8000-0000000000bb', '{"total": 1}',
+  (select atualizado_em from public.projecoes where id = '00000000-0000-4000-8000-0000000000bb'), '{}');
 
 -- faz a operação de verdade, com a RLS e as funções do banco, e desfaz em seguida
 create function public.teste_consegue(op text) returns boolean language plpgsql as $$
@@ -49,7 +53,7 @@ begin
         insert into public.projecoes (nome, inicio, prazo_meses, area_m2)
           values ('Teste', '2027-01-01', 3, 1000);
       when 'aprovar' then
-        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'aprovada', '{"total": 1}');
+        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'em_analise');
       when 'auditoria' then
         select count(*) into n from public.auditoria;
       when 'usuarios' then

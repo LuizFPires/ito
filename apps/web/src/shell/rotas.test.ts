@@ -14,6 +14,7 @@ describe("menu", () => {
       "Rubricas da folha",
       "Auditoria",
       "Usuários",
+      "Desempenho",
     ]);
   });
 

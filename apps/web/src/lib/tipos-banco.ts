@@ -416,6 +416,25 @@ export type Database = {
           },
         ];
       };
+      cotas: {
+        Row: {
+          acao: string;
+          em: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          acao: string;
+          em?: string;
+          usuario_id: string;
+        };
+        Update: {
+          acao?: string;
+          em?: string;
+          usuario_id?: string;
+        };
+        Relationships: [];
+      };
       data_base_beneficios: {
         Row: {
           ano: number;
@@ -943,6 +962,40 @@ export type Database = {
           },
         ];
       };
+      metricas_tela: {
+        Row: {
+          criado_em: string;
+          detalhe: string;
+          id: number;
+          nome: string;
+          rota: string;
+          tipo: string;
+          valor: number | null;
+          versao: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          criado_em?: string;
+          detalhe?: string;
+          id?: never;
+          nome: string;
+          rota?: string;
+          tipo: string;
+          valor?: number | null;
+          versao?: string;
+        };
+        Update: {
+          criado_em?: string;
+          detalhe?: string;
+          id?: never;
+          nome?: string;
+          rota?: string;
+          tipo?: string;
+          valor?: number | null;
+          versao?: string;
+        };
+        Relationships: [];
+      };
       notas_fiscais: {
         Row: {
           cofins: number;
@@ -1294,6 +1347,51 @@ export type Database = {
           },
         ];
       };
+      projecao_aprovacoes: {
+        Row: {
+          aprovado_em: string;
+          aprovado_por: string | null;
+          entradas: NonNullable<Json>;
+          id: number;
+          precos: NonNullable<Json>;
+          projecao_id: string | null;
+          referencias: NonNullable<Json>;
+          resumo: NonNullable<Json>;
+          versao_calculo: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          aprovado_em?: string;
+          aprovado_por?: string | null;
+          entradas: NonNullable<Json>;
+          id?: never;
+          precos: NonNullable<Json>;
+          projecao_id?: string | null;
+          referencias?: NonNullable<Json>;
+          resumo: NonNullable<Json>;
+          versao_calculo: string;
+        };
+        Update: {
+          aprovado_em?: string;
+          aprovado_por?: string | null;
+          entradas?: NonNullable<Json>;
+          id?: never;
+          precos?: NonNullable<Json>;
+          projecao_id?: string | null;
+          referencias?: NonNullable<Json>;
+          resumo?: NonNullable<Json>;
+          versao_calculo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "projecao_aprovacoes_projecao_id_fkey";
+            columns: ["projecao_id"];
+            isOneToOne: false;
+            referencedRelation: "projecoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       projecoes: {
         Row: {
           absenteismo_pct: number | null;
@@ -1566,6 +1664,16 @@ export type Database = {
     };
     Functions: {
       ajustar_cct: { Args: { p_cct: string; p_pct: number }; Returns: number };
+      aprovar_projecao: {
+        Args: {
+          p_atualizado_em: string;
+          p_autor: string;
+          p_id: string;
+          p_registro: Json;
+          p_resumo: Json;
+        };
+        Returns: number;
+      };
       autor_atual: { Args: Record<PropertyKey, never>; Returns: string };
       criar_cct: { Args: { p_id: string; p_nome: string }; Returns: string };
       criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
@@ -1573,13 +1681,10 @@ export type Database = {
         Args: { p_escala_area?: boolean; p_id: string; p_nome: string; p_sinonimo?: string };
         Returns: string;
       };
+      dados_calculo_obras: { Args: { p_ids: string[] }; Returns: Json };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
       definir_situacao: {
-        Args: {
-          p_id: string;
-          p_resumo?: Json;
-          p_situacao: Database["public"]["Enums"]["situacao_projecao"];
-        };
+        Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };
         Returns: undefined;
       };
       definir_situacao_obra: {
@@ -1588,6 +1693,16 @@ export type Database = {
       };
       duplicar_cct: { Args: { p_id: string; p_nome: string; p_origem: string }; Returns: string };
       encerrar_sessoes: { Args: { p_id: string }; Returns: number };
+      erros_tela: {
+        Args: { p_dias?: number };
+        Returns: {
+          detalhe: string;
+          rota: string;
+          ultimo: string;
+          versao: string;
+          vezes: number;
+        }[];
+      };
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
@@ -1608,6 +1723,7 @@ export type Database = {
       json_resumo: { Args: { j: Json }; Returns: boolean };
       lancar_mes: { Args: { p: Json }; Returns: number };
       lancar_mes_dados: { Args: { p: Json }; Returns: number };
+      limpar_metricas_antigas: { Args: Record<PropertyKey, never>; Returns: undefined };
       limpar_rascunhos_antigos: { Args: Record<PropertyKey, never>; Returns: number };
       listar_usuarios: {
         Args: Record<PropertyKey, never>;
@@ -1652,12 +1768,29 @@ export type Database = {
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_projetar: { Args: Record<PropertyKey, never>; Returns: boolean };
       preciso_de_mfa: { Args: Record<PropertyKey, never>; Returns: boolean };
+      registrar_metricas: { Args: { p: Json }; Returns: number };
       regra: {
         Args: { acao: string; adm: boolean; p: Database["public"]["Enums"]["perfil"] };
         Returns: boolean;
       };
+      resumo_metricas: {
+        Args: { p_dias?: number };
+        Returns: {
+          n: number;
+          nome: string;
+          p50: number;
+          p75: number;
+          p95: number;
+          tipo: string;
+          ultimo: string;
+        }[];
+      };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       sou_ativo: { Args: Record<PropertyKey, never>; Returns: boolean };
+      usar_cota: {
+        Args: { p_acao: string; p_janela: string; p_maximo: number; p_usuario: string };
+        Returns: boolean;
+      };
       validar_carga: { Args: { p: Json; v_meses: number }; Returns: undefined };
     };
     Enums: {

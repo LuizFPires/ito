@@ -61,6 +61,16 @@
     display: none;
   }
 }
+/* M14 · tela pequena: as etapas rolam numa faixa, sem alargar a página */
+@media (max-width: 860px) {
+  .etapas {
+    display: flex;
+    overflow-x: auto;
+  }
+  .etapas > li {
+    flex: 0 0 auto;
+  }
+}
 
 .slot {
   display: flex;

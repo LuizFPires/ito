@@ -9,3 +9,6 @@ test-results
 
 # gerados pelo script de migração (M9)
 docs/migracao/
+
+# gerado por scripts/gerar-calculo.mjs (M14)
+supabase/functions/projecoes/calculo.gerado.js
