@@ -219,6 +219,15 @@ test("projeção: histograma com 5 e com 1.000 referências (24 meses)", async (
       await expect(page.getByRole("img", { name: "Histograma previsto" })).toBeVisible();
     }),
   ]);
+  // M14: o mesmo tempo medido dentro do app (useTempoDeTela), sem a espera do Playwright
+  await expect
+    .poll(() => page.evaluate(() => performance.getEntriesByName("ito:abrir histograma").length))
+    .toBeGreaterThan(0);
+  registrar("projeção · todas as refs: abrir o histograma (medido no app)", [
+    await page.evaluate(
+      () => performance.getEntriesByName("ito:abrir histograma").at(-1)!.duration,
+    ),
+  ]);
   await histograma(page, "projeção · todas as refs");
   registrar("projeção · todas as refs: abrir o resultado", [
     await cronometrar(async () => {

@@ -40,6 +40,7 @@ import { PassoHistograma } from "./PassoHistograma";
 import { TIPOLOGIAS } from "../carga/estado";
 import { manualValido, rotulosMeses } from "./projecoes";
 import { Resultado } from "./Resultado";
+import { useTempoDeTela } from "../../ui/useTempoDeTela";
 import s from "./projecoes.module.css";
 
 const PASSOS = [
@@ -146,6 +147,11 @@ function Assistente({
       precos && ctx ? calcularProjecao(e, e.referencias.length ? refs : [], precos, ctx) : null,
     [e, refs, precos, ctx],
   );
+  // M14: quanto o histograma e o resultado levam para abrir (monitoramento, sem dado pessoal)
+  const refsEmDia =
+    !e.referencias.length || (!!refsQ.data && !refsQ.isPlaceholderData && !refsQ.isFetching);
+  useTempoDeTela("abrir histograma", passo === 3, !!calc?.r && refsEmDia);
+  useTempoDeTela("abrir resultado", passo === 6, !!calc?.r && refsEmDia);
 
   const titulo = e.nome.trim() || (id ? "Editar projeção" : "Nova projeção");
   const grupo = (

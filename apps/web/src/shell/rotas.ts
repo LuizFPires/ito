@@ -3,7 +3,17 @@ import type { Usuario } from "../lib/supabase";
 import { podeAuditar, podeGerirUsuarios } from "../lib/permissoes";
 
 export type Icone =
-  "base" | "comp" | "proj" | "carga" | "cid" | "param" | "func" | "rub" | "audit" | "users";
+  | "base"
+  | "comp"
+  | "proj"
+  | "carga"
+  | "cid"
+  | "param"
+  | "func"
+  | "rub"
+  | "audit"
+  | "users"
+  | "perf";
 
 export interface Destino {
   caminho: string;
@@ -104,6 +114,16 @@ export const MENU: readonly Destino[] = [
     resumo:
       "Convidar pessoas, mudar perfil e admin, desativar e reativar, e o que cada perfil pode fazer no ITO.",
     milestone: "M10",
+    visivel: podeGerirUsuarios,
+  },
+  {
+    caminho: "/desempenho",
+    nome: "Desempenho",
+    icone: "perf",
+    grupo: "Administração",
+    resumo:
+      "Quanto as telas levam para abrir no navegador de quem usa o ITO e os erros que aparecem, sem nome nem obra.",
+    milestone: "M14",
     visivel: podeGerirUsuarios,
   },
 ];

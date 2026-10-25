@@ -962,6 +962,40 @@ export type Database = {
           },
         ];
       };
+      metricas_tela: {
+        Row: {
+          criado_em: string;
+          detalhe: string;
+          id: number;
+          nome: string;
+          rota: string;
+          tipo: string;
+          valor: number | null;
+          versao: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          criado_em?: string;
+          detalhe?: string;
+          id?: never;
+          nome: string;
+          rota?: string;
+          tipo: string;
+          valor?: number | null;
+          versao?: string;
+        };
+        Update: {
+          criado_em?: string;
+          detalhe?: string;
+          id?: never;
+          nome?: string;
+          rota?: string;
+          tipo?: string;
+          valor?: number | null;
+          versao?: string;
+        };
+        Relationships: [];
+      };
       notas_fiscais: {
         Row: {
           cofins: number;
@@ -1659,6 +1693,16 @@ export type Database = {
       };
       duplicar_cct: { Args: { p_id: string; p_nome: string; p_origem: string }; Returns: string };
       encerrar_sessoes: { Args: { p_id: string }; Returns: number };
+      erros_tela: {
+        Args: { p_dias?: number };
+        Returns: {
+          detalhe: string;
+          rota: string;
+          ultimo: string;
+          versao: string;
+          vezes: number;
+        }[];
+      };
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
@@ -1679,6 +1723,7 @@ export type Database = {
       json_resumo: { Args: { j: Json }; Returns: boolean };
       lancar_mes: { Args: { p: Json }; Returns: number };
       lancar_mes_dados: { Args: { p: Json }; Returns: number };
+      limpar_metricas_antigas: { Args: Record<PropertyKey, never>; Returns: undefined };
       limpar_rascunhos_antigos: { Args: Record<PropertyKey, never>; Returns: number };
       listar_usuarios: {
         Args: Record<PropertyKey, never>;
@@ -1723,9 +1768,22 @@ export type Database = {
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_projetar: { Args: Record<PropertyKey, never>; Returns: boolean };
       preciso_de_mfa: { Args: Record<PropertyKey, never>; Returns: boolean };
+      registrar_metricas: { Args: { p: Json }; Returns: number };
       regra: {
         Args: { acao: string; adm: boolean; p: Database["public"]["Enums"]["perfil"] };
         Returns: boolean;
+      };
+      resumo_metricas: {
+        Args: { p_dias?: number };
+        Returns: {
+          n: number;
+          nome: string;
+          p50: number;
+          p75: number;
+          p95: number;
+          tipo: string;
+          ultimo: string;
+        }[];
       };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       sou_ativo: { Args: Record<PropertyKey, never>; Returns: boolean };

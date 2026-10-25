@@ -1,6 +1,7 @@
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { useSessao } from "../auth/sessao";
+import { iniciarMonitoramento } from "../lib/metricas";
 import { Badge } from "../ui/componentes";
 import { BuscaGlobal } from "./BuscaGlobal";
 import { Icone } from "./Icone";
@@ -23,6 +24,8 @@ export function Shell() {
   const { erroUsuario, usuario } = useSessao();
   const menu = menuDe(usuario);
   const { recolhido, alternar } = useMenuRecolhido();
+  // M14: tempos de tela e erros para o administrador (sem dado pessoal)
+  useEffect(iniciarMonitoramento, []);
 
   return (
     <div className={s.app}>

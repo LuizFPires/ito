@@ -3,6 +3,10 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
+  // versão do build nas métricas de tela (M14): commit da Vercel ou "local"
+  define: {
+    __VERSAO_SITE__: JSON.stringify((process.env.VERCEL_GIT_COMMIT_SHA ?? "local").slice(0, 7)),
+  },
   server: { port: 5173, strictPort: true },
   // Núcleo (React, Router, Query, supabase-js) ≈ 170 kB gzip; telas já vêm sob demanda.
   build: { chunkSizeWarningLimit: 700 },
