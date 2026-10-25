@@ -57,7 +57,7 @@ const INSTANTE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
 const IDENTIFICADOR = /^(ano|data_base|data_base_vigente|codigo|.+_codigo|mes|mes_idx|dia)$/;
 /** Campos em R$ e em percentual (regra 3: R$ 1.234,56 e 43,96%). */
 const MOEDA =
-  /^(valor|salario|tarifa_local|passagem|valor_.+|.+_valor|ito_apropriado|erp_realizado)$/;
+  /^(valor|salario|tarifa_local|passagem|valor_.+|.+_valor|ito_apropriado|erp_realizado|total|vigente)$/;
 const PERCENTUAL = /(_pct|_mix_.+)$/;
 
 /** Valor guardado em JSON, no formato brasileiro (regra 3). */
@@ -115,5 +115,7 @@ const NOMES: Record<string, string> = {
   he_media: "HE média",
   quantidades_manuais: "quantidades informadas",
   iss_pct: "ISS",
+  resumo: "números (total, pico, pessoa-mês)",
+  pessoa_mes: "pessoa-mês",
 };
 export const nomeCampo = (c: string) => NOMES[c] ?? c.replace(/_/g, " ");

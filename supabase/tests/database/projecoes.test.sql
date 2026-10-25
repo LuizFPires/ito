@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(20);
 
 select has_table('public', 'projecoes', 'tabela projecoes');
 select is((select relrowsecurity from pg_class where oid = 'public.projecoes'::regclass), true, 'RLS ligada');
@@ -45,8 +45,13 @@ select throws_ok($$update public.projecoes set area_m2 = 1 where id = '11111111-
 select throws_ok($$update public.projecoes set resumo = '{"total": 1}' where id = '11111111-1111-4111-8111-111111111111'$$,
   '42501', null, 'planejamento não regrava o resumo da aprovada');
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
-select lives_ok($$update public.projecoes set resumo = '{"total": 1}' where id = '11111111-1111-4111-8111-111111111111'$$,
-  'quem aprova e edita (admin) recalcula o resumo da aprovada');
+-- M13 · S05: congelada também para quem aprova; a aprovação ficou na auditoria com os números
+select throws_ok($$update public.projecoes set resumo = '{"total": 999999999}' where id = '11111111-1111-4111-8111-111111111111'$$,
+  '42501', null, 'nem quem aprova (admin) muda o resumo da aprovada');
+select is((select (depois -> 'resumo') is not null from public.auditoria
+           where tabela = 'projecoes' and ref = '11111111-1111-4111-8111-111111111111'
+             and depois ->> 'situacao' = 'aprovada' and antes ->> 'situacao' <> 'aprovada'),
+  true, 'a aprovação fica na auditoria com o resumo aprovado');
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
 select throws_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'em_analise')$$,
   '42501', null, 'planejamento não desfaz a aprovação');
@@ -57,6 +62,11 @@ insert into public.projecoes (id, nome, inicio, prazo_meses, area_m2, criado_por
   values ('22222222-2222-4222-8222-222222222222', 'Autoria', '2027-01-01', 3, 100, '00000000-0000-4000-8000-000000000001');
 select is((select criado_por::text from public.projecoes where id = '22222222-2222-4222-8222-222222222222'),
   '00000000-0000-4000-8000-000000000002', 'autor é quem criou, não o informado');
+
+-- M13 · S05: aprovar e trocar os números no mesmo passo não vale (admin aprova e edita)
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select throws_ok($$update public.projecoes set situacao = 'aprovada', resumo = '{"total": 5}'
+  where id = '22222222-2222-4222-8222-222222222222'$$, '42501', null, 'aprovar sem mudar a projeção');
 
 select * from finish();
 rollback;

@@ -35,6 +35,10 @@ describe("auditoria", () => {
     expect(valorAuditado(null)).toBe("—");
     expect(valorAuditado(["ped", "serv"])).toBe("ped, serv");
     expect(valorAuditado([{ a: 1 }, { a: 2 }])).toBe("2 itens");
+    // M13 · S05: números da projeção aprovada no histórico
+    expect(valorAuditado({ total: 1234.5, pico: 40, pessoa_mes: 310.25 }, "resumo")).toBe(
+      "total: R$ 1.234,50; pico: 40; pessoa-mês: 310,25",
+    );
   });
 
   it("rótulo do registro pela chave", () => {

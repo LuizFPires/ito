@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { mesAno, numero } from "@ito/formato";
+import { mesAno, moeda, numero } from "@ito/formato";
 import { useSessao } from "../../auth/sessao";
 import { nomeCurtoCct } from "../../dados/cidades";
 import {
@@ -73,8 +73,8 @@ export function TelaProjecao() {
   );
   // resumo da lista desatualizado (preço da cidade, tabela vigente, referência apagada): regrava
   const resumo = calc && contexto ? resumoDaProjecao(calc, contexto.vigente) : null;
-  // aprovada: só quem aprova e edita regrava (regra no banco)
-  const gravaResumo = !!p && projeta && (p.situacao !== "aprovada" || aprova);
+  // aprovada: o resumo fica congelado na aprovação (M13 · S05, regra no banco)
+  const gravaResumo = !!p && projeta && p.situacao !== "aprovada";
   const atrasado = !!(p && resumo && gravaResumo && !mesmoResumo(p.resumo, resumo));
   const chaveResumo = atrasado ? JSON.stringify([p!.id, resumo]) : "";
   useEffect(() => {
@@ -243,6 +243,15 @@ export function TelaProjecao() {
           </Botao>
         )}
       </div>
+
+      {/* M13 · S05: os números aprovados ficam congelados; a tela calcula com os preços de hoje */}
+      {aprovada && resumo && p.resumo.total != null && !mesmoResumo(p.resumo, resumo) && (
+        <p className={f.aviso} role="status">
+          Os preços mudaram depois da aprovação. O total aprovado foi {moeda(p.resumo.total)}; a
+          tela mostra o cálculo com os preços de hoje ({moeda(resumo.total)}). Para aprovar os
+          valores novos, volte a projeção a Em análise e aprove de novo.
+        </p>
+      )}
 
       {/* referência reaberta (M11): o resultado muda a cada mês lançado nela */}
       {!manual && refs.some((b) => b.obra.situacao === "andamento") && (
