@@ -9,6 +9,8 @@ export const LIMITES_ARQUIVO = {
   planilhaBytes: 50 * 1024 * 1024,
   /** abas de uma planilha */
   abas: 30,
+  /** linhas de uma aba (a maior obra real tem menos de 10 mil) */
+  linhas: 300_000,
   /** cada XML de nota fiscal */
   xmlBytes: 2 * 1024 * 1024,
   /** notas fiscais de um envio */

@@ -58,7 +58,8 @@ async function lancar(page: Page, comp: string, pessoas: number, botao: RegExp) 
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     buffer: await folhaDoMes(comp, pessoas),
   });
-  await expect(page.getByText(/1 competência · /)).toBeVisible();
+  // leitura no Web Worker (M14): no Vite em dev, a primeira compila o worker
+  await expect(page.getByText(/1 competência · /)).toBeVisible({ timeout: 30_000 });
   await continuar(page);
   await expect(page.getByRole("row", { name: /^PEDREIRO / })).toContainText("reconhecida");
   await continuar(page);

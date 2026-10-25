@@ -1,9 +1,9 @@
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { ErroLeitura, Leituras, TipoArquivo } from "@ito/carga";
-import { lerErp, lerFolha, lerNotasFiscais, lerPonto, lerVt } from "@ito/carga";
-import { moeda, numero } from "@ito/formato";
-import { baixarModelo, decodificarTexto, planilhaDe } from "../../lib/arquivos";
-import { foraDoLimite, LIMITES_ARQUIVO } from "../../lib/limitesArquivos";
+import { numero } from "@ito/formato";
+import { baixarModelo } from "../../lib/arquivos";
+import { LeituraInterrompida, lerNoWorker } from "../../lib/lerNoWorker";
+import { foraDoLimite } from "../../lib/limitesArquivos";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
 import u from "../../ui/ui.module.css";
@@ -66,6 +66,7 @@ const FOLHA_VAZIA = { rubricas: [], pessoas: [], resumo: [], erros: [] };
 export function EtapaArquivos({ r, mudar }: PropsEtapa) {
   const avisar = useToast();
   const [lendo, setLendo] = useState<TipoArquivo | null>(null);
+  const cancelar = useRef<AbortController | null>(null);
 
   async function ler(tipo: TipoArquivo, arquivos: FileList | null) {
     if (!arquivos?.length) return;
@@ -75,66 +76,12 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
       return;
     }
     setLendo(tipo);
+    const controle = new AbortController();
+    cancelar.current = controle;
     try {
       const nomes = [...arquivos].map((a) => a.name).join(", ");
-      let parcial: Partial<Leituras> = {};
-      let resumo = "";
-      let erros: ErroLeitura[] = [];
-      if (tipo === "nf") {
-        const lidas = await Promise.all(
-          [...arquivos].map(async (a) =>
-            lerNotasFiscais(decodificarTexto(await a.arrayBuffer()), a.name),
-          ),
-        );
-        const notas = lidas.flatMap((l) => l.notas);
-        erros = lidas.flatMap((l) => l.erros);
-        parcial = { notas };
-        const soma = (k: "valor" | "iss" | "pis" | "cofins") =>
-          moeda(notas.reduce((t, n) => t + n[k], 0));
-        resumo = `${plural(notas.length, "nota", "notas")} · ${soma("valor")} em serviços · ISS ${soma("iss")}, PIS ${soma("pis")} e COFINS ${soma("cofins")} retidos`;
-      } else {
-        const p = await planilhaDe(arquivos[0]!);
-        if (Object.keys(p).length > LIMITES_ARQUIVO.abas) {
-          avisar(`Planilha com mais de ${LIMITES_ARQUIVO.abas} abas: use o modelo do ITO.`);
-          return;
-        }
-        if (tipo === "folha") {
-          const folha = lerFolha(p);
-          erros = folha.erros;
-          parcial = { folha };
-          const comps = new Set(folha.rubricas.map((x) => `${x.comp.ano}-${x.comp.mes}`)).size;
-          const mats = new Set(folha.rubricas.map((x) => x.matricula)).size;
-          const rubs = new Set(folha.rubricas.map((x) => x.codigo)).size;
-          resumo = `${plural(comps, "competência", "competências")} · ${plural(folha.rubricas.length, "lançamento", "lançamentos")} · ${plural(mats, "matrícula", "matrículas")} · ${plural(rubs, "rubrica", "rubricas")}`;
-        } else if (tipo === "ponto") {
-          const l = lerPonto(p);
-          erros = l.erros;
-          parcial = { ponto: l.linhas };
-          resumo = `${numero(
-            l.linhas.reduce((t, x) => t + x.he, 0),
-            1,
-          )} h de HE · ${numero(
-            l.linhas.reduce((t, x) => t + x.faltas, 0),
-            1,
-          )} h de falta`;
-        } else if (tipo === "vt") {
-          const l = lerVt(p);
-          erros = l.erros;
-          parcial = { vt: l.linhas };
-          resumo = `${plural(l.linhas.length, "crédito", "créditos")} · ${moeda(l.linhas.reduce((t, x) => t + x.valor, 0))}`;
-        } else {
-          const l = lerErp(p);
-          erros = l.erros;
-          parcial = { erp: l.linhas };
-          const meses = new Set(l.linhas.map((x) => `${x.comp.ano}-${x.comp.mes}`)).size;
-          const contas = [...new Set(l.linhas.map((x) => x.conta))].sort();
-          resumo = `${plural(meses, "mês", "meses")} · ${
-            contas.length > 1
-              ? `contas ${contas[0]} a ${contas[contas.length - 1]}`
-              : plural(contas.length, "conta", "contas")
-          }`;
-        }
-      }
+      // M14 · S07: lido num Web Worker (a tela não trava; Cancelar encerra na hora)
+      const { parcial, resumo, erros } = await lerNoWorker(tipo, [...arquivos], controle.signal);
       mudar((x) => {
         const leituras: Leituras = { folha: FOLHA_VAZIA, ...x.leituras, ...parcial };
         // erros dos demais arquivos entram na verificação (a folha traz os seus)
@@ -149,9 +96,19 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
           arquivos: { ...x.arquivos, [tipo]: { nome: nomes, resumo, erros: textoErros(erros) } },
         };
       });
-    } catch {
-      avisar("Não foi possível ler o arquivo. Envie .xlsx, .csv ou .xml no layout do ITO.");
+    } catch (e) {
+      const motivo = e instanceof LeituraInterrompida ? e.motivo : "falha";
+      avisar(
+        motivo === "cancelada"
+          ? "Leitura cancelada."
+          : motivo === "tempo"
+            ? "O arquivo demorou mais de 2 minutos para ler. Divida-o por período e envie de novo."
+            : motivo === "arquivo"
+              ? (e as Error).message
+              : "Não foi possível ler o arquivo. Envie .xlsx, .csv ou .xml no layout do ITO.",
+      );
     } finally {
+      cancelar.current = null;
       setLendo(null);
     }
   }
@@ -196,6 +153,7 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
           lendo={lendo === sl.tipo}
           onLer={(a) => ler(sl.tipo, a)}
           onRemover={() => remover(sl.tipo)}
+          onCancelar={() => cancelar.current?.abort()}
         />
       ))}
     </Cartao>
@@ -208,12 +166,14 @@ function SlotArquivo({
   lendo,
   onLer,
   onRemover,
+  onCancelar,
 }: {
   slot: Slot;
   meta: { nome: string; resumo: string; erros: string[] } | undefined;
   lendo: boolean;
   onLer: (a: FileList | null) => void;
   onRemover: () => void;
+  onCancelar: () => void;
 }) {
   const id = useId();
   const avisar = useToast();
@@ -274,9 +234,14 @@ function SlotArquivo({
           Baixar modelo
         </Botao>
       )}
-      {meta && (
+      {meta && !lendo && (
         <Botao pequeno variante="fantasma" onClick={onRemover}>
           Remover
+        </Botao>
+      )}
+      {lendo && (
+        <Botao pequeno variante="fantasma" onClick={onCancelar}>
+          Cancelar
         </Botao>
       )}
       {/* input antes do rótulo: o foco do teclado aparece no "botão" (CSS :focus-visible + label) */}

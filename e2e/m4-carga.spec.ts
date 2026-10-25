@@ -110,7 +110,7 @@ test("carga completa pelo DP/RH: folha .xlsx, mapeamento, rubrica nova, realocad
   });
   await expect(
     page.getByText("2 competências · 6 lançamentos · 2 matrículas · 3 rubricas"),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 30_000 }); // leitura no Web Worker (M14)
   await expect(page.getByText("TRABALHADOR FICTICIO")).toHaveCount(0);
   await page.getByRole("button", { name: /^01 Obra/ }).click();
   await expect(page.getByLabel("Início da obra")).toHaveValue("2025-03");
