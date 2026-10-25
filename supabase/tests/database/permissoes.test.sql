@@ -79,7 +79,7 @@ begin
              as x (id uuid, email text, perfil public.perfil, admin boolean) loop
     vistos := vistos + 1;
     perform set_config('request.jwt.claims',
-      jsonb_build_object('sub', u.id, 'role', 'authenticated')::text, true);
+      jsonb_build_object('sub', u.id, 'role', 'authenticated', 'aal', 'aal2')::text, true); -- M13: sessão com MFA
     for t in select * from public.permissoes() x
              where x.admin = u.admin and (u.admin or x.perfil = u.perfil::text) loop
       -- funções pode_* (as telas e as políticas usam)

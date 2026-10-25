@@ -10,7 +10,9 @@ begin
       ('00000000-0000-4000-8000-000000000002'::uuid, 'planejamento@ito.local', 'Planejamento', 'planejamento', false),
       ('00000000-0000-4000-8000-000000000003'::uuid, 'engenharia@ito.local', 'Engenharia', 'engenharia', false),
       ('00000000-0000-4000-8000-000000000004'::uuid, 'dprh@ito.local', 'DP RH', 'dp_rh', false),
-      ('00000000-0000-4000-8000-000000000005'::uuid, 'diretoria@ito.local', 'Diretoria', 'diretoria', false)
+      ('00000000-0000-4000-8000-000000000005'::uuid, 'diretoria@ito.local', 'Diretoria', 'diretoria', false),
+      -- conta do e2e do MFA (M13): única que precisa do segundo fator no local
+      ('00000000-0000-4000-8000-000000000006'::uuid, 'mfa@ito.local', 'Teste MFA', 'diretoria', false)
     ) as t(id, email, nome, perfil, admin)
   loop
     insert into auth.users (
@@ -27,3 +29,7 @@ begin
     values (gen_random_uuid(), u.id, u.id::text, jsonb_build_object('sub', u.id::text, 'email', u.email), 'email', now(), now(), now());
   end loop;
 end $$;
+
+-- M13: as contas de desenvolvimento entram só com senha (no ITO de verdade, administrador,
+-- controladoria e diretoria precisam do aplicativo autenticador); mfa@ito.local testa o MFA
+update public.usuarios set mfa_dispensado = true where email like '%@ito.local' and email <> 'mfa@ito.local';

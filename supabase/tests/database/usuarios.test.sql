@@ -35,7 +35,7 @@ select throws_ok(
 
 -- Admin: vê todos e altera perfil de outro
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
-select is((select count(*)::int from public.usuarios), 5, 'admin vê todos');
+select is((select count(*)::int from public.usuarios), 6, 'admin vê todos (5 perfis + conta do teste de MFA)');
 update public.usuarios set perfil = 'planejamento' where id = '00000000-0000-4000-8000-000000000003';
 select is(
   (select perfil::text from public.usuarios where id = '00000000-0000-4000-8000-000000000003'),

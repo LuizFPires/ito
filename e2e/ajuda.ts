@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
@@ -83,6 +84,16 @@ export async function apiAdmin() {
       if (!r.ok) throw new Error(`POST ${caminho}: ${r.status} ${await r.text()}`);
       return r;
     },
+    /** Edge Function (ex.: usuarios) com o token do admin. */
+    funcao: async (nome: string, corpo: unknown) => {
+      const r = await fetch(`${url}/functions/v1/${nome}`, {
+        method: "POST",
+        headers: cab,
+        body: JSON.stringify(corpo),
+      });
+      if (!r.ok) throw new Error(`função ${nome}: ${r.status} ${await r.text()}`);
+      return r.json();
+    },
     alterar: (caminho: string, corpo: unknown) =>
       fetch(`${url}/rest/v1/${caminho}`, {
         method: "PATCH",
@@ -90,4 +101,19 @@ export async function apiAdmin() {
         body: JSON.stringify(corpo),
       }),
   };
+}
+
+/** Código TOTP de 6 números (RFC 6238, como o aplicativo autenticador) a partir da chave base32. */
+export function codigoTotp(segredo: string, agora = Date.now()): string {
+  const alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = "";
+  for (const c of segredo.replace(/=+$/, "").toUpperCase())
+    bits += alfabeto.indexOf(c).toString(2).padStart(5, "0");
+  const chave = Buffer.from(bits.match(/.{8}/g)!.map((b) => parseInt(b, 2)));
+  const contador = Buffer.alloc(8);
+  contador.writeBigUInt64BE(BigInt(Math.floor(agora / 30_000)));
+  const h = createHmac("sha1", chave).update(contador).digest();
+  const i = h[h.length - 1]! & 0xf;
+  const n = (h.readUInt32BE(i) & 0x7fffffff) % 1_000_000;
+  return String(n).padStart(6, "0");
 }

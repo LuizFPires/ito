@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { supabase } from "../lib/supabase";
 import { limparSelecao } from "../lib/selecao";
 import type { Usuario } from "../lib/supabase";
+import { nivelDaSessao, precisaDeMfa } from "./mfa";
 
 interface SessaoCtx {
   /** undefined = ainda carregando; null = sem login */
@@ -12,6 +13,8 @@ interface SessaoCtx {
   usuario: Usuario | null | undefined;
   /** A conta existe no Auth, mas o cadastro em `usuarios` não pôde ser lido. */
   erroUsuario: boolean;
+  /** M13: a conta precisa do segundo fator e a sessão ainda não tem (AAL1). */
+  faltaMfa: boolean;
   /** Devolve false quando não deu para encerrar a sessão (ex.: sem rede). */
   sair: () => Promise<boolean>;
 }
@@ -20,6 +23,7 @@ const Ctx = createContext<SessaoCtx>({
   sessao: undefined,
   usuario: undefined,
   erroUsuario: false,
+  faltaMfa: false,
   sair: async () => true,
 });
 
@@ -58,6 +62,7 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
     sessao,
     usuario: sessao === null ? null : usuario,
     erroUsuario: !!uid && isError,
+    faltaMfa: !!sessao && precisaDeMfa(usuario) && nivelDaSessao(sessao) !== "aal2",
     sair: async () => {
       limparSelecao();
       const { error } = await supabase.auth.signOut();

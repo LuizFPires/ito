@@ -157,6 +157,33 @@ async function mudarSituacao(id: string, ativo: boolean, quem: string) {
   return resposta(200, { id, ativo });
 }
 
+/**
+ * M13: zera o segundo fator de quem perdeu o celular. Apaga os fatores no Auth e encerra as
+ * sessões (a sessão AAL2 antiga não vale mais); no próximo login a pessoa se inscreve de novo.
+ * Fica na auditoria (mfa_zerado_em, com o admin como autor).
+ */
+async function zerarMfa(id: string, quem: string) {
+  if (!idValido(id)) return erro(400, "Usuário inválido. Atualize a página.");
+  const fatores = await chamar(`/auth/v1/admin/users/${id}/factors`);
+  if (!fatores.ok) return erro(502, "Não foi possível ler o segundo fator. Tente de novo.");
+  const lista = Array.isArray(fatores.corpo) ? (fatores.corpo as { id: string }[]) : [];
+  for (const f of lista) {
+    const apagado = await chamar(`/auth/v1/admin/users/${id}/factors/${f.id}`, {
+      method: "DELETE",
+    });
+    if (!apagado.ok) return erro(502, "Não foi possível zerar o segundo fator. Tente de novo.");
+  }
+  const sessoes = await chamar("/rest/v1/rpc/encerrar_sessoes", {
+    method: "POST",
+    json: { p_id: id },
+  });
+  if (!sessoes.ok)
+    return erro(502, "O segundo fator foi zerado, mas a sessão antiga não saiu. Tente de novo.");
+  const linha = await gerir(quem, id, { mfa_zerado_em: new Date().toISOString() });
+  if (!linha.ok) return erro(400, mensagemBanco(linha.corpo));
+  return resposta(200, { id, fatores: lista.length });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return erro(405, "Use POST.");
@@ -178,6 +205,8 @@ Deno.serve(async (req) => {
       return mudarSituacao(String(corpo.id ?? ""), false, quem.id);
     case "reativar":
       return mudarSituacao(String(corpo.id ?? ""), true, quem.id);
+    case "zerar_mfa":
+      return zerarMfa(String(corpo.id ?? ""), quem.id);
     default:
       return erro(400, "Ação desconhecida.");
   }

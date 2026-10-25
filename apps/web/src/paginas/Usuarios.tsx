@@ -7,6 +7,7 @@ import {
   useAlterarUsuario,
   useConvidar,
   useLinkSenha,
+  useZerarMfa,
   usePermissoes,
   useSituacao,
   useUsuarios,
@@ -189,8 +190,9 @@ function LinhaUsuario({ u, eu }: { u: UsuarioLista; eu: boolean }) {
   const alterar = useAlterarUsuario();
   const situacao = useSituacao();
   const link = useLinkSenha();
+  const zerar = useZerarMfa();
   const s = situacaoDe(u);
-  const ocupado = alterar.isPending || situacao.isPending || link.isPending;
+  const ocupado = alterar.isPending || situacao.isPending || link.isPending || zerar.isPending;
   return (
     <tr>
       <td>
@@ -229,6 +231,13 @@ function LinhaUsuario({ u, eu }: { u: UsuarioLista; eu: boolean }) {
         <div className="sub">
           {u.ultimo_acesso ? `último acesso ${dataHora(u.ultimo_acesso)}` : "nunca entrou"}
         </div>
+        {u.mfa_obrigatorio && (
+          <div className="sub">
+            {u.mfa_ativo
+              ? "segundo fator ativo"
+              : "segundo fator pendente (ativa no próximo login)"}
+          </div>
+        )}
       </td>
       <td className={f.r} style={{ whiteSpace: "nowrap" }}>
         {u.ativo && (
@@ -240,6 +249,24 @@ function LinhaUsuario({ u, eu }: { u: UsuarioLista; eu: boolean }) {
             onClick={() => link.mutate(u.id)}
           >
             Enviar link de senha
+          </Botao>
+        )}{" "}
+        {!eu && u.mfa_ativo && (
+          <Botao
+            pequeno
+            variante="fantasma"
+            disabled={ocupado}
+            title="Para quem perdeu o celular: a pessoa ativa o segundo fator de novo no próximo login"
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Zerar o segundo fator de ${u.email}? A sessão dela é encerrada e, no próximo login, ela lê um QR code novo no aplicativo autenticador.`,
+                )
+              )
+                zerar.mutate(u.id);
+            }}
+          >
+            Zerar segundo fator
           </Botao>
         )}{" "}
         {!eu && (

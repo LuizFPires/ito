@@ -1513,6 +1513,8 @@ export type Database = {
           criado_em: string;
           email: string;
           id: string;
+          mfa_dispensado: boolean;
+          mfa_zerado_em: string | null;
           nome: string;
           perfil: Database["public"]["Enums"]["perfil"];
         };
@@ -1524,6 +1526,8 @@ export type Database = {
           criado_em?: string;
           email: string;
           id: string;
+          mfa_dispensado?: boolean;
+          mfa_zerado_em?: string | null;
           nome?: string;
           perfil?: Database["public"]["Enums"]["perfil"];
         };
@@ -1534,6 +1538,8 @@ export type Database = {
           criado_em?: string;
           email?: string;
           id?: string;
+          mfa_dispensado?: boolean;
+          mfa_zerado_em?: string | null;
           nome?: string;
           perfil?: Database["public"]["Enums"]["perfil"];
         };
@@ -1589,6 +1595,7 @@ export type Database = {
       gravar_resumos: { Args: { p: Json }; Returns: number };
       lancar_mes: { Args: { p: Json }; Returns: number };
       lancar_mes_dados: { Args: { p: Json }; Returns: number };
+      limpar_rascunhos_antigos: { Args: Record<PropertyKey, never>; Returns: number };
       listar_usuarios: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1598,6 +1605,8 @@ export type Database = {
           criado_em: string;
           email: string;
           id: string;
+          mfa_ativo: boolean;
+          mfa_obrigatorio: boolean;
           nome: string;
           perfil: Database["public"]["Enums"]["perfil"];
           ultimo_acesso: string;
@@ -1607,6 +1616,8 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];
       };
+      mfa_obrigatorio: { Args: { p_id: string }; Returns: boolean };
+      mfa_ok: { Args: Record<PropertyKey, never>; Returns: boolean };
       permissoes: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1627,6 +1638,7 @@ export type Database = {
       pode_editar_cadastros: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_projetar: { Args: Record<PropertyKey, never>; Returns: boolean };
+      preciso_de_mfa: { Args: Record<PropertyKey, never>; Returns: boolean };
       regra: {
         Args: { acao: string; adm: boolean; p: Database["public"]["Enums"]["perfil"] };
         Returns: boolean;
