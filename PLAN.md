@@ -230,10 +230,10 @@ O ITO deixa de servir só para obras concluídas: uma obra pode começar no ITO 
 
 ## M12 — Desempenho (pedido do usuário, 24/10/2026; plano em `ITO_Plano_Implementacao_Performance.md`)
 Medir antes de mexer: só entra otimização com número de antes e depois e sem mudar nenhum resultado do motor (golden, diferencial e conferência continuam iguais).
-- [ ] Baseline (Fase 0): `docs/performance/baseline.md` com tamanho do código baixado, tempos de abertura (base, obra, projeção), latência das mexidas no histograma da projeção, custo do motor por tamanho (projeção com 5, 23, 100 e 1.000 referências; obra de 9 e 36 meses) e tarefas longas; em três cenários (as 23 obras reais da homologação, 100 e 1.000 obras sintéticas), sobre o build de produção.
-- [ ] Lista priorizada de gargalos medidos (impacto, esforço, risco), cada um com a hipótese verificada.
-- [ ] Correções dos gargalos P0 medidos, uma por commit, com a medição de antes e depois no baseline.
-- [ ] Medição repetível: `pnpm perf` roda o baseline de novo e grava os números.
+- [x] Baseline (Fase 0): `docs/performance/baseline.md` com tamanho do código baixado, tempos de abertura (base, obra, projeção), latência das mexidas no histograma da projeção, custo do motor por tamanho (projeção com 5, 23, 100 e 1.000 referências; obra de 9 e 36 meses) e tarefas longas; em três cenários (as 23 obras reais da homologação, 100 e 1.000 obras sintéticas), sobre o build de produção.
+- [x] Lista priorizada de gargalos medidos (impacto, esforço, risco), cada um com a hipótese verificada.
+- [x] Correções dos gargalos P0 medidos, uma por commit, com a medição de antes e depois no baseline.
+- [x] Medição repetível: `pnpm perf` roda o baseline de novo e grava os números.
 
 **Aceite:** baseline reproduzível; cada gargalo P0 corrigido com ganho medido; nenhum teste de cálculo muda; nenhuma regressão nos e2e.
 
