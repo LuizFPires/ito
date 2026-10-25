@@ -1587,12 +1587,21 @@ export type Database = {
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
+      exigir_lote: { Args: { max_bytes: number; p: Json; tipo: string }; Returns: undefined };
       gerir_usuario: { Args: { p_autor: string; p_id: string; p_patch: Json }; Returns: number };
       gravar_cadastros_da_carga: { Args: { p: Json }; Returns: undefined };
       gravar_carga: { Args: { p: Json }; Returns: string };
       gravar_carga_dados: { Args: { p: Json }; Returns: string };
       gravar_meses_da_carga: { Args: { p: Json; v_id: string }; Returns: undefined };
       gravar_resumos: { Args: { p: Json }; Returns: number };
+      json_numeros: {
+        Args: { chaves?: string[]; j: Json; maximo: number; minimo: number; n: number };
+        Returns: boolean;
+      };
+      json_opcoes: { Args: { j: Json; n: number; opcoes: string[] }; Returns: boolean };
+      json_premissas: { Args: { j: Json }; Returns: boolean };
+      json_quantidades: { Args: { j: Json }; Returns: boolean };
+      json_resumo: { Args: { j: Json }; Returns: boolean };
       lancar_mes: { Args: { p: Json }; Returns: number };
       lancar_mes_dados: { Args: { p: Json }; Returns: number };
       limpar_rascunhos_antigos: { Args: Record<PropertyKey, never>; Returns: number };
