@@ -1,9 +1,10 @@
 import { execSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
-import { entrar, semRolagemLateral } from "./ajuda";
+import { entrar, semRolagemLateral, codigoTotp, envLocal } from "./ajuda";
 
-const URL_API = "http://127.0.0.1:54821";
-const MAILPIT = "http://127.0.0.1:54824";
+const URL_API = envLocal().VITE_SUPABASE_URL ?? "http://127.0.0.1:54821";
+// Mailpit fica 3 portas acima da API (supabase/config.toml)
+const MAILPIT = URL_API.replace(/\d+$/, (p) => String(Number(p) + 3));
 const EMAIL = `e2e-convite-${Date.now()}@ito.local`;
 
 /** Chave de serviço do Supabase local, só para o teste apagar o usuário que criou. */
@@ -83,6 +84,11 @@ test("admin convida, muda o perfil, desativa e reativa; a pessoa define a senha 
   await convidada.getByLabel("Nova senha").fill("senha-e2e-2026");
   await convidada.getByLabel("Confirme a senha").fill("senha-e2e-2026");
   await convidada.getByRole("button", { name: "Salvar e entrar" }).click();
+  // M13: diretoria precisa do segundo fator antes de entrar
+  await expect(convidada.getByRole("heading", { name: "Ative o segundo fator" })).toBeVisible();
+  const segredo = (await convidada.locator("[data-segredo]").textContent())!.trim();
+  await convidada.getByLabel("Código do aplicativo").fill(codigoTotp(segredo));
+  await convidada.getByRole("button", { name: "Entrar" }).click();
   await expect(convidada.getByRole("heading", { level: 1, name: "Base histórica" })).toBeVisible();
   // perfil trocado para diretoria: lê a auditoria, não gere usuários
   await expect(convidada.getByRole("link", { name: "Auditoria" })).toBeVisible();

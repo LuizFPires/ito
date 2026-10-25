@@ -49,7 +49,7 @@ begin
         insert into public.projecoes (nome, inicio, prazo_meses, area_m2)
           values ('Teste', '2027-01-01', 3, 1000);
       when 'aprovar' then
-        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'aprovada');
+        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'aprovada', '{"total": 1}');
       when 'auditoria' then
         select count(*) into n from public.auditoria;
       when 'usuarios' then
@@ -79,7 +79,8 @@ begin
              as x (id uuid, email text, perfil public.perfil, admin boolean) loop
     vistos := vistos + 1;
     perform set_config('request.jwt.claims',
-      jsonb_build_object('sub', u.id, 'role', 'authenticated')::text, true);
+      jsonb_build_object('sub', u.id, 'role', 'authenticated', 'aal', 'aal2',
+                         'session_id', u.id)::text, true); -- M13: sessão viva com MFA
     for t in select * from public.permissoes() x
              where x.admin = u.admin and (u.admin or x.perfil = u.perfil::text) loop
       -- funções pode_* (as telas e as políticas usam)
@@ -110,6 +111,10 @@ $$;
 grant execute on function public.teste_divergencias(jsonb) to authenticated;
 
 select is((select count(*)::integer from public.permissoes()), 12 * 6, '12 módulos × 6 colunas');
+
+-- M13: cada usuário de teste com uma sessão AAL2 viva (o id da sessão = o do usuário)
+insert into auth.sessions (id, user_id, aal, created_at, updated_at)
+  select id, id, 'aal2', now(), now() from public.usuarios where email like 'perm-%';
 
 select set_config('teste.usuarios', (select jsonb_agg(jsonb_build_object('id', id, 'email', email,
   'perfil', perfil, 'admin', admin)) from public.usuarios where email like 'perm-%')::text, true);

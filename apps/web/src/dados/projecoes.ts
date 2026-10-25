@@ -284,8 +284,14 @@ export function useApagarProjecao() {
 
 export function useDefinirSituacao() {
   return useGravar(
-    (a: { id: string; situacao: Situacao }) =>
-      ok(supabase.rpc("definir_situacao", { p_id: a.id, p_situacao: a.situacao })),
+    (a: { id: string; situacao: Situacao; resumo?: ResumoProjecao }) =>
+      ok(
+        supabase.rpc("definir_situacao", {
+          p_id: a.id,
+          p_situacao: a.situacao,
+          ...(a.resumo ? { p_resumo: a.resumo } : {}),
+        }),
+      ),
     "Situação alterada",
   );
 }

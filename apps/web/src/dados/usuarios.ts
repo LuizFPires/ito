@@ -19,6 +19,9 @@ export interface UsuarioLista {
   criado_em: string;
   ultimo_acesso: string | null;
   convite_pendente: boolean;
+  /** M13: a conta precisa do segundo fator / já ativou */
+  mfa_obrigatorio: boolean;
+  mfa_ativo: boolean;
 }
 
 export interface Permissao {
@@ -102,6 +105,12 @@ export const useSituacao = () =>
     ({ id, ativo }: { id: string; ativo: boolean }) =>
       funcao({ acao: ativo ? "reativar" : "desativar", id }),
     "Salvo",
+  );
+
+export const useZerarMfa = () =>
+  useAcao(
+    (id: string) => funcao({ acao: "zerar_mfa", id }),
+    "Segundo fator zerado: a pessoa ativa de novo no próximo login",
   );
 
 export const useLinkSenha = () =>

@@ -1513,6 +1513,8 @@ export type Database = {
           criado_em: string;
           email: string;
           id: string;
+          mfa_dispensado: boolean;
+          mfa_zerado_em: string | null;
           nome: string;
           perfil: Database["public"]["Enums"]["perfil"];
         };
@@ -1524,6 +1526,8 @@ export type Database = {
           criado_em?: string;
           email: string;
           id: string;
+          mfa_dispensado?: boolean;
+          mfa_zerado_em?: string | null;
           nome?: string;
           perfil?: Database["public"]["Enums"]["perfil"];
         };
@@ -1534,6 +1538,8 @@ export type Database = {
           criado_em?: string;
           email?: string;
           id?: string;
+          mfa_dispensado?: boolean;
+          mfa_zerado_em?: string | null;
           nome?: string;
           perfil?: Database["public"]["Enums"]["perfil"];
         };
@@ -1569,7 +1575,11 @@ export type Database = {
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
       definir_situacao: {
-        Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };
+        Args: {
+          p_id: string;
+          p_resumo?: Json;
+          p_situacao: Database["public"]["Enums"]["situacao_projecao"];
+        };
         Returns: undefined;
       };
       definir_situacao_obra: {
@@ -1581,14 +1591,24 @@ export type Database = {
       excluir_obra: { Args: { p_id: string }; Returns: undefined };
       exigir_carga: { Args: Record<PropertyKey, never>; Returns: undefined };
       exigir_config: { Args: Record<PropertyKey, never>; Returns: undefined };
+      exigir_lote: { Args: { max_bytes: number; p: Json; tipo: string }; Returns: undefined };
       gerir_usuario: { Args: { p_autor: string; p_id: string; p_patch: Json }; Returns: number };
       gravar_cadastros_da_carga: { Args: { p: Json }; Returns: undefined };
       gravar_carga: { Args: { p: Json }; Returns: string };
       gravar_carga_dados: { Args: { p: Json }; Returns: string };
       gravar_meses_da_carga: { Args: { p: Json; v_id: string }; Returns: undefined };
       gravar_resumos: { Args: { p: Json }; Returns: number };
+      json_numeros: {
+        Args: { chaves?: string[]; j: Json; maximo: number; minimo: number; n: number };
+        Returns: boolean;
+      };
+      json_opcoes: { Args: { j: Json; n: number; opcoes: string[] }; Returns: boolean };
+      json_premissas: { Args: { j: Json }; Returns: boolean };
+      json_quantidades: { Args: { j: Json }; Returns: boolean };
+      json_resumo: { Args: { j: Json }; Returns: boolean };
       lancar_mes: { Args: { p: Json }; Returns: number };
       lancar_mes_dados: { Args: { p: Json }; Returns: number };
+      limpar_rascunhos_antigos: { Args: Record<PropertyKey, never>; Returns: number };
       listar_usuarios: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1598,6 +1618,8 @@ export type Database = {
           criado_em: string;
           email: string;
           id: string;
+          mfa_ativo: boolean;
+          mfa_obrigatorio: boolean;
           nome: string;
           perfil: Database["public"]["Enums"]["perfil"];
           ultimo_acesso: string;
@@ -1607,6 +1629,8 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["perfil"];
       };
+      mfa_obrigatorio: { Args: { p_id: string }; Returns: boolean };
+      mfa_ok: { Args: Record<PropertyKey, never>; Returns: boolean };
       permissoes: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1627,6 +1651,7 @@ export type Database = {
       pode_editar_cadastros: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_editar_config: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_projetar: { Args: Record<PropertyKey, never>; Returns: boolean };
+      preciso_de_mfa: { Args: Record<PropertyKey, never>; Returns: boolean };
       regra: {
         Args: { acao: string; adm: boolean; p: Database["public"]["Enums"]["perfil"] };
         Returns: boolean;

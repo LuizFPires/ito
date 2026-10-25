@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { mesAno, numero } from "@ito/formato";
+import { mesAno, moeda, numero } from "@ito/formato";
 import { useSessao } from "../../auth/sessao";
 import { nomeCurtoCct } from "../../dados/cidades";
 import {
@@ -73,8 +73,8 @@ export function TelaProjecao() {
   );
   // resumo da lista desatualizado (preço da cidade, tabela vigente, referência apagada): regrava
   const resumo = calc && contexto ? resumoDaProjecao(calc, contexto.vigente) : null;
-  // aprovada: só quem aprova e edita regrava (regra no banco)
-  const gravaResumo = !!p && projeta && (p.situacao !== "aprovada" || aprova);
+  // aprovada: o resumo fica congelado na aprovação (M13 · S05, regra no banco)
+  const gravaResumo = !!p && projeta && p.situacao !== "aprovada";
   const atrasado = !!(p && resumo && gravaResumo && !mesmoResumo(p.resumo, resumo));
   const chaveResumo = atrasado ? JSON.stringify([p!.id, resumo]) : "";
   useEffect(() => {
@@ -208,15 +208,29 @@ export function TelaProjecao() {
               key={x}
               type="button"
               aria-pressed={p.situacao === x}
-              disabled={!podeMudar(x) || situacao.isPending}
+              disabled={
+                !podeMudar(x) ||
+                situacao.isPending ||
+                (x === "aprovada" && !aprovada && resumo?.total === undefined)
+              }
               title={
                 podeMudar(x)
-                  ? undefined
+                  ? x === "aprovada" && !aprovada && resumo?.total === undefined
+                    ? "Espere o cálculo terminar para aprovar"
+                    : undefined
                   : x === "aprovada" || aprovada
                     ? "Só controladoria, diretoria ou administrador aprova ou desfaz a aprovação"
                     : "Seu perfil só consulta projeções"
               }
-              onClick={() => x !== p.situacao && situacao.gravar({ id: p.id, situacao: x })}
+              onClick={() =>
+                x !== p.situacao &&
+                // M13: os números aprovados são os que quem aprova está vendo
+                situacao.gravar({
+                  id: p.id,
+                  situacao: x,
+                  resumo: x === "aprovada" ? (resumo ?? undefined) : undefined,
+                })
+              }
             >
               {NOME_SITUACAO[x]}
             </button>
@@ -243,6 +257,15 @@ export function TelaProjecao() {
           </Botao>
         )}
       </div>
+
+      {/* M13 · S05: os números aprovados ficam congelados; a tela calcula com os preços de hoje */}
+      {aprovada && resumo && p.resumo.total != null && !mesmoResumo(p.resumo, resumo) && (
+        <p className={f.aviso} role="status">
+          O cálculo de hoje é diferente do aprovado: o total aprovado foi {moeda(p.resumo.total)} e,
+          com os preços e cadastros de hoje, dá {moeda(resumo.total)}. Para aprovar os valores
+          novos, volte a projeção a Em análise e aprove de novo.
+        </p>
+      )}
 
       {/* referência reaberta (M11): o resultado muda a cada mês lançado nela */}
       {!manual && refs.some((b) => b.obra.situacao === "andamento") && (

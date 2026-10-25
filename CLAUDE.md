@@ -307,6 +307,23 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Correções do M12 (baseline em `docs/performance/baseline.md`): o resultado da projeção usa o **resumo em cache** das referências quando ele está em dia (6,4 s → 0,3 s com 1.000 referências) e mostra 50 linhas na tela (todas no .xlsx); a **impressão digital do resumo ignora a ordem** das listas e das chaves (tela e scripts gravavam impressões diferentes e a tela recalculava tudo); referências baixadas em até 4 lotes ao mesmo tempo (3,3 s → 1,8 s); detalhe da obra numa rodada de busca só. (auto — recomendado)
 - Ficam para quando a medição na produção pedir: paginação da base no servidor (G5) e abrir o app carregando só os cadastros da tela (G6).
 
+### M13 — Segurança (24/10/2026)
+- **Base:** a auditoria do ITO (`AUDITORIA-2026-10-24.md`, revisão `4d242d7`) e o cruzamento com a auditoria do JETO. Cadastro público confirmado fechado na homologação e na produção (`disable_signup = true`).
+- **MFA obrigatório** (usuário): administrador, controladoria e diretoria, com aplicativo autenticador (TOTP). Sem o segundo fator (sessão AAL1), essas contas não leem nem escrevem nada, também pela API: `sou_ativo`, `sou_admin` e `meu_perfil` exigem AAL2 delas. Demais perfis usam só senha. (auto — recomendado)
+- **Perdeu o celular:** outro administrador zera o MFA pela tela de usuários (a pessoa se inscreve de novo no próximo login). Contas do seed local ficam dispensadas (`mfa_dispensado`, só a chave de serviço altera), menos a de teste do MFA. (auto — recomendado)
+- **Projeção aprovada congelada** (S05): entradas e resumo travados depois da aprovação; mudanças de resumo auditadas. O cálculo autoritativo no servidor fica para depois: hoje o motor roda no navegador de quem aprova. (auto — recomendado)
+- **Aprovada congelada também para quem aprova:** o resumo não é regravado depois da aprovação, nem pela controladoria; aprovar e mudar números no mesmo passo é recusado. Com preços novos, a tela avisa o total aprovado e o de hoje; para aprovar o novo, volta-se a Em análise. A aprovação fica na auditoria com os números. (auto — recomendado)
+- **AAL2 só com a sessão viva:** para quem precisa de MFA, o token vale enquanto a sessão dele existir no Auth; zerar o MFA, desativar ou sair derrubam o acesso na hora (antes, o token valia até expirar). (auto — recomendado)
+- **Link de senha pela conta do Auth** (UUID): convite de novo só para quem nunca confirmou; os demais recebem a recuperação, que não cria conta. E-mail do cadastro acompanha o do Auth (gatilho). (auto — recomendado)
+- **Contratos e limites:** o banco recusa JSON da projeção fora do formato da tela e do motor. Limites com folga sobre a maior obra real: planilha até 50 MB e 30 abas, 2.000 XMLs de até 2 MB (sem DTD), carga até 100 MB, rascunho até 60 MB e 20 por pessoa, 5.000 resumos por chamada. (auto — recomendado)
+- **Permissões padrão fechadas:** tabela, função ou sequência nova no `public` nasce sem acesso para `anon`, `authenticated` e `public`. Toda migração nova concede explicitamente o que a tela usa (`grant`) e liga a RLS; `privilegios.test.sql` falha se uma tabela ficar sem RLS ou algo ficar aberto ao `anon`. (auto — recomendado)
+- **Backup cifrado** (`pnpm db:backup … --cifrar`, frase em `ITO_BACKUP_CHAVE`, guardada no cofre); segredos do Auth (MFA, sessões, tokens) ficam fora do dump: depois de restaurar, cada pessoa entra de novo e reinscreve o MFA. (auto — recomendado)
+- Revisão do M13 (25/10/2026), corrigido:
+  - **Aprovar grava os números da tela de quem aprova** (`definir_situacao` com o resumo, auditado no mesmo passo); o resumo gravado antes, velho ou forjado pela API, não vira o aprovado. O botão "Aprovada" espera o cálculo terminar.
+  - **Contratos aceitam as chaves antigas** `resumo.indireta_pct` e `premissas.foraDaSede` (projeções salvas antes de 23/10 e do M11): sem isso, a migração e o restauro de backups antigos falhariam.
+  - Tela não consulta o banco antes de saber se falta o MFA e relê tudo ao confirmar o código; zerar o MFA recusa a própria conta e grava antes de mexer no Auth; `ITO_SITE_URL` obrigatório fora do local (segredo da função); restauro lê a frase de `.env.supabase.local`; dump aberto apagado mesmo se a cifragem falhar; célula do histograma com até 5 dígitos; grants explícitos das funções dos CHECKs, com teste.
+  - Aceito: o limite de 30 abas é conferido depois da leitura (o limite de 50 MB, antes dela, é o que protege o navegador).
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

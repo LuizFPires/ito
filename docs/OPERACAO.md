@@ -11,8 +11,9 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    pnpm exec supabase link --project-ref <ref>
    pnpm exec supabase db push
    ```
-2. **Edge Functions** (gestão de usuários, M10). A função usa as variáveis `SUPABASE_*` que o próprio Supabase injeta, então não precisa de segredo extra.
+2. **Edge Functions** (gestão de usuários, M10). A função usa as variáveis `SUPABASE_*` que o próprio Supabase injeta e, desde o M13, o endereço do site em `ITO_SITE_URL`. É para lá que os links de convite e de senha voltam; o cabeçalho de quem chama não é usado. Sem `ITO_SITE_URL`, a função recusa as chamadas fora do Supabase local.
    ```sh
+   pnpm exec supabase secrets set ITO_SITE_URL=https://<endereço do site> --project-ref <ref>
    pnpm exec supabase functions deploy usuarios --project-ref <ref>
    ```
 3. **Auth:** aplique a configuração. O comando leva os modelos de e-mail em português: convite (`supabase/templates/convite.html`) e troca de senha (`recuperar.html`).
@@ -60,12 +61,13 @@ São duas linhas de defesa:
    - Em produção, contrate pelo menos o plano Pro.
 2. **`pnpm db:backup`:** cópia sob o nosso controle, com esquema e dados (`public` e `auth`), gravada numa pasta fora do repositório.
    ```sh
-   pnpm db:backup producao                         # ~/ITO-backups/producao-<data>
-   pnpm db:backup homologacao --pasta D:\backups\ito
+   pnpm db:backup producao --cifrar                # ~/ITO-backups/producao-<data>
+   pnpm db:backup homologacao --pasta D:\backups\ito --cifrar
    ```
    - Precisa da senha do banco em `.env.supabase.local` (`SUPABASE_DB_PASSWORD_PRODUCAO` ou `_HOMOLOGACAO`). A senha vai para o CLI por variável de ambiente, nunca na linha de comando.
-   - O dump traz contas (com o hash da senha) e valores por matrícula, sem nomes; sessões e tokens de renovação ficam de fora. Guarde-o em pasta com acesso restrito (cofre ou unidade da controladoria), nunca no git nem em e-mail.
-   - No Linux e no Mac, o script cria a pasta e os arquivos só para o dono. No Windows isso não vale: use uma pasta do próprio usuário ou com permissão só para a controladoria.
+   - **Use `--cifrar` (M13):** esquema e dados saem cifrados (AES-256-GCM, arquivos `.cifrado`) com a frase de `ITO_BACKUP_CHAVE` (no ambiente ou em `.env.supabase.local`, ao menos 16 caracteres). A frase fica no cofre de senhas da empresa, **nunca na pasta do backup** nem junto da cópia: sem ela o backup não abre, e um arquivo alterado também não abre.
+   - O dump traz contas (com o hash da senha) e valores por matrícula, sem nomes. Ficam de fora os segredos do Auth: sessões, tokens, fatores e desafios de MFA, códigos de uso único e logs. Depois de restaurar, cada pessoa entra de novo e quem precisa de MFA se inscreve outra vez. Mesmo cifrado, guarde em local com acesso restrito, nunca no git nem em e-mail.
+   - O script cria a pasta só para o dono: no Linux e no Mac, com chmod 700; no Windows, tirando a herança de permissões e deixando só o próprio usuário (icacls). Ele confere a permissão e para se outra conta tiver acesso.
    - **Rotina sugerida:** semanal em produção e antes de cada migração que mexa em dados. Guarde as 8 últimas cópias.
 
 ## 4. Restauração
@@ -74,6 +76,7 @@ São duas linhas de defesa:
 
 ```sh
 pnpm db:restaurar <pasta do backup> --confirmar
+# backup cifrado: a frase vem de ITO_BACKUP_CHAVE (frase errada = o comando para sem mexer no banco)
 ```
 
 O comando:
@@ -88,7 +91,7 @@ O ensaio de 22/10/2026 restaurou as 23 obras migradas (3.172 lançamentos, 5 usu
 **Homologação ou produção:**
 
 1. **Perda recente**, como um erro de operação ou uma carga errada: restaure pelo Supabase, em Database → Backups (ou PITR), para o ponto anterior ao problema. É o caminho mais seguro, porque restaura o projeto inteiro: auth, banco e configuração.
-2. **Projeto perdido ou cópia em outro lugar:** crie um projeto novo e aplique as migrações (`db push`). Depois carregue o `dados.sql` do backup com `psql`, como faz `scripts/restaurar.mjs`:
+2. **Projeto perdido ou cópia em outro lugar:** crie um projeto novo e aplique as migrações (`db push`). Depois carregue o `dados.sql` do backup com `psql`, como faz `scripts/restaurar.mjs` (cifrado: abra-o antes com `decifrarArquivo`, de `scripts/cifra.mjs`):
    - esvazie `public` e `auth`;
    - rode `set session_replication_role = replica` e carregue os dados;
    - volte para `origin`.
