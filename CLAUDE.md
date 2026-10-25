@@ -339,7 +339,7 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - **Monitoramento:** sem usuário nem obra nas métricas (rota com `:id`); tela Desempenho só para administrador; metas do M12 marcadas pelo 75%. (auto — recomendado)
   - **Celular:** até 860 px, tabela larga rola dentro do cartão (`!important` sobre o `overflow: hidden` dos cartões) e a página nunca rola de lado; o menu já era uma faixa no topo. (auto — recomendado)
   - **Aviso ao sair** no assistente de projeção e no Lançar mês (a carga já tem rascunho automático). (auto — recomendado)
-  - **SSL obrigatório no banco:** ligado na homologação; na produção depende do OK do usuário (a regra de permissões bloqueou a mudança feita daqui).
+  - **SSL obrigatório no banco** nos dois ambientes (homologação e produção, 25/10/2026, com OK do usuário).
 - Revisão do M14 (25/10/2026), corrigido:
   - **CSP com `worker-src 'self' blob:` e `font-src 'self' data:`:** a biblioteca de zip (fflate, na leitura e na gravação de .xlsx) cria workers de `blob:`, e o build embute fontes pequenas como `data:`. Com `'self'` só, ler uma folha grande travava em produção — já na `main`, reproduzido com o worker do build. `script-src` segue só `'self'`.
   - Carga lê um arquivo por vez (campos travados durante a leitura) e cancela o worker ao sair da tela; cota de métricas por envio (240 por hora); servidor carrega as referências na mesma ordem da tela; texto de erro nas métricas sem e-mail nem números longos.
