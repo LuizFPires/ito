@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(22);
 
 -- S01: perda do perfil de carga revoga rascunhos (dados por matrícula)
 insert into public.carga_rascunhos (id, usuario_id, titulo, etapa, dados)
@@ -72,6 +72,15 @@ select throws_ok($$insert into public.carga_rascunhos (usuario_id) values ('0000
 select throws_ok($$select public.gravar_carga('[]')$$, '22023', null, 'carga que não é objeto recusada');
 select throws_ok($$select public.gravar_resumos((select jsonb_agg(jsonb_build_object('obra_id', i)) from generate_series(1, 5001) i))$$,
   '54000', null, 'no máximo 5.000 resumos por vez');
+
+-- M14 · S07: cota de convites (20 por hora por administrador), só pela chave de serviço
+reset role;
+select is((select count(*)::int from generate_series(1, 21) i
+           where public.usar_cota('00000000-0000-4000-8000-000000000001', 'convite', 20, '1 hour')),
+  20, 'o 21º convite na mesma hora é recusado');
+set local role authenticated;
+select throws_ok($$select public.usar_cota('00000000-0000-4000-8000-000000000001', 'convite', 99, '1 hour')$$,
+  '42501', null, 'a API não mexe na cota');
 
 select * from finish();
 rollback;

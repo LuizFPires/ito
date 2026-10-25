@@ -416,6 +416,25 @@ export type Database = {
           },
         ];
       };
+      cotas: {
+        Row: {
+          acao: string;
+          em: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          acao: string;
+          em?: string;
+          usuario_id: string;
+        };
+        Update: {
+          acao?: string;
+          em?: string;
+          usuario_id?: string;
+        };
+        Relationships: [];
+      };
       data_base_beneficios: {
         Row: {
           ano: number;
@@ -1709,6 +1728,10 @@ export type Database = {
       };
       sou_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       sou_ativo: { Args: Record<PropertyKey, never>; Returns: boolean };
+      usar_cota: {
+        Args: { p_acao: string; p_janela: string; p_maximo: number; p_usuario: string };
+        Returns: boolean;
+      };
       validar_carga: { Args: { p: Json; v_meses: number }; Returns: undefined };
     };
     Enums: {
