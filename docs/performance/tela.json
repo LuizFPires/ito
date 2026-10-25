@@ -1,62 +1,128 @@
 {
-  "medidoEm": "2026-10-25T01:55:20.823Z",
+  "medidoEm": "2026-10-25T20:22:22.436Z",
   "linhas": [
     {
       "caso": "base: abrir com 1.000 obras",
-      "mediana": 286,
-      "p95": 888,
+      "mediana": 924,
+      "p95": 956,
       "n": 3
     },
     {
       "caso": "base: LCP",
-      "mediana": 64,
-      "p95": 64,
+      "mediana": 396,
+      "p95": 396,
       "n": 1
     },
     {
       "caso": "base: tarefas longas (total por abertura)",
-      "mediana": 0,
-      "p95": 0,
+      "mediana": 30,
+      "p95": 30,
       "n": 1
     },
     {
       "caso": "obra: abrir detalhe pelo endereço (carrega o app)",
-      "mediana": 890,
-      "p95": 896,
+      "mediana": 956,
+      "p95": 968,
       "n": 3
     },
     {
       "caso": "obra: abrir pela base (app já aberto)",
-      "mediana": 147,
-      "p95": 159,
+      "mediana": 293,
+      "p95": 384,
       "n": 3
     },
     {
       "caso": "obra: maior tarefa longa",
-      "mediana": 53,
-      "p95": 53,
+      "mediana": 104,
+      "p95": 104,
       "n": 1
     },
     {
       "caso": "obra: trocar de aba",
-      "mediana": 64,
-      "p95": 108,
+      "mediana": 111,
+      "p95": 145,
       "n": 4
+    },
+    {
+      "caso": "projeção · 5 refs: abrir o histograma",
+      "mediana": 143,
+      "p95": 143,
+      "n": 1
+    },
+    {
+      "caso": "projeção · 5 refs: régua (do evento ao quadro)",
+      "mediana": 31,
+      "p95": 34,
+      "n": 10
+    },
+    {
+      "caso": "projeção · 5 refs: digitar um mês (do evento ao quadro)",
+      "mediana": 31,
+      "p95": 32,
+      "n": 10
+    },
+    {
+      "caso": "projeção · 5 refs: maior tarefa longa",
+      "mediana": 63,
+      "p95": 63,
+      "n": 1
+    },
+    {
+      "caso": "projeção · 5 refs: abrir o resultado",
+      "mediana": 105,
+      "p95": 105,
+      "n": 1
+    },
+    {
+      "caso": "projeção · todas as refs: abrir o histograma",
+      "mediana": 700,
+      "p95": 700,
+      "n": 1
+    },
+    {
+      "caso": "projeção · todas as refs: abrir o histograma (medido no app)",
+      "mediana": 466,
+      "p95": 466,
+      "n": 1
+    },
+    {
+      "caso": "projeção · todas as refs: régua (do evento ao quadro)",
+      "mediana": 33,
+      "p95": 43,
+      "n": 10
+    },
+    {
+      "caso": "projeção · todas as refs: digitar um mês (do evento ao quadro)",
+      "mediana": 31,
+      "p95": 32,
+      "n": 10
+    },
+    {
+      "caso": "projeção · todas as refs: maior tarefa longa",
+      "mediana": 119,
+      "p95": 119,
+      "n": 1
+    },
+    {
+      "caso": "projeção · todas as refs: abrir o resultado",
+      "mediana": 165,
+      "p95": 165,
+      "n": 1
     }
   ],
   "anterior": {
-    "medidoEm": "2026-10-25T01:55:00.806Z",
+    "medidoEm": "2026-10-25T01:55:20.823Z",
     "linhas": [
       {
         "caso": "base: abrir com 1.000 obras",
-        "mediana": 870,
-        "p95": 891,
+        "mediana": 286,
+        "p95": 888,
         "n": 3
       },
       {
         "caso": "base: LCP",
-        "mediana": 360,
-        "p95": 360,
+        "mediana": 64,
+        "p95": 64,
         "n": 1
       },
       {
@@ -67,661 +133,28 @@
       },
       {
         "caso": "obra: abrir detalhe pelo endereço (carrega o app)",
-        "mediana": 885,
-        "p95": 917,
+        "mediana": 890,
+        "p95": 896,
         "n": 3
       },
       {
         "caso": "obra: abrir pela base (app já aberto)",
-        "mediana": 155,
-        "p95": 173,
+        "mediana": 147,
+        "p95": 159,
         "n": 3
       },
       {
         "caso": "obra: maior tarefa longa",
-        "mediana": 67,
-        "p95": 67,
+        "mediana": 53,
+        "p95": 53,
         "n": 1
       },
       {
         "caso": "obra: trocar de aba",
-        "mediana": 72,
-        "p95": 75,
+        "mediana": 64,
+        "p95": 108,
         "n": 4
       }
-    ],
-    "anterior": {
-      "medidoEm": "2026-10-25T01:54:39.900Z",
-      "linhas": [
-        {
-          "caso": "base: abrir com 1.000 obras",
-          "mediana": 852,
-          "p95": 870,
-          "n": 3
-        },
-        {
-          "caso": "base: LCP",
-          "mediana": 348,
-          "p95": 348,
-          "n": 1
-        },
-        {
-          "caso": "base: tarefas longas (total por abertura)",
-          "mediana": 0,
-          "p95": 0,
-          "n": 1
-        },
-        {
-          "caso": "obra: abrir detalhe pelo endereço (carrega o app)",
-          "mediana": 944,
-          "p95": 959,
-          "n": 3
-        },
-        {
-          "caso": "obra: abrir pela base (app já aberto)",
-          "mediana": 162,
-          "p95": 173,
-          "n": 3
-        },
-        {
-          "caso": "obra: maior tarefa longa",
-          "mediana": 81,
-          "p95": 81,
-          "n": 1
-        },
-        {
-          "caso": "obra: trocar de aba",
-          "mediana": 75,
-          "p95": 97,
-          "n": 4
-        }
-      ],
-      "anterior": {
-        "medidoEm": "2026-10-25T01:53:56.058Z",
-        "linhas": [
-          {
-            "caso": "base: abrir com 1.000 obras",
-            "mediana": 866,
-            "p95": 873,
-            "n": 3
-          },
-          {
-            "caso": "base: LCP",
-            "mediana": 352,
-            "p95": 352,
-            "n": 1
-          },
-          {
-            "caso": "base: tarefas longas (total por abertura)",
-            "mediana": 0,
-            "p95": 0,
-            "n": 1
-          },
-          {
-            "caso": "obra: abrir detalhe pelo endereço (carrega o app)",
-            "mediana": 947,
-            "p95": 974,
-            "n": 3
-          },
-          {
-            "caso": "obra: abrir pela base (app já aberto)",
-            "mediana": 156,
-            "p95": 228,
-            "n": 3
-          },
-          {
-            "caso": "obra: maior tarefa longa",
-            "mediana": 84,
-            "p95": 84,
-            "n": 1
-          },
-          {
-            "caso": "obra: trocar de aba",
-            "mediana": 74,
-            "p95": 96,
-            "n": 4
-          },
-          {
-            "caso": "projeção · 5 refs: abrir o histograma",
-            "mediana": 106,
-            "p95": 106,
-            "n": 1
-          },
-          {
-            "caso": "projeção · 5 refs: régua (do evento ao quadro)",
-            "mediana": 29,
-            "p95": 32,
-            "n": 10
-          },
-          {
-            "caso": "projeção · 5 refs: digitar um mês (do evento ao quadro)",
-            "mediana": 30,
-            "p95": 31,
-            "n": 10
-          },
-          {
-            "caso": "projeção · 5 refs: maior tarefa longa",
-            "mediana": 0,
-            "p95": 0,
-            "n": 1
-          },
-          {
-            "caso": "projeção · 5 refs: abrir o resultado",
-            "mediana": 98,
-            "p95": 98,
-            "n": 1
-          },
-          {
-            "caso": "projeção · todas as refs: abrir o histograma",
-            "mediana": 1769,
-            "p95": 1769,
-            "n": 1
-          },
-          {
-            "caso": "projeção · todas as refs: régua (do evento ao quadro)",
-            "mediana": 114,
-            "p95": 143,
-            "n": 10
-          },
-          {
-            "caso": "projeção · todas as refs: digitar um mês (do evento ao quadro)",
-            "mediana": 88,
-            "p95": 116,
-            "n": 10
-          },
-          {
-            "caso": "projeção · todas as refs: maior tarefa longa",
-            "mediana": 137,
-            "p95": 137,
-            "n": 1
-          },
-          {
-            "caso": "projeção · todas as refs: abrir o resultado",
-            "mediana": 293,
-            "p95": 293,
-            "n": 1
-          }
-        ],
-        "anterior": {
-          "medidoEm": "2026-10-25T01:53:17.407Z",
-          "linhas": [
-            {
-              "caso": "base: abrir com 1.000 obras",
-              "mediana": 868,
-              "p95": 875,
-              "n": 3
-            },
-            {
-              "caso": "base: LCP",
-              "mediana": 372,
-              "p95": 372,
-              "n": 1
-            },
-            {
-              "caso": "base: tarefas longas (total por abertura)",
-              "mediana": 0,
-              "p95": 0,
-              "n": 1
-            },
-            {
-              "caso": "obra: abrir detalhe pelo endereço (carrega o app)",
-              "mediana": 872,
-              "p95": 885,
-              "n": 3
-            },
-            {
-              "caso": "obra: abrir pela base (app já aberto)",
-              "mediana": 154,
-              "p95": 174,
-              "n": 3
-            },
-            {
-              "caso": "obra: maior tarefa longa",
-              "mediana": 0,
-              "p95": 0,
-              "n": 1
-            },
-            {
-              "caso": "obra: trocar de aba",
-              "mediana": 79,
-              "p95": 95,
-              "n": 4
-            }
-          ],
-          "anterior": {
-            "medidoEm": "2026-10-25T01:52:49.507Z",
-            "linhas": [
-              {
-                "caso": "base: abrir com 1.000 obras",
-                "mediana": 118,
-                "p95": 877,
-                "n": 3
-              },
-              {
-                "caso": "base: LCP",
-                "mediana": 48,
-                "p95": 48,
-                "n": 1
-              },
-              {
-                "caso": "base: tarefas longas (total por abertura)",
-                "mediana": 0,
-                "p95": 0,
-                "n": 1
-              },
-              {
-                "caso": "obra: abrir detalhe pelo endereço (carrega o app)",
-                "mediana": 909,
-                "p95": 912,
-                "n": 3
-              },
-              {
-                "caso": "obra: abrir pela base (app já aberto)",
-                "mediana": 38,
-                "p95": 39,
-                "n": 3
-              },
-              {
-                "caso": "obra: maior tarefa longa",
-                "mediana": 80,
-                "p95": 80,
-                "n": 1
-              },
-              {
-                "caso": "obra: trocar de aba",
-                "mediana": 84,
-                "p95": 147,
-                "n": 4
-              }
-            ],
-            "anterior": {
-              "medidoEm": "2026-10-25T01:52:17.678Z",
-              "linhas": [
-                {
-                  "caso": "base: abrir com 1.000 obras",
-                  "mediana": 124,
-                  "p95": 147,
-                  "n": 3
-                },
-                {
-                  "caso": "base: LCP",
-                  "mediana": 52,
-                  "p95": 52,
-                  "n": 1
-                },
-                {
-                  "caso": "base: tarefas longas (total por abertura)",
-                  "mediana": 0,
-                  "p95": 0,
-                  "n": 1
-                },
-                {
-                  "caso": "obra: abrir detalhe",
-                  "mediana": 881,
-                  "p95": 898,
-                  "n": 3
-                },
-                {
-                  "caso": "obra: maior tarefa longa",
-                  "mediana": 0,
-                  "p95": 0,
-                  "n": 1
-                },
-                {
-                  "caso": "obra: trocar de aba",
-                  "mediana": 76,
-                  "p95": 80,
-                  "n": 4
-                }
-              ],
-              "anterior": {
-                "medidoEm": "2026-10-25T01:52:02.180Z",
-                "linhas": [
-                  {
-                    "caso": "base: abrir com 1.000 obras",
-                    "mediana": 217,
-                    "p95": 901,
-                    "n": 3
-                  },
-                  {
-                    "caso": "base: LCP",
-                    "mediana": 68,
-                    "p95": 68,
-                    "n": 1
-                  },
-                  {
-                    "caso": "base: tarefas longas (total por abertura)",
-                    "mediana": 19,
-                    "p95": 19,
-                    "n": 1
-                  },
-                  {
-                    "caso": "obra: abrir detalhe",
-                    "mediana": 896,
-                    "p95": 899,
-                    "n": 3
-                  },
-                  {
-                    "caso": "obra: maior tarefa longa",
-                    "mediana": 0,
-                    "p95": 0,
-                    "n": 1
-                  },
-                  {
-                    "caso": "obra: trocar de aba",
-                    "mediana": 79,
-                    "p95": 83,
-                    "n": 4
-                  }
-                ],
-                "anterior": {
-                  "medidoEm": "2026-10-25T01:51:32.820Z",
-                  "linhas": [
-                    {
-                      "caso": "base: abrir com 1.000 obras",
-                      "mediana": 890,
-                      "p95": 931,
-                      "n": 3
-                    },
-                    {
-                      "caso": "base: LCP",
-                      "mediana": 352,
-                      "p95": 352,
-                      "n": 1
-                    },
-                    {
-                      "caso": "base: tarefas longas (total por abertura)",
-                      "mediana": 21,
-                      "p95": 21,
-                      "n": 1
-                    },
-                    {
-                      "caso": "obra: abrir detalhe",
-                      "mediana": 926,
-                      "p95": 941,
-                      "n": 3
-                    },
-                    {
-                      "caso": "obra: maior tarefa longa",
-                      "mediana": 0,
-                      "p95": 0,
-                      "n": 1
-                    },
-                    {
-                      "caso": "obra: trocar de aba",
-                      "mediana": 120,
-                      "p95": 327,
-                      "n": 4
-                    },
-                    {
-                      "caso": "projeção · 5 refs: abrir o histograma",
-                      "mediana": 133,
-                      "p95": 133,
-                      "n": 1
-                    },
-                    {
-                      "caso": "projeção · 5 refs: régua (do evento ao quadro)",
-                      "mediana": 30,
-                      "p95": 31,
-                      "n": 10
-                    },
-                    {
-                      "caso": "projeção · 5 refs: digitar um mês (do evento ao quadro)",
-                      "mediana": 30,
-                      "p95": 31,
-                      "n": 10
-                    },
-                    {
-                      "caso": "projeção · 5 refs: maior tarefa longa",
-                      "mediana": 51,
-                      "p95": 51,
-                      "n": 1
-                    },
-                    {
-                      "caso": "projeção · 5 refs: abrir o resultado",
-                      "mediana": 127,
-                      "p95": 127,
-                      "n": 1
-                    },
-                    {
-                      "caso": "projeção · todas as refs: abrir o histograma",
-                      "mediana": 1878,
-                      "p95": 1878,
-                      "n": 1
-                    },
-                    {
-                      "caso": "projeção · todas as refs: régua (do evento ao quadro)",
-                      "mediana": 86,
-                      "p95": 106,
-                      "n": 10
-                    },
-                    {
-                      "caso": "projeção · todas as refs: digitar um mês (do evento ao quadro)",
-                      "mediana": 53,
-                      "p95": 70,
-                      "n": 10
-                    },
-                    {
-                      "caso": "projeção · todas as refs: maior tarefa longa",
-                      "mediana": 135,
-                      "p95": 135,
-                      "n": 1
-                    },
-                    {
-                      "caso": "projeção · todas as refs: abrir o resultado",
-                      "mediana": 195,
-                      "p95": 195,
-                      "n": 1
-                    }
-                  ],
-                  "anterior": {
-                    "medidoEm": "2026-10-25T01:46:58.610Z",
-                    "linhas": [
-                      {
-                        "caso": "base: abrir com 1.000 obras",
-                        "mediana": 334,
-                        "p95": 865,
-                        "n": 3
-                      },
-                      {
-                        "caso": "base: LCP",
-                        "mediana": 360,
-                        "p95": 360,
-                        "n": 1
-                      },
-                      {
-                        "caso": "base: tarefas longas (total por abertura)",
-                        "mediana": 44,
-                        "p95": 44,
-                        "n": 1
-                      },
-                      {
-                        "caso": "obra: abrir detalhe",
-                        "mediana": 898,
-                        "p95": 903,
-                        "n": 3
-                      },
-                      {
-                        "caso": "obra: maior tarefa longa",
-                        "mediana": 0,
-                        "p95": 0,
-                        "n": 1
-                      },
-                      {
-                        "caso": "obra: trocar de aba",
-                        "mediana": 76,
-                        "p95": 91,
-                        "n": 4
-                      },
-                      {
-                        "caso": "projeção · 5 refs: abrir o histograma",
-                        "mediana": 99,
-                        "p95": 99,
-                        "n": 1
-                      },
-                      {
-                        "caso": "projeção · 5 refs: régua (do evento ao quadro)",
-                        "mediana": 31,
-                        "p95": 35,
-                        "n": 10
-                      },
-                      {
-                        "caso": "projeção · 5 refs: digitar um mês (do evento ao quadro)",
-                        "mediana": 31,
-                        "p95": 33,
-                        "n": 10
-                      },
-                      {
-                        "caso": "projeção · 5 refs: maior tarefa longa",
-                        "mediana": 0,
-                        "p95": 0,
-                        "n": 1
-                      },
-                      {
-                        "caso": "projeção · 5 refs: abrir o resultado",
-                        "mediana": 141,
-                        "p95": 141,
-                        "n": 1
-                      },
-                      {
-                        "caso": "projeção · todas as refs: abrir o histograma",
-                        "mediana": 1719,
-                        "p95": 1719,
-                        "n": 1
-                      },
-                      {
-                        "caso": "projeção · todas as refs: régua (do evento ao quadro)",
-                        "mediana": 82,
-                        "p95": 115,
-                        "n": 10
-                      },
-                      {
-                        "caso": "projeção · todas as refs: digitar um mês (do evento ao quadro)",
-                        "mediana": 59,
-                        "p95": 76,
-                        "n": 10
-                      },
-                      {
-                        "caso": "projeção · todas as refs: maior tarefa longa",
-                        "mediana": 109,
-                        "p95": 109,
-                        "n": 1
-                      },
-                      {
-                        "caso": "projeção · todas as refs: abrir o resultado",
-                        "mediana": 6724,
-                        "p95": 6724,
-                        "n": 1
-                      }
-                    ],
-                    "anterior": {
-                      "medidoEm": "2026-10-25T01:43:37.140Z",
-                      "linhas": [
-                        {
-                          "caso": "base: abrir com 1.000 obras",
-                          "mediana": 209,
-                          "p95": 231,
-                          "n": 3
-                        },
-                        {
-                          "caso": "base: LCP",
-                          "mediana": 60,
-                          "p95": 60,
-                          "n": 1
-                        },
-                        {
-                          "caso": "base: tarefas longas (total por abertura)",
-                          "mediana": 51,
-                          "p95": 51,
-                          "n": 1
-                        },
-                        {
-                          "caso": "obra: abrir detalhe",
-                          "mediana": 889,
-                          "p95": 910,
-                          "n": 3
-                        },
-                        {
-                          "caso": "obra: maior tarefa longa",
-                          "mediana": 0,
-                          "p95": 0,
-                          "n": 1
-                        },
-                        {
-                          "caso": "obra: trocar de aba",
-                          "mediana": 78,
-                          "p95": 83,
-                          "n": 4
-                        },
-                        {
-                          "caso": "projeção · 5 refs: abrir o histograma",
-                          "mediana": 129,
-                          "p95": 129,
-                          "n": 1
-                        },
-                        {
-                          "caso": "projeção · 5 refs: régua (do evento ao quadro)",
-                          "mediana": 31,
-                          "p95": 32,
-                          "n": 10
-                        },
-                        {
-                          "caso": "projeção · 5 refs: digitar um mês (do evento ao quadro)",
-                          "mediana": 31,
-                          "p95": 33,
-                          "n": 10
-                        },
-                        {
-                          "caso": "projeção · 5 refs: maior tarefa longa",
-                          "mediana": 0,
-                          "p95": 0,
-                          "n": 1
-                        },
-                        {
-                          "caso": "projeção · 5 refs: abrir o resultado",
-                          "mediana": 129,
-                          "p95": 129,
-                          "n": 1
-                        },
-                        {
-                          "caso": "projeção · todas as refs: abrir o histograma",
-                          "mediana": 3258,
-                          "p95": 3258,
-                          "n": 1
-                        },
-                        {
-                          "caso": "projeção · todas as refs: régua (do evento ao quadro)",
-                          "mediana": 68,
-                          "p95": 75,
-                          "n": 10
-                        },
-                        {
-                          "caso": "projeção · todas as refs: digitar um mês (do evento ao quadro)",
-                          "mediana": 49,
-                          "p95": 56,
-                          "n": 10
-                        },
-                        {
-                          "caso": "projeção · todas as refs: maior tarefa longa",
-                          "mediana": 81,
-                          "p95": 81,
-                          "n": 1
-                        },
-                        {
-                          "caso": "projeção · todas as refs: abrir o resultado",
-                          "mediana": 6446,
-                          "p95": 6446,
-                          "n": 1
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    ]
   }
 }

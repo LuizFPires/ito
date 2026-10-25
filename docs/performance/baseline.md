@@ -71,3 +71,31 @@ de uso normal.
   (mexidas em 30–110 ms; listas paginadas).
 - **Monitoramento em produção (Core Web Vitals reais):** Vercel Speed Insights é dependência nova
   com custo conforme o plano da Vercel; decisão do usuário.
+
+## M14 — o que faltou (25/10/2026)
+
+Mesmo método do M12 (`pnpm perf`, build de produção, 1.000 obras sintéticas), na mesma máquina, que
+estava mais carregada nesta medição (Supabase local de quatro projetos no Docker): os números de
+antes foram medidos de novo no dia, antes das mudanças.
+
+| Caso | Antes (25/10) | Depois | Meta |
+|---|---:|---:|---:|
+| Projeção · 1.000 referências: abrir o histograma (Playwright, do clique ao gráfico) | 1.955 ms | 700 ms¹ | — |
+| Projeção · 1.000 referências: abrir o histograma (medido no app) | — | **466 ms** | ≤ 500 ms |
+| Projeção · 1.000 referências: régua, mediana / p95 | 106 / 177 ms | **33 / 43 ms** | ≤ 100 ms |
+| Projeção · 1.000 referências: digitar um mês, mediana / p95 | 73 / 94 ms | 31 / 32 ms | ≤ 100 ms |
+| Projeção · 1.000 referências: abrir o resultado | 237 ms | 165 ms | ≤ 500 ms |
+
+¹ A medida do Playwright soma a espera dele (a cada tentativa varre a acessibilidade da página para
+achar o gráfico) e oscila de 400 a 1.000 ms com a máquina carregada; a medida do app
+(`useTempoDeTela`, do passo aberto ao quadro pintado) é a que o monitoramento grava na produção.
+
+| # | Gargalo | Evidência | Correção |
+|---|---|---|---|
+| G7 | Referências baixadas em ~180 pedidos (efetivo de 160 mil linhas, 1.000 por pedido) | linha do tempo das requisições | `dados_calculo_obras`: obras, competências e efetivo compactos, 4 chamadas de ~1,1 MB; `= any(array)` trocado por junção (2,4 s → 0,3 s no banco) e `json` + `array_agg` no lugar de `jsonb` |
+| G8 | Montagem das linhas ordenava as 160 mil linhas | cronômetro das etapas no Node | ordenação das 8,8 mil listas e dos meses de cada uma (mesma ordem) |
+| G9 | Cada mexida reconvertia 1.000 obras e refazia os agregados de cada referência | cálculo da régua: 75 ms → 15 ms | `obraDoBanco` uma vez por obra lida; motor guarda os agregados por referência (imutável), com teste de igualdade |
+
+Etapas do ITO ao abrir o histograma com 1.000 referências (Node, mesmo banco): carregar 180–320 ms,
+converter 25 ms, calcular 75 ms. Os números do cálculo não mudaram (golden, diferencial e as 300
+obras conferidas iguais à consulta antiga).

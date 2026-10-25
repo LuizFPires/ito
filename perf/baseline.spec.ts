@@ -86,7 +86,17 @@ test.afterAll(() => {
   writeFileSync(
     ARQ,
     JSON.stringify(
-      { medidoEm: new Date().toISOString(), linhas, anterior: anterior ?? undefined },
+      {
+        medidoEm: new Date().toISOString(),
+        linhas,
+        // só a rodada anterior (sem a anterior dela: o arquivo não cresce a cada medição)
+        anterior: anterior
+          ? {
+              medidoEm: (anterior as { medidoEm?: string }).medidoEm,
+              linhas: (anterior as { linhas?: unknown }).linhas,
+            }
+          : undefined,
+      },
       null,
       2,
     ) + "\n",
