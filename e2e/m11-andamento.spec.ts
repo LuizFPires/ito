@@ -58,8 +58,10 @@ async function lancar(page: Page, comp: string, pessoas: number, botao: RegExp) 
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     buffer: await folhaDoMes(comp, pessoas),
   });
-  // leitura no Web Worker (M14): no Vite em dev, a primeira compila o worker
-  await expect(page.getByText(/1 competência · /)).toBeVisible({ timeout: 30_000 });
+  // leitura no Web Worker (M14): espera o arquivo novo (o resumo de uma folha anterior pode estar
+  // na tela); no Vite em dev, a primeira leitura compila o worker
+  await expect(page.getByText(`folha_${comp}.xlsx`)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/1 competência · /)).toBeVisible();
   await continuar(page);
   await expect(page.getByRole("row", { name: /^PEDREIRO / })).toContainText("reconhecida");
   await continuar(page);
@@ -114,6 +116,8 @@ test("obra em andamento: começa sem folha, recebe três meses, refaz um e é co
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     buffer: await folhaDoMes("02/2026", 1),
   });
+  // leitura no Web Worker (M14): espera o resumo antes de seguir
+  await expect(page.getByText(/1 competência · /)).toBeVisible({ timeout: 30_000 });
   await continuar(page);
   await continuar(page);
   await continuar(page);

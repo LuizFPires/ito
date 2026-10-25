@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useBlocker } from "react-router";
 
 /**
@@ -8,12 +8,26 @@ import { useBlocker } from "react-router";
  */
 export function useAvisoAoSair(sujo: boolean, mensagem: string) {
   const livre = useRef(false);
+  // o roteador guarda a função de bloqueio de um render anterior: o estado vem por ref, para um
+  // clique logo depois de digitar já valer como mudança
+  const sujoAgora = useRef(sujo);
+  useLayoutEffect(() => {
+    sujoAgora.current = sujo;
+  }, [sujo]);
   const bloqueio = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      sujo && !livre.current && currentLocation.pathname !== nextLocation.pathname,
+      sujoAgora.current && !livre.current && currentLocation.pathname !== nextLocation.pathname,
   );
+  // uma pergunta por saída bloqueada (o efeito pode rodar de novo com o mesmo bloqueio, como no
+  // StrictMode; perguntar duas vezes deixava o segundo "cancelar" desfazer o "sair")
+  const perguntado = useRef<string | null>(null);
   useEffect(() => {
-    if (bloqueio.state !== "blocked") return;
+    if (bloqueio.state !== "blocked") {
+      perguntado.current = null;
+      return;
+    }
+    if (perguntado.current === bloqueio.location.key) return;
+    perguntado.current = bloqueio.location.key;
     if (window.confirm(mensagem)) bloqueio.proceed();
     else bloqueio.reset();
   }, [bloqueio, mensagem]);
