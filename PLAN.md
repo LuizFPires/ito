@@ -239,6 +239,21 @@ Medir antes de mexer: só entra otimização com número de antes e depois e sem
 
 ---
 
+## M13 — Segurança (pedido do usuário, 24/10/2026; auditoria em `AUDITORIA-2026-10-24.md`)
+Correções da auditoria de segurança do ITO, na ordem de risco. Cada item com teste de banco (chamada direta à API, não só a tela).
+- [ ] Rascunhos da carga: quem perde o perfil de carga deixa de ler e apagar os próprios rascunhos (S01).
+- [ ] MFA (aplicativo autenticador) obrigatório para administrador, controladoria e diretoria: sem o segundo fator, nenhuma leitura ou escrita, também pela API; inscrição e código na entrada; admin zera o MFA de quem perdeu o celular (S02).
+- [ ] Recuperação e convite pela conta (UUID), não pelo e-mail guardado; e-mail do cadastro acompanha o do Auth; recuperação nunca cria conta; função de usuários revalida o autor e confere as respostas do Auth (S03, S06).
+- [ ] Projeção aprovada congelada: entradas e resumo não mudam depois de aprovar; mudanças de resumo entram na auditoria (S05).
+- [ ] Contratos dos JSON da projeção no banco (ajustes, quantidades, premissas, regime, origem, mix de HE) e limites de tamanho de arquivos, lotes e rascunhos (S04, S07).
+- [ ] Permissões padrão fechadas para tabelas e funções novas, com teste (S12 do JETO, pendência da auditoria do ITO).
+- [ ] Dependência de desenvolvimento com aviso (esbuild via tsx) atualizada (S09).
+- [ ] Backup com criptografia opcional e documentação de proteção (S08).
+
+**Aceite:** testes de banco provam cada correção com chamada direta (perfil rebaixado, AAL1 × AAL2, JSON inválido, aprovação); e2e da inscrição e do código de MFA; homologação e produção com o MFA ativo e os administradores inscritos.
+
+---
+
 ## Dependências
 
 ```

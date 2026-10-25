@@ -307,6 +307,12 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - Correções do M12 (baseline em `docs/performance/baseline.md`): o resultado da projeção usa o **resumo em cache** das referências quando ele está em dia (6,4 s → 0,3 s com 1.000 referências) e mostra 50 linhas na tela (todas no .xlsx); a **impressão digital do resumo ignora a ordem** das listas e das chaves (tela e scripts gravavam impressões diferentes e a tela recalculava tudo); referências baixadas em até 4 lotes ao mesmo tempo (3,3 s → 1,8 s); detalhe da obra numa rodada de busca só. (auto — recomendado)
 - Ficam para quando a medição na produção pedir: paginação da base no servidor (G5) e abrir o app carregando só os cadastros da tela (G6).
 
+### M13 — Segurança (24/10/2026)
+- **Base:** a auditoria do ITO (`AUDITORIA-2026-10-24.md`, revisão `4d242d7`) e o cruzamento com a auditoria do JETO. Cadastro público confirmado fechado na homologação e na produção (`disable_signup = true`).
+- **MFA obrigatório** (usuário): administrador, controladoria e diretoria, com aplicativo autenticador (TOTP). Sem o segundo fator (sessão AAL1), essas contas não leem nem escrevem nada, também pela API: `sou_ativo`, `sou_admin` e `meu_perfil` exigem AAL2 delas. Demais perfis usam só senha. (auto — recomendado)
+- **Perdeu o celular:** outro administrador zera o MFA pela tela de usuários (a pessoa se inscreve de novo no próximo login). Contas do seed local ficam dispensadas (`mfa_dispensado`, só a chave de serviço altera), menos a de teste do MFA. (auto — recomendado)
+- **Projeção aprovada congelada** (S05): entradas e resumo travados depois da aprovação; mudanças de resumo auditadas. O cálculo autoritativo no servidor fica para depois: hoje o motor roda no navegador de quem aprova. (auto — recomendado)
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
