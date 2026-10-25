@@ -17,7 +17,8 @@ create index metricas_tela_criado on public.metricas_tela (criado_em);
 alter table public.metricas_tela enable row level security;
 -- sem política nem grant: grava por registrar_metricas, lê por resumo_metricas e erros_tela
 
--- a tela manda em lotes de até 50; até 600 por hora por pessoa (o excesso some calado)
+-- a tela manda em lotes de até 50, a cada 30 s e ao sair da aba: até 240 envios por hora por
+-- pessoa (folga para quem alterna muito de aba); o excesso some calado
 create function public.registrar_metricas(p json)
 returns integer language plpgsql security definer set search_path = '' as $$
 declare
@@ -29,7 +30,7 @@ begin
   if p is null or json_typeof(p) <> 'array' or json_array_length(p) > 50 then
     raise exception 'Pedido inválido.' using errcode = '22023';
   end if;
-  if not public.usar_cota(auth.uid(), 'metricas', 600 / 50, '1 hour') then
+  if not public.usar_cota(auth.uid(), 'metricas', 240, '1 hour') then
     return 0;
   end if;
   insert into public.metricas_tela (tipo, nome, valor, rota, versao, detalhe)

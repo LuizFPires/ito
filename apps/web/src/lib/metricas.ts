@@ -27,8 +27,23 @@ export function rotaAnonima(caminho: string): string {
 
 /** Só a mensagem e onde (arquivo:linha), sem pilha completa nem dados. */
 export function detalheDoErro(e: unknown): string {
-  const err = e as { message?: unknown; stack?: unknown } | null;
-  const msg = String(err?.message ?? e ?? "erro").replace(/\s+/g, " ");
+  const err = e as {
+    message?: unknown;
+    stack?: unknown;
+    status?: unknown;
+    statusText?: unknown;
+  } | null;
+  // resposta de erro do roteador (404…): status, não "[object Object]"
+  const bruto =
+    err && typeof err === "object" && "status" in err && !("message" in err)
+      ? `${String(err.status)} ${String(err.statusText ?? "")}`
+      : String(err?.message ?? e ?? "erro");
+  // nada que identifique alguém: e-mails e números longos (matrícula, CPF, valores) saem
+  const msg = bruto
+    .replace(/[^\s@]+@[^\s@]+/g, "<e-mail>")
+    .replace(/\d{4,}/g, "<n>")
+    .replace(/\s+/g, " ")
+    .trim();
   const onde = /([\w.-]+\.(?:js|ts|tsx)):(\d+)/.exec(String(err?.stack ?? ""));
   return `${msg.slice(0, 220)}${onde ? ` @ ${onde[1]}:${onde[2]}` : ""}`.slice(0, 300);
 }

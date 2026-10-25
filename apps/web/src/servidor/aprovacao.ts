@@ -51,7 +51,10 @@ export async function calcularAprovacao(c: Cliente, id: string): Promise<Aprovac
       "Faltam os preços da cidade ou a tabela vigente. Confira os cadastros.",
     );
   const refs = e.referencias.length
-    ? (await carregarObrasBanco(c, e.referencias)).filter((b) => e.referencias.includes(b.obra.id))
+    ? // mesma ordem da tela (consultaReferencias ordena os ids): mesma soma no motor
+      (await carregarObrasBanco(c, [...e.referencias].sort())).filter((b) =>
+        e.referencias.includes(b.obra.id),
+      )
     : [];
   const calc = calcularProjecao(e, refs, precos, contexto.ctx);
   const resumo = resumoDaProjecao(calc, contexto.vigente);

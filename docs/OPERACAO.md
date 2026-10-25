@@ -17,6 +17,10 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    pnpm exec supabase functions deploy usuarios --project-ref <ref>
    pnpm exec supabase functions deploy projecoes --project-ref <ref>
    ```
+   Na homologação, que atende os previews da Vercel, libere também o CORS deles: `supabase secrets set ITO_PREVIEWS=sim --project-ref <homologação>` (na produção, não).
+
+   **Ordem quando a versão muda a aprovação ou o cálculo:** 1) publique as funções (`projecoes` com o `calculo.gerado.js` novo); 2) aplique as migrações; 3) faça o merge, que publica o site. Ao contrário, alguém pode tentar aprovar com uma função velha (recusada pelo banco) ou com o cálculo antigo.
+
    A função `projecoes` (M14) aprova as projeções refazendo o cálculo no servidor, com o mesmo código da tela (`supabase/functions/projecoes/calculo.gerado.js`, gerado por `pnpm gen:calculo` e conferido no CI). Publique-a junto com as migrações que mexem no cálculo ou nas tabelas que ele lê.
 3. **Auth:** aplique a configuração. O comando leva os modelos de e-mail em português: convite (`supabase/templates/convite.html`) e troca de senha (`recuperar.html`).
    ```sh

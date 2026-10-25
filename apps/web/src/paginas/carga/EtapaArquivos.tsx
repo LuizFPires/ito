@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { ErroLeitura, Leituras, TipoArquivo } from "@ito/carga";
 import { numero } from "@ito/formato";
 import { baixarModelo } from "../../lib/arquivos";
@@ -67,9 +67,12 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
   const avisar = useToast();
   const [lendo, setLendo] = useState<TipoArquivo | null>(null);
   const cancelar = useRef<AbortController | null>(null);
+  // saiu da etapa no meio da leitura: o worker para junto
+  useEffect(() => () => cancelar.current?.abort(), []);
 
   async function ler(tipo: TipoArquivo, arquivos: FileList | null) {
-    if (!arquivos?.length) return;
+    // uma leitura por vez (os campos ficam travados enquanto lê)
+    if (!arquivos?.length || cancelar.current) return;
     const limite = foraDoLimite(tipo, [...arquivos]);
     if (limite) {
       avisar(limite);
@@ -151,6 +154,7 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
           slot={sl}
           meta={r.arquivos[sl.tipo]}
           lendo={lendo === sl.tipo}
+          ocupado={lendo !== null}
           onLer={(a) => ler(sl.tipo, a)}
           onRemover={() => remover(sl.tipo)}
           onCancelar={() => cancelar.current?.abort()}
@@ -167,6 +171,7 @@ function SlotArquivo({
   onLer,
   onRemover,
   onCancelar,
+  ocupado,
 }: {
   slot: Slot;
   meta: { nome: string; resumo: string; erros: string[] } | undefined;
@@ -174,6 +179,8 @@ function SlotArquivo({
   onLer: (a: FileList | null) => void;
   onRemover: () => void;
   onCancelar: () => void;
+  /** outro arquivo está sendo lido */
+  ocupado: boolean;
 }) {
   const id = useId();
   const avisar = useToast();
@@ -234,7 +241,7 @@ function SlotArquivo({
           Baixar modelo
         </Botao>
       )}
-      {meta && !lendo && (
+      {meta && !ocupado && (
         <Botao pequeno variante="fantasma" onClick={onRemover}>
           Remover
         </Botao>
@@ -251,7 +258,7 @@ function SlotArquivo({
         type="file"
         accept={slot.aceita}
         multiple={slot.tipo === "nf"}
-        disabled={lendo}
+        disabled={ocupado}
         aria-label={slot.titulo}
         onChange={(e) => {
           onLer(e.target.files);
@@ -261,7 +268,7 @@ function SlotArquivo({
       <label
         htmlFor={id}
         className={`${u.botao} ${u.pequeno} ${meta ? "" : u.escuro} ${s.botaoArquivo}`}
-        aria-disabled={lendo}
+        aria-disabled={ocupado}
       >
         {lendo ? "Lendo…" : meta ? "Trocar arquivo" : "Escolher arquivo"}
       </label>

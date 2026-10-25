@@ -1197,7 +1197,7 @@ var resumoDaProjecao = (c, vigente) => c.r ? {
 } : {};
 
 // apps/web/src/servidor/aprovacao.ts
-var VERSAO_CALCULO = "7c2a42baa239cd99";
+var VERSAO_CALCULO = "0796cadcd2323cc8";
 var ErroAprovacao = class extends Error {
 };
 async function calcularAprovacao(c, id) {
@@ -1218,7 +1218,12 @@ async function calcularAprovacao(c, id) {
     throw new ErroAprovacao(
       "Faltam os pre\xE7os da cidade ou a tabela vigente. Confira os cadastros."
     );
-  const refs = e.referencias.length ? (await carregarObrasBanco(c, e.referencias)).filter((b) => e.referencias.includes(b.obra.id)) : [];
+  const refs = e.referencias.length ? (
+    // mesma ordem da tela (consultaReferencias ordena os ids): mesma soma no motor
+    (await carregarObrasBanco(c, [...e.referencias].sort())).filter(
+      (b) => e.referencias.includes(b.obra.id)
+    )
+  ) : [];
   const calc = calcularProjecao(e, refs, precos, contexto.ctx);
   const resumo = resumoDaProjecao(calc, contexto.vigente);
   if (resumo.total === void 0)

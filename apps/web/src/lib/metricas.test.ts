@@ -15,6 +15,10 @@ describe("métricas sem dado pessoal (M14)", () => {
       "TypeError: x is undefined\n    at f (https://ito/assets/Resultado-ab12.js:3:99)\n    at g (outro.js:1:1)";
     expect(detalheDoErro(e)).toBe("x is undefined @ Resultado-ab12.js:3");
     expect(detalheDoErro("texto solto")).toBe("texto solto");
+    expect(detalheDoErro(new Error("falhou para ana@x.com.br, matrícula 123456"))).toMatch(
+      /^falhou para <e-mail> matrícula <n>( @ |$)/,
+    );
+    expect(detalheDoErro({ status: 404, statusText: "Not Found" })).toBe("404 Not Found");
     expect(detalheDoErro(new Error("a".repeat(500))).length).toBeLessThanOrEqual(300);
   });
 });

@@ -21,6 +21,11 @@ describe("cabeçalhos de segurança do site", () => {
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).not.toMatch(/script-src[^;]*unsafe/);
+    // a descompactação e a gravação de .xlsx (fflate) criam workers de blob:; as fontes
+    // pequenas vêm embutidas como data: (o build do Vite)
+    expect(csp).toContain("worker-src 'self' blob:");
+    expect(csp).toContain("font-src 'self' data:");
+    expect(csp).toMatch(/script-src 'self';/);
   });
 
   it("HSTS de 2 anos e janela isolada", () => {

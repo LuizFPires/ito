@@ -8,7 +8,7 @@ Deno.serve(
     urlBase: Deno.env.get("SUPABASE_URL")!,
     servico: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     publica: Deno.env.get("SUPABASE_ANON_KEY")!,
-    site: Deno.env.get("ITO_SITE_URL"),
+    site: Deno.env.get("ITO_SITE_URL")?.replace(/\/+$/, "") || undefined,
     local: LOCAL,
     cors: cabecalhosCors,
     fetch: (...a) => fetch(...a),
