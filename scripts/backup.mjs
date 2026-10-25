@@ -136,8 +136,15 @@ const dump = async (arquivo, extra = []) => {
   });
   chmodSync(destino, 0o600);
   if (!cifrar) return [arquivo, statSync(destino).size];
-  await cifrarArquivo(destino, destino + EXTENSAO, frase);
-  rmSync(destino);
+  // o dump aberto não fica na pasta nem se a cifragem falhar (disco cheio, por exemplo)
+  try {
+    await cifrarArquivo(destino, destino + EXTENSAO, frase);
+  } catch (e) {
+    rmSync(destino + EXTENSAO, { force: true });
+    throw e;
+  } finally {
+    rmSync(destino, { force: true });
+  }
   return [arquivo + EXTENSAO, statSync(destino + EXTENSAO).size];
 };
 

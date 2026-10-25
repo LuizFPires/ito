@@ -1575,7 +1575,11 @@ export type Database = {
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
       definir_situacao: {
-        Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };
+        Args: {
+          p_id: string;
+          p_resumo?: Json;
+          p_situacao: Database["public"]["Enums"]["situacao_projecao"];
+        };
         Returns: undefined;
       };
       definir_situacao_obra: {

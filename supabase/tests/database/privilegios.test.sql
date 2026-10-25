@@ -1,5 +1,5 @@
 begin;
-select plan(7);
+select plan(8);
 
 -- M13: objeto novo no public nasce fechado; os que existem seguem com RLS e sem acesso anônimo
 select is((select count(*)::integer
@@ -32,6 +32,17 @@ select is(array(select p.proname::text from pg_proc p join pg_namespace n on n.o
                 where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
                 order by 1),
   array[]::text[], 'anon não executa função nenhuma do public');
+
+-- funções chamadas pelos CHECKs: quem grava pela API precisa executá-las
+select is(array(select distinct p.proname::text
+                from pg_constraint c
+                join pg_namespace n on n.oid = c.connamespace and n.nspname = 'public'
+                join pg_depend d on d.objid = c.oid and d.classid = 'pg_constraint'::regclass
+                                and d.refclassid = 'pg_proc'::regclass
+                join pg_proc p on p.oid = d.refobjid
+                where not has_function_privilege('authenticated', p.oid, 'execute')
+                order by 1),
+  array[]::text[], 'funções dos CHECKs executáveis por authenticated');
 
 select * from finish();
 rollback;

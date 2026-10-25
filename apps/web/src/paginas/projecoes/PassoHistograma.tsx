@@ -191,6 +191,7 @@ export function PassoHistograma({
                           className={`${f.input} ${f.num} ${f.compacto}`}
                           style={{ width: 56 }}
                           inputMode="numeric"
+                          maxLength={5}
                           aria-label={`${fun(k).nome} em ${meses[j]}`}
                           value={String(v)}
                           onChange={(ev) =>

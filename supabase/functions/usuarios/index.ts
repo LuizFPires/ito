@@ -188,6 +188,13 @@ async function mudarSituacao(id: string, ativo: boolean, quem: string) {
  */
 async function zerarMfa(id: string, quem: string) {
   if (!idValido(id)) return erro(400, "Usuário inválido. Atualize a página.");
+  if (id === quem) return erro(400, "Peça a outro administrador para zerar o seu segundo fator.");
+  // grava antes (confere que o autor ainda é admin ativo e que a pessoa existe); a auditoria
+  // registra o pedido mesmo se o Auth falhar no meio, e repetir é seguro
+  const linha = await gerir(quem, id, { mfa_zerado_em: new Date().toISOString() });
+  if (!linha.ok) return erro(400, mensagemBanco(linha.corpo));
+  if (linha.corpo !== (1 as unknown))
+    return erro(404, "Usuário não encontrado. Atualize a página.");
   const fatores = await chamar(`/auth/v1/admin/users/${id}/factors`);
   if (!fatores.ok) return erro(502, "Não foi possível ler o segundo fator. Tente de novo.");
   const lista = Array.isArray(fatores.corpo) ? (fatores.corpo as { id: string }[]) : [];
@@ -203,8 +210,6 @@ async function zerarMfa(id: string, quem: string) {
   });
   if (!sessoes.ok)
     return erro(502, "O segundo fator foi zerado, mas a sessão antiga não saiu. Tente de novo.");
-  const linha = await gerir(quem, id, { mfa_zerado_em: new Date().toISOString() });
-  if (!linha.ok) return erro(400, mensagemBanco(linha.corpo));
   return resposta(200, { id, fatores: lista.length });
 }
 
@@ -225,7 +230,12 @@ Deno.serve(async (req) => {
   } catch {
     return erro(400, "Pedido inválido.");
   }
-  const origem = Deno.env.get("ITO_SITE_URL") ?? req.headers.get("Origin") ?? "";
+  // fora do Supabase local, o retorno dos links vem só do ITO_SITE_URL (nunca do Origin)
+  const local = /\/\/(kong|127\.0\.0\.1|localhost)[:/]/.test(URL_BASE);
+  const site = Deno.env.get("ITO_SITE_URL");
+  if (!site && !local)
+    return erro(500, "Falta ITO_SITE_URL na função de usuários. Avise o suporte.");
+  const origem = site ?? req.headers.get("Origin") ?? "";
   switch (corpo.acao) {
     case "convidar":
       return convidar(corpo, origem, quem.id);

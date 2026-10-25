@@ -5,9 +5,10 @@ import { useSessao } from "./sessao";
 
 /** Só entra com sessão; sem login, vai para /entrar e volta para onde estava. */
 export function Protegida({ children }: { children: ReactNode }) {
-  const { sessao, faltaMfa } = useSessao();
+  const { sessao, usuario, erroUsuario, faltaMfa } = useSessao();
   const local = useLocation();
-  if (sessao === undefined)
+  // M13: até saber se a conta precisa do segundo fator, nada consulta o banco
+  if (sessao === undefined || (sessao && usuario === undefined && !erroUsuario))
     return (
       <p className="sub" style={{ padding: 24 }}>
         Carregando…

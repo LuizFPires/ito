@@ -49,7 +49,7 @@ begin
         insert into public.projecoes (nome, inicio, prazo_meses, area_m2)
           values ('Teste', '2027-01-01', 3, 1000);
       when 'aprovar' then
-        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'aprovada');
+        perform public.definir_situacao('00000000-0000-4000-8000-0000000000bb', 'aprovada', '{"total": 1}');
       when 'auditoria' then
         select count(*) into n from public.auditoria;
       when 'usuarios' then

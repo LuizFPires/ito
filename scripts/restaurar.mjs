@@ -19,11 +19,20 @@ if (!pasta || !(existsSync(aberto) || existsSync(cifrado))) {
   console.log("Uso: pnpm db:restaurar <pasta do backup com dados.sql> --confirmar");
   process.exit(1);
 }
+// a frase também pode estar em .env.supabase.local, como no backup
+function fraseDoArquivo() {
+  const f = join(REPO, ".env.supabase.local");
+  if (!existsSync(f)) return undefined;
+  const linha = readFileSync(f, "utf8")
+    .split(/\r?\n/)
+    .find((l) => l.trim().startsWith("ITO_BACKUP_CHAVE="));
+  return linha?.trim().slice("ITO_BACKUP_CHAVE=".length).replace(/^"|"$/g, "");
+}
 let dados;
 try {
   dados = existsSync(aberto)
     ? readFileSync(aberto, "utf8")
-    : decifrarArquivo(cifrado, process.env.ITO_BACKUP_CHAVE).toString("utf8");
+    : decifrarArquivo(cifrado, process.env.ITO_BACKUP_CHAVE ?? fraseDoArquivo()).toString("utf8");
 } catch (e) {
   console.error(e.message);
   process.exit(1);

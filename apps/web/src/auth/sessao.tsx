@@ -39,6 +39,8 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((evento, s) => {
       // Em computador compartilhado, nada do usuário anterior fica no cache.
       if (evento === "SIGNED_OUT") queryClient.clear();
+      // M13: o que foi lido em AAL1 veio vazio (RLS); com o código confirmado, lê de novo
+      if (evento === "MFA_CHALLENGE_VERIFIED") void queryClient.invalidateQueries();
       setSessao(s);
     });
     return () => {

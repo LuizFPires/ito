@@ -1,5 +1,5 @@
 begin;
-select plan(19);
+select plan(20);
 
 -- S01: perda do perfil de carga revoga rascunhos (dados por matrícula)
 insert into public.carga_rascunhos (id, usuario_id, titulo, etapa, dados)
@@ -44,6 +44,9 @@ select lives_ok($$update public.projecoes set ajustes = '{"ped": 20, "serv": -10
   regime = '{"ped": "sp"}', origem = '{"ped": "aloj"}',
   resumo = '{"total": 1234.5, "pico": 4, "pessoa_mes": 8, "vigente": 2026}'
   where id = '33333333-3333-4333-8333-333333333333'$$, 'projeção como a tela grava');
+select lives_ok($$update public.projecoes set resumo = '{"total": 1, "indireta_pct": 12.5}',
+  premissas = '{"foraDaSede": true}' where id = '33333333-3333-4333-8333-333333333333'$$,
+  'chaves antigas das projeções salvas antes (indireta_pct, foraDaSede) seguem aceitas');
 select throws_ok($$update public.projecoes set ajustes = '"20"' where id = '33333333-3333-4333-8333-333333333333'$$, '23514', null,
   'ajustes como texto recusado');
 select throws_ok($$update public.projecoes set ajustes = '{"ped": 500}' where id = '33333333-3333-4333-8333-333333333333'$$, '23514', null,

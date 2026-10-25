@@ -11,8 +11,9 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    pnpm exec supabase link --project-ref <ref>
    pnpm exec supabase db push
    ```
-2. **Edge Functions** (gestão de usuários, M10). A função usa as variáveis `SUPABASE_*` que o próprio Supabase injeta, então não precisa de segredo extra.
+2. **Edge Functions** (gestão de usuários, M10). A função usa as variáveis `SUPABASE_*` que o próprio Supabase injeta e, desde o M13, o endereço do site em `ITO_SITE_URL`. É para lá que os links de convite e de senha voltam; o cabeçalho de quem chama não é usado. Sem `ITO_SITE_URL`, a função recusa as chamadas fora do Supabase local.
    ```sh
+   pnpm exec supabase secrets set ITO_SITE_URL=https://<endereço do site> --project-ref <ref>
    pnpm exec supabase functions deploy usuarios --project-ref <ref>
    ```
 3. **Auth:** aplique a configuração. O comando leva os modelos de e-mail em português: convite (`supabase/templates/convite.html`) e troca de senha (`recuperar.html`).

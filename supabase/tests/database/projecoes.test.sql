@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(22);
 
 select has_table('public', 'projecoes', 'tabela projecoes');
 select is((select relrowsecurity from pg_class where oid = 'public.projecoes'::regclass), true, 'RLS ligada');
@@ -31,10 +31,18 @@ update public.projecoes set nome = 'outra' where id = '11111111-1111-4111-8111-1
 select is((select nome from public.projecoes where id = '11111111-1111-4111-8111-111111111111'),
   'Projeção teste', 'DP/RH não edita');
 
--- diretoria aprova (mas não edita)
+-- M13: resumo forjado pela API antes da aprovação (planejamento edita)
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+update public.projecoes set resumo = '{"total": 1}' where id = '11111111-1111-4111-8111-111111111111';
+
+-- diretoria aprova (mas não edita) com os números que está vendo
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}', true);
-select lives_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'aprovada')$$,
+select throws_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'aprovada')$$, '22023', null,
+  'aprovar exige o resumo da tela');
+select lives_ok($$select public.definir_situacao('11111111-1111-4111-8111-111111111111', 'aprovada', '{"total": 5000, "pico": 3}')$$,
   'diretoria aprova');
+select is((select resumo ->> 'total' from public.projecoes where id = '11111111-1111-4111-8111-111111111111'), '5000',
+  'o resumo aprovado é o de quem aprovou, não o gravado antes');
 select is((select situacao::text from public.projecoes where id = '11111111-1111-4111-8111-111111111111'),
   'aprovada', 'aprovada');
 

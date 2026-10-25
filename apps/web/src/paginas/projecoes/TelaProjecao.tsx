@@ -208,15 +208,29 @@ export function TelaProjecao() {
               key={x}
               type="button"
               aria-pressed={p.situacao === x}
-              disabled={!podeMudar(x) || situacao.isPending}
+              disabled={
+                !podeMudar(x) ||
+                situacao.isPending ||
+                (x === "aprovada" && !aprovada && resumo?.total === undefined)
+              }
               title={
                 podeMudar(x)
-                  ? undefined
+                  ? x === "aprovada" && !aprovada && resumo?.total === undefined
+                    ? "Espere o cálculo terminar para aprovar"
+                    : undefined
                   : x === "aprovada" || aprovada
                     ? "Só controladoria, diretoria ou administrador aprova ou desfaz a aprovação"
                     : "Seu perfil só consulta projeções"
               }
-              onClick={() => x !== p.situacao && situacao.gravar({ id: p.id, situacao: x })}
+              onClick={() =>
+                x !== p.situacao &&
+                // M13: os números aprovados são os que quem aprova está vendo
+                situacao.gravar({
+                  id: p.id,
+                  situacao: x,
+                  resumo: x === "aprovada" ? (resumo ?? undefined) : undefined,
+                })
+              }
             >
               {NOME_SITUACAO[x]}
             </button>
@@ -247,9 +261,9 @@ export function TelaProjecao() {
       {/* M13 · S05: os números aprovados ficam congelados; a tela calcula com os preços de hoje */}
       {aprovada && resumo && p.resumo.total != null && !mesmoResumo(p.resumo, resumo) && (
         <p className={f.aviso} role="status">
-          Os preços mudaram depois da aprovação. O total aprovado foi {moeda(p.resumo.total)}; a
-          tela mostra o cálculo com os preços de hoje ({moeda(resumo.total)}). Para aprovar os
-          valores novos, volte a projeção a Em análise e aprove de novo.
+          O cálculo de hoje é diferente do aprovado: o total aprovado foi {moeda(p.resumo.total)} e,
+          com os preços e cadastros de hoje, dá {moeda(resumo.total)}. Para aprovar os valores
+          novos, volte a projeção a Em análise e aprove de novo.
         </p>
       )}
 

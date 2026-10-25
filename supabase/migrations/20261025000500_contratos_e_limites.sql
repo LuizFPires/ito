@@ -52,7 +52,8 @@ returns boolean language sql immutable set search_path = '' as $$
          when e.key in ('gratPremiosPct', 'transfPct', 'riscoPct', 'lucroPct', 'tribLucroPct',
                         'adiantamentoPct')
            then jsonb_typeof(e.value) <> 'number' or (e.value #>> '{}')::numeric not between 0 and 100
-         when e.key in ('provisionar', 'adiantamento') then jsonb_typeof(e.value) <> 'boolean'
+         -- foraDaSede: chave antiga (até o M11), ainda em projeções salvas antes; o motor ignora
+         when e.key in ('provisionar', 'adiantamento', 'foraDaSede') then jsonb_typeof(e.value) <> 'boolean'
          when e.key = 'funcoesTransferidas'
            then jsonb_typeof(e.value) <> 'array' or jsonb_array_length(e.value) > 300
                 or exists (select 1 from jsonb_array_elements(e.value) x
@@ -66,7 +67,8 @@ create function public.json_resumo(j jsonb)
 returns boolean language sql immutable set search_path = '' as $$
   select jsonb_typeof(j) = 'object'
      and not exists (select 1 from jsonb_each(j) e
-                     where e.key not in ('total', 'pico', 'pessoa_mes', 'vigente')
+                     -- indireta_pct: chave antiga (até 23/10/2026), ainda em projeções salvas antes
+                    where e.key not in ('total', 'pico', 'pessoa_mes', 'vigente', 'indireta_pct')
                         or jsonb_typeof(e.value) <> 'number' or (e.value #>> '{}')::numeric < 0);
 $$;
 
