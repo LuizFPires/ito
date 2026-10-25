@@ -4,14 +4,28 @@
 // restauração). Restaurar em homologação ou produção segue docs/OPERACAO.md (não por aqui).
 //
 //   pnpm db:restaurar <pasta do backup> --confirmar   (apaga o banco local antes)
+//
+// Backup cifrado (dados.sql.cifrado, M13): pede a frase em ITO_BACKUP_CHAVE.
 import { execFileSync, execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { decifrarArquivo, EXTENSAO } from "./cifra.mjs";
 
 const REPO = resolve(import.meta.dirname, "..");
 const pasta = process.argv[2] && resolve(process.argv[2]);
-if (!pasta || !existsSync(join(pasta, "dados.sql"))) {
+const aberto = pasta && join(pasta, "dados.sql");
+const cifrado = pasta && join(pasta, "dados.sql" + EXTENSAO);
+if (!pasta || !(existsSync(aberto) || existsSync(cifrado))) {
   console.log("Uso: pnpm db:restaurar <pasta do backup com dados.sql> --confirmar");
+  process.exit(1);
+}
+let dados;
+try {
+  dados = existsSync(aberto)
+    ? readFileSync(aberto, "utf8")
+    : decifrarArquivo(cifrado, process.env.ITO_BACKUP_CHAVE).toString("utf8");
+} catch (e) {
+  console.error(e.message);
   process.exit(1);
 }
 if (!process.argv.includes("--confirmar")) {
@@ -55,7 +69,7 @@ psql(limpar);
 console.log("carregando os dados do backup…");
 psql(
   "begin;\nset session_replication_role = replica;\n" +
-    readFileSync(join(pasta, "dados.sql"), "utf8") +
+    dados +
     "\nset session_replication_role = origin;\ncommit;\n",
 );
 const contagem = psql(
