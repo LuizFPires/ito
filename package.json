@@ -28,7 +28,8 @@
     "perf:motor": "tsx packages/motor/src/desempenho.medicao.ts",
     "perf:bundle": "node scripts/medir-bundle.mjs",
     "perf": "pnpm perf:motor && playwright test -c playwright.perf.config.ts && pnpm perf:bundle",
-    "gen:calculo": "node scripts/gerar-calculo.mjs"
+    "gen:calculo": "node scripts/gerar-calculo.mjs",
+    "db:conferir": "node scripts/conferir.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
