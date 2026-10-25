@@ -1,9 +1,10 @@
 import { execSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
-import { entrar, semRolagemLateral, codigoTotp } from "./ajuda";
+import { entrar, semRolagemLateral, codigoTotp, envLocal } from "./ajuda";
 
-const URL_API = "http://127.0.0.1:54821";
-const MAILPIT = "http://127.0.0.1:54824";
+const URL_API = envLocal().VITE_SUPABASE_URL ?? "http://127.0.0.1:54821";
+// Mailpit fica 3 portas acima da API (supabase/config.toml)
+const MAILPIT = URL_API.replace(/\d+$/, (p) => String(Number(p) + 3));
 const EMAIL = `e2e-convite-${Date.now()}@ito.local`;
 
 /** Chave de serviço do Supabase local, só para o teste apagar o usuário que criou. */

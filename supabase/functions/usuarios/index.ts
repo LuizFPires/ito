@@ -112,10 +112,15 @@ async function convidar(corpo: Record<string, unknown>, origem: string, quem: st
   if (!link.ok || !link.novo)
     return erro(502, "O convite não foi enviado. Tente de novo em instantes.");
   // perfil e admin: no Auth (app_metadata, só o servidor define) e na linha de usuarios
-  await chamar(`/auth/v1/admin/users/${link.id}`, {
+  const meta = await chamar(`/auth/v1/admin/users/${link.id}`, {
     method: "PUT",
     json: { app_metadata: { perfil, admin } },
   });
+  if (!meta.ok)
+    return erro(
+      502,
+      "O convite saiu, mas o perfil não foi gravado no login. Ajuste o perfil na lista.",
+    );
   const linha = await gerir(quem, link.id, { nome, perfil, admin });
   if (!linha.ok) return erro(500, mensagemBanco(linha.corpo));
   return resposta(200, { id: link.id });
@@ -123,14 +128,26 @@ async function convidar(corpo: Record<string, unknown>, origem: string, quem: st
 
 const idValido = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
 
+/**
+ * M13 · S03: o link vai para o e-mail da conta no Auth (resolvida pelo UUID), não para o e-mail
+ * guardado no cadastro. Convite de novo só para quem nunca confirmou; os demais recebem a
+ * recuperação de senha, que nunca cria conta.
+ */
 async function linkDeSenha(id: string, origem: string) {
   if (!idValido(id)) return erro(400, "Usuário inválido. Atualize a página.");
-  const u = await chamar(`/rest/v1/usuarios?select=email,ativo&id=eq.${id}`);
-  const linha = Array.isArray(u.corpo) ? (u.corpo[0] as { email: string; ativo: boolean }) : null;
+  const u = await chamar(`/rest/v1/usuarios?select=ativo&id=eq.${id}`);
+  const linha = Array.isArray(u.corpo) ? (u.corpo[0] as { ativo: boolean }) : null;
   if (!linha) return erro(404, "Usuário não encontrado. Atualize a página.");
   if (!linha.ativo) return erro(400, "Reative o usuário antes de enviar o link.");
-  const link = await enviarLink(linha.email, origem);
-  if (!link.ok) return erro(502, "O e-mail não foi enviado. Tente de novo em instantes.");
+  const conta = await chamar(`/auth/v1/admin/users/${id}`);
+  const email = String(conta.corpo.email ?? "");
+  if (!conta.ok || !email) return erro(404, "Conta de acesso não encontrada. Atualize a página.");
+  const caminho = conta.corpo.email_confirmed_at ? "/auth/v1/recover" : "/auth/v1/invite";
+  const envio = await chamar(`${caminho}${destinoDoLink(origem)}`, {
+    method: "POST",
+    json: { email },
+  });
+  if (!envio.ok) return erro(502, "O e-mail não foi enviado. Tente de novo em instantes.");
   return resposta(200, { id });
 }
 
@@ -153,7 +170,14 @@ async function mudarSituacao(id: string, ativo: boolean, quem: string) {
     return erro(502, "Não foi possível mudar o acesso no login. Tente de novo.");
   }
   // quem foi desativado sai na hora: sem sessão nem renovação do token (a RLS já nega leituras)
-  if (!ativo) await chamar("/rest/v1/rpc/encerrar_sessoes", { method: "POST", json: { p_id: id } });
+  if (!ativo) {
+    const sessoes = await chamar("/rest/v1/rpc/encerrar_sessoes", {
+      method: "POST",
+      json: { p_id: id },
+    });
+    if (!sessoes.ok)
+      return erro(502, "O acesso foi desativado, mas a sessão aberta não saiu. Tente de novo.");
+  }
   return resposta(200, { id, ativo });
 }
 
@@ -189,13 +213,19 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return erro(405, "Use POST.");
   const quem = await chamador(req);
   if (quem instanceof Response) return quem;
+  // M13 · S06: corpo pequeno e objeto JSON; endereço de retorno fixo por ambiente
   let corpo: Record<string, unknown>;
   try {
-    corpo = await req.json();
+    const texto = await req.text();
+    if (texto.length > 10_000) return erro(413, "Pedido grande demais.");
+    const lido: unknown = JSON.parse(texto);
+    if (!lido || typeof lido !== "object" || Array.isArray(lido))
+      return erro(400, "Pedido inválido.");
+    corpo = lido as Record<string, unknown>;
   } catch {
     return erro(400, "Pedido inválido.");
   }
-  const origem = req.headers.get("Origin") ?? Deno.env.get("ITO_SITE_URL") ?? "";
+  const origem = Deno.env.get("ITO_SITE_URL") ?? req.headers.get("Origin") ?? "";
   switch (corpo.acao) {
     case "convidar":
       return convidar(corpo, origem, quem.id);

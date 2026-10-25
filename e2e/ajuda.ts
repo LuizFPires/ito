@@ -36,7 +36,7 @@ export async function semRolagemLateral(page: Page) {
   });
 }
 
-function envLocal(): Record<string, string> {
+export function envLocal(): Record<string, string> {
   try {
     const txt = readFileSync("apps/web/.env.local", "utf8");
     return Object.fromEntries(
