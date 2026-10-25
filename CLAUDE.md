@@ -324,6 +324,12 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
   - Tela não consulta o banco antes de saber se falta o MFA e relê tudo ao confirmar o código; zerar o MFA recusa a própria conta e grava antes de mexer no Auth; `ITO_SITE_URL` obrigatório fora do local (segredo da função); restauro lê a frase de `.env.supabase.local`; dump aberto apagado mesmo se a cifragem falhar; célula do histograma com até 5 dígitos; grants explícitos das funções dos CHECKs, com teste.
   - Aceito: o limite de 30 abas é conferido depois da leitura (o limite de 50 MB, antes dela, é o que protege o navegador).
 
+### M14 — Segurança e desempenho, o que faltou (25/10/2026)
+- **Tudo o que couber no código e nas ferramentas do projeto** (usuário). Fica com o usuário o que só ele faz: MFA das contas do GitHub, da Vercel e do Supabase; restrição de rede do banco (bloquearia as migrações feitas daqui, de IP variável); plano e add-on de PITR.
+- **Aprovação no servidor:** Edge Function `projecoes` com o mesmo motor e os mesmos carregadores da tela, empacotados por esbuild num arquivo gerado (`supabase/functions/projecoes/calculo.gerado.js`, conferido no CI); cada aprovação fica em `projecao_aprovacoes` com resumo, entradas, preços e versão do cálculo (hash do código); `definir_situacao` não aprova mais. (auto — recomendado)
+- **Monitoramento próprio no banco** em vez do Vercel Speed Insights (dependência e custo): métricas sem dado pessoal, 90 dias. (auto — recomendado)
+- **Ficam para quando o monitoramento da produção pedir:** paginação da base no servidor (G5), cadastros só da tela aberta (G6), cálculo em Web Worker, virtualização e feature flags; voltar uma publicação é pelo "Instant Rollback" da Vercel (documentado). (auto — recomendado)
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

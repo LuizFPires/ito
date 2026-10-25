@@ -252,6 +252,19 @@ Correções da auditoria de segurança do ITO, na ordem de risco. Cada item com 
 
 **Aceite:** testes de banco provam cada correção com chamada direta (perfil rebaixado, AAL1 × AAL2, JSON inválido, aprovação); e2e da inscrição e do código de MFA; homologação e produção com o MFA ativo e os administradores inscritos.
 
+## M14 — Segurança e desempenho, o que faltou (pedido do usuário, 25/10/2026)
+O que ficou de fora do M12 e do M13 e cabe no código ou nas ferramentas do projeto. Cada item com teste (banco, unidade ou ponta a ponta) e, no desempenho, número de antes e depois.
+- [ ] Aprovação calculada no servidor: a Edge Function `projecoes` refaz o cálculo com o mesmo motor e grava os números, as entradas, os preços e a versão do cálculo de cada aprovação; o navegador não define o total aprovado (S05).
+- [ ] Leitura dos arquivos da carga fora da tela (Web Worker), com botão Cancelar e tempo-limite; abas e linhas conferidas antes de processar (S07).
+- [ ] Função de usuários: CORS só para o site, tempo-limite nas chamadas ao Auth, falhas do Auth (lentidão, 429, 5xx) testadas sem sucesso falso e registradas sem dado pessoal; até 20 convites por hora por administrador (S06, S07).
+- [ ] Cabeçalhos do site: CSP com os endereços exatos do Supabase de cada ambiente e HSTS conferido.
+- [ ] Plataforma: `pnpm db:conferir` compara homologação e produção com as migrações; SSL obrigatório no banco; `main` protegida (CI obrigatório, sem force push), Actions fixadas por SHA, varredura de segredos e alertas de dependência ligados; backups conferidos e RPO/RTO no OPERACAO.
+- [ ] Histograma com 1.000 referências abrindo em até 500 ms (dados numa chamada só) e régua em até 100 ms (só o que muda é recalculado), sem mudar nenhum número.
+- [ ] Monitoramento próprio: tempos de tela (Web Vitals, abrir histograma e resultado) e erros da tela gravados no banco sem dado pessoal, com retenção de 90 dias e uma tela para o administrador.
+- [ ] Edição não se perde: aviso ao sair do assistente de projeção e da carga com mudança não salva; uso em tela pequena (menu recolhido, sem rolagem lateral da página em 390 px).
+
+**Aceite:** aprovar pela API sem o servidor é recusado e a aprovação guarda o cálculo do servidor; arquivo grande pode ser cancelado sem travar a tela; metas do histograma medidas com `pnpm perf`; conferência remota sem divergência; CI obrigatório na `main`.
+
 ---
 
 ## Dependências
