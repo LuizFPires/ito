@@ -11,7 +11,8 @@ describe("métricas sem dado pessoal (M14)", () => {
 
   it("erro com a mensagem e o arquivo, sem a pilha", () => {
     const e = new TypeError("x is undefined");
-    e.stack = "TypeError: x is undefined\n    at f (https://ito/assets/Resultado-ab12.js:3:99)\n    at g (outro.js:1:1)";
+    e.stack =
+      "TypeError: x is undefined\n    at f (https://ito/assets/Resultado-ab12.js:3:99)\n    at g (outro.js:1:1)";
     expect(detalheDoErro(e)).toBe("x is undefined @ Resultado-ab12.js:3");
     expect(detalheDoErro("texto solto")).toBe("texto solto");
     expect(detalheDoErro(new Error("a".repeat(500))).length).toBeLessThanOrEqual(300);

@@ -24,6 +24,7 @@ import { EtapaRubricas } from "../carga/EtapaRubricas";
 import { EtapaVerificacao } from "../carga/EtapaVerificacao";
 import { Pagina } from "../Pagina";
 import { prepararMes, rascunhoDoMes } from "./mesDaObra";
+import { useAvisoAoSair } from "../../ui/useAvisoAoSair";
 import s from "./obra.module.css";
 
 const ETAPAS = [
@@ -150,6 +151,11 @@ function LancarMes({
   );
   const bloqueia = !prep || prep.verificacao.bloqueia;
   const props: PropsEtapa = { r, mudar, ctx };
+  // M14: o lançamento não tem rascunho; arquivo lido e não gravado se perde ao sair
+  const liberar = useAvisoAoSair(
+    Object.keys(r.arquivos).length > 0,
+    `Os arquivos de ${nome} foram lidos, mas o mês ainda não foi lançado. Sair mesmo assim?`,
+  );
 
   async function gravar() {
     if (!prep || bloqueia) return;
@@ -165,6 +171,7 @@ function LancarMes({
         ),
       );
       avisar(`${nome} ${refazer ? "refeito" : "lançado"} na obra`);
+      liberar();
       navegar(`/obras/${d.obra.id}`);
     } catch (e) {
       avisar(mensagemErroCarga(e));
