@@ -15,7 +15,9 @@ A ordem é sempre esta: homologação primeiro, produção só depois de validar
    ```sh
    pnpm exec supabase secrets set ITO_SITE_URL=https://<endereço do site> --project-ref <ref>
    pnpm exec supabase functions deploy usuarios --project-ref <ref>
+   pnpm exec supabase functions deploy projecoes --project-ref <ref>
    ```
+   A função `projecoes` (M14) aprova as projeções refazendo o cálculo no servidor, com o mesmo código da tela (`supabase/functions/projecoes/calculo.gerado.js`, gerado por `pnpm gen:calculo` e conferido no CI). Publique-a junto com as migrações que mexem no cálculo ou nas tabelas que ele lê.
 3. **Auth:** aplique a configuração. O comando leva os modelos de e-mail em português: convite (`supabase/templates/convite.html`) e troca de senha (`recuperar.html`).
    ```sh
    pnpm exec supabase config diff --project-ref <ref>

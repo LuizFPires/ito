@@ -11,6 +11,7 @@ import { resumoDaObra, VERSAO_RESUMO } from "../lib/obraDoBanco";
 import type { Situacao } from "../lib/situacao";
 import { supabase } from "../lib/supabase";
 import type { Database, Json } from "../lib/tipos-banco";
+import { carregarObrasBanco as carregarObrasBancoDe } from "./carregar";
 
 type T = Database["public"]["Tables"];
 
@@ -99,91 +100,8 @@ export function useListaObras() {
 export const desatualizado = (r: Resumo | null, vigente: number, contexto: string) =>
   !r || r.versao !== VERSAO_RESUMO || r.vigente !== vigente || r.contexto !== contexto;
 
-/**
- * Dados de cálculo de várias obras (resumo, referências da projeção), em lotes de 50, até 4 lotes
- * ao mesmo tempo (M12: em sequência, 1.000 obras levavam 20 rodadas). A ordem dos ids fica.
- */
-export async function carregarObrasBanco(ids: readonly string[]): Promise<ObraBanco[]> {
-  const lotes: string[][] = [];
-  for (let k = 0; k < ids.length; k += 50) lotes.push(ids.slice(k, k + 50));
-  const resultados: ObraBanco[][] = Array.from({ length: lotes.length }, () => []);
-  let proximo = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(4, lotes.length) }, async () => {
-      while (proximo < lotes.length) {
-        const i = proximo++;
-        resultados[i] = await carregarLote(lotes[i]!);
-      }
-    }),
-  );
-  return resultados.flat();
-}
-
-async function carregarLote(lote: readonly string[]): Promise<ObraBanco[]> {
-  const saida: ObraBanco[] = [];
-  {
-    const [obras, comps, efetivo, regime, trocas, feriados] = await Promise.all([
-      ok(supabase.from("obras").select("*").in("id", lote)),
-      // ordem estável entre páginas (LIMIT/OFFSET sem ORDER BY pula ou repete linhas)
-      todas((de, ate) =>
-        supabase
-          .from("competencias")
-          .select("*")
-          .in("obra_id", lote)
-          .order("obra_id")
-          .order("mes_idx")
-          .range(de, ate),
-      ),
-      todas((de, ate) =>
-        supabase
-          .from("efetivo_mes")
-          .select("*")
-          .in("obra_id", lote)
-          .order("obra_id")
-          .order("funcao_id")
-          .order("mes_idx")
-          .range(de, ate),
-      ),
-      todas((de, ate) =>
-        supabase
-          .from("obra_regime")
-          .select("*")
-          .in("obra_id", lote)
-          .order("obra_id")
-          .order("funcao_id")
-          .range(de, ate),
-      ),
-      todas((de, ate) =>
-        supabase
-          .from("obra_trocas_tabela")
-          .select("*")
-          .in("obra_id", lote)
-          .order("obra_id")
-          .order("mes_idx")
-          .range(de, ate),
-      ),
-      todas((de, ate) =>
-        supabase
-          .from("obra_feriados")
-          .select("*")
-          .in("obra_id", lote)
-          .order("obra_id")
-          .order("data")
-          .range(de, ate),
-      ),
-    ]);
-    for (const o of obras)
-      saida.push({
-        obra: o,
-        competencias: comps.filter((c) => c.obra_id === o.id),
-        efetivo: efetivo.filter((e) => e.obra_id === o.id),
-        regime: regime.filter((r) => r.obra_id === o.id),
-        trocas: trocas.filter((t) => t.obra_id === o.id),
-        feriados: feriados.filter((f) => f.obra_id === o.id),
-      });
-  }
-  return saida;
-}
+/** Dados de cálculo de várias obras (resumo, referências da projeção): ver `carregar.ts`. */
+export const carregarObrasBanco = (ids: readonly string[]) => carregarObrasBancoDe(supabase, ids);
 
 /**
  * Recalcula os resumos desatualizados no navegador; grava no banco quando o usuário pode

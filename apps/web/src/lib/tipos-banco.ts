@@ -1294,6 +1294,51 @@ export type Database = {
           },
         ];
       };
+      projecao_aprovacoes: {
+        Row: {
+          aprovado_em: string;
+          aprovado_por: string | null;
+          entradas: NonNullable<Json>;
+          id: number;
+          precos: NonNullable<Json>;
+          projecao_id: string | null;
+          referencias: NonNullable<Json>;
+          resumo: NonNullable<Json>;
+          versao_calculo: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          aprovado_em?: string;
+          aprovado_por?: string | null;
+          entradas: NonNullable<Json>;
+          id?: never;
+          precos: NonNullable<Json>;
+          projecao_id?: string | null;
+          referencias?: NonNullable<Json>;
+          resumo: NonNullable<Json>;
+          versao_calculo: string;
+        };
+        Update: {
+          aprovado_em?: string;
+          aprovado_por?: string | null;
+          entradas?: NonNullable<Json>;
+          id?: never;
+          precos?: NonNullable<Json>;
+          projecao_id?: string | null;
+          referencias?: NonNullable<Json>;
+          resumo?: NonNullable<Json>;
+          versao_calculo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "projecao_aprovacoes_projecao_id_fkey";
+            columns: ["projecao_id"];
+            isOneToOne: false;
+            referencedRelation: "projecoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       projecoes: {
         Row: {
           absenteismo_pct: number | null;
@@ -1566,6 +1611,16 @@ export type Database = {
     };
     Functions: {
       ajustar_cct: { Args: { p_cct: string; p_pct: number }; Returns: number };
+      aprovar_projecao: {
+        Args: {
+          p_atualizado_em: string;
+          p_autor: string;
+          p_id: string;
+          p_registro: Json;
+          p_resumo: Json;
+        };
+        Returns: number;
+      };
       autor_atual: { Args: Record<PropertyKey, never>; Returns: string };
       criar_cct: { Args: { p_id: string; p_nome: string }; Returns: string };
       criar_data_base: { Args: { p_ano: number; p_reajuste_pct: number }; Returns: number };
@@ -1575,11 +1630,7 @@ export type Database = {
       };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
       definir_situacao: {
-        Args: {
-          p_id: string;
-          p_resumo?: Json;
-          p_situacao: Database["public"]["Enums"]["situacao_projecao"];
-        };
+        Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };
         Returns: undefined;
       };
       definir_situacao_obra: {

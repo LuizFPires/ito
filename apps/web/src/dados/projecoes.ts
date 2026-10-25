@@ -4,20 +4,14 @@
  */
 import { useCallback, useMemo } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CctPrecos, Tabela } from "@ito/motor";
-import type {
-  CidadeComPrecos,
-  Entradas,
-  LinhaProjecao,
-  Precos,
-  Situacao,
-} from "../lib/projecaoDoBanco";
+import type { Tabela } from "@ito/motor";
+import type { Entradas, LinhaProjecao, Situacao } from "../lib/projecaoDoBanco";
 import { entradasDaLinha, linhaDasEntradas } from "../lib/projecaoDoBanco";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../ui/toast";
 import { useContextoCarga } from "./carga";
-import type { Cidade } from "./cidades";
-import { carregarCct, nomeCidade, useCidades } from "./cidades";
+import { carregarCctPrecos, montarPrecos } from "./carregar";
+import { useCidades } from "./cidades";
 import { carregarObrasBanco } from "./obras";
 import { mensagemErroBanco } from "./erros";
 
@@ -90,35 +84,12 @@ export function useProjecao(id: string | undefined) {
   });
 }
 
-export const cidadeComPrecos = (c: Cidade): CidadeComPrecos => ({
-  id: c.id,
-  nome: nomeCidade(c),
-  cctId: c.cct_id,
-  tarifaLocal: Number(c.tarifa_local),
-  conducoes: c.conducoes,
-  issPct: Number(c.iss_pct),
-  passagens: c.passagens,
-  feriados: c.feriados,
-});
-
-export type CctComPrecos = CctPrecos & { id: string; nome: string };
+export type { CctComPrecos } from "./carregar";
 
 /** CCT da cidade com os preços que o motor usa (mês da data-base e reajuste estimado). */
 export const consultaCctPrecos = (cctId: string) => ({
   queryKey: ["projecoes", "cct", cctId] as const,
-  queryFn: async (): Promise<CctComPrecos> => {
-    const [c, det] = await Promise.all([
-      ok(supabase.from("ccts").select("*").eq("id", cctId).single()),
-      carregarCct(cctId),
-    ]);
-    return {
-      id: c.id,
-      nome: c.nome,
-      mesDataBase: c.mes_data_base,
-      reajusteEstimadoPct: Number(c.reajuste_estimado_pct),
-      ...det,
-    };
-  },
+  queryFn: () => carregarCctPrecos(supabase, cctId),
 });
 
 export function useCctPrecos(cctId: string | null | undefined) {
@@ -144,31 +115,7 @@ export function useReferencias(ids: readonly string[]) {
   });
 }
 
-/** Cidade de origem padrão de quem vem todo dia (como o protótipo): BH, se não for a da obra. */
-export const origemPadrao = (cidades: readonly { id: string }[], cidadeId: string | null) =>
-  cidades.find((c) => c.id === "bh" && c.id !== cidadeId)?.id ??
-  cidades.find((c) => c.id !== cidadeId)?.id ??
-  null;
-
-/** Preços da projeção a partir dos cadastros já carregados (nulo se falta a CCT da cidade). */
-export function montarPrecos(
-  tabela: Tabela | undefined,
-  cidades: readonly Cidade[],
-  cidadeId: string | null,
-  origemId: string | null,
-  cct: CctComPrecos | undefined,
-): Precos | null {
-  const cid = cidades.find((c) => c.id === cidadeId) ?? null;
-  if (!tabela || (cid && !cct)) return null;
-  const orig = origemId ?? origemPadrao(cidades, cidadeId);
-  const de = cidades.find((c) => c.id === orig && c.id !== cidadeId) ?? null;
-  return {
-    vigente: tabela,
-    cidade: cid ? cidadeComPrecos(cid) : null,
-    cidadeOrigem: de ? cidadeComPrecos(de) : null,
-    cct: cid ? cct! : null,
-  };
-}
+export { cidadeComPrecos, montarPrecos, origemPadrao } from "./carregar";
 
 /**
  * Contexto do motor, cidades e preços da cidade da projeção (tabela vigente, CCT, VT, ISS).
@@ -282,16 +229,35 @@ export function useApagarProjecao() {
   );
 }
 
+/**
+ * Aprovar (M14 · S05): a Edge Function `projecoes` refaz o cálculo no servidor e grava os
+ * números dela; as outras situações mudam por `definir_situacao`.
+ */
+async function aprovarNoServidor(id: string) {
+  const { data, error } = await supabase.functions.invoke("projecoes", {
+    body: { acao: "aprovar", id },
+  });
+  if (error) {
+    const ctx = (error as { context?: Response }).context;
+    let msg = "Não foi possível aprovar agora. Tente de novo.";
+    try {
+      const j = (await ctx?.json()) as { erro?: string } | undefined;
+      if (j?.erro) msg = j.erro;
+    } catch {
+      /* resposta sem JSON: fica a mensagem genérica */
+    }
+    // 22023: a tela mostra o texto como veio (o servidor já diz o que fazer)
+    throw { code: "22023", message: msg };
+  }
+  return data as { id: string; resumo: ResumoProjecao };
+}
+
 export function useDefinirSituacao() {
   return useGravar(
-    (a: { id: string; situacao: Situacao; resumo?: ResumoProjecao }) =>
-      ok(
-        supabase.rpc("definir_situacao", {
-          p_id: a.id,
-          p_situacao: a.situacao,
-          ...(a.resumo ? { p_resumo: a.resumo } : {}),
-        }),
-      ),
+    (a: { id: string; situacao: Situacao }) =>
+      a.situacao === "aprovada"
+        ? aprovarNoServidor(a.id)
+        : ok(supabase.rpc("definir_situacao", { p_id: a.id, p_situacao: a.situacao })),
     "Situação alterada",
   );
 }

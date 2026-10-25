@@ -2,19 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import type { Database } from "../lib/tipos-banco";
 import { useToast } from "../ui/toast";
+import { carregarCct as carregarCctDe, carregarCidades } from "./carregar";
 import { mensagemErroBanco } from "./erros";
 
 type T = Database["public"]["Tables"];
 export type Cct = T["ccts"]["Row"];
-export type Cidade = T["cidades"]["Row"] & {
-  feriados: { mes: number; dia: number; nome: string }[];
-  passagens: Record<string, number>;
-};
-export interface DetalheCct {
-  salarios: Record<string, number>;
-  gratificacoes: Record<string, number>;
-  beneficios: Record<string, number>;
-}
+export type { Cidade, DetalheCct } from "./carregar";
+export { nomeCidade } from "./carregar";
 
 const chaves = {
   ccts: ["ccts"] as const,
@@ -81,17 +75,6 @@ async function todas<R>(
   }
 }
 
-function agrupar<R, K extends string>(linhas: readonly R[], chave: (r: R) => K): Map<K, R[]> {
-  const m = new Map<K, R[]>();
-  for (const r of linhas) {
-    const k = chave(r);
-    const g = m.get(k);
-    if (g) g.push(r);
-    else m.set(k, [r]);
-  }
-  return m;
-}
-
 export function useCcts() {
   return useQuery({
     queryKey: chaves.ccts,
@@ -129,18 +112,7 @@ export function useCcts() {
 export type CctResumo = NonNullable<ReturnType<typeof useCcts>["data"]>[number];
 
 /** Salários, gratificações e benefícios de uma CCT (usado pelo editor e pela comparação). */
-export async function carregarCct(id: string): Promise<DetalheCct> {
-  const [sal, grat, ben] = await Promise.all([
-    ok(supabase.from("cct_salarios").select("funcao_id, valor").eq("cct_id", id)),
-    ok(supabase.from("cct_gratificacoes").select("funcao_id, valor").eq("cct_id", id)),
-    ok(supabase.from("cct_beneficios").select("beneficio_id, valor").eq("cct_id", id)),
-  ]);
-  return {
-    salarios: Object.fromEntries(sal.map((r) => [r.funcao_id, Number(r.valor)])),
-    gratificacoes: Object.fromEntries(grat.map((r) => [r.funcao_id, Number(r.valor)])),
-    beneficios: Object.fromEntries(ben.map((r) => [r.beneficio_id, Number(r.valor)])),
-  };
-}
+export const carregarCct = (id: string) => carregarCctDe(supabase, id);
 
 export const consultaCct = (id: string) => ({
   queryKey: chaves.cct(id),
@@ -154,43 +126,10 @@ export function useCct(id: string | undefined) {
 export function useCidades() {
   return useQuery({
     queryKey: chaves.cidades,
-    queryFn: async (): Promise<Cidade[]> => {
-      const [cidades, fer, pas] = await Promise.all([
-        todas((de, ate) =>
-          supabase.from("cidades").select("*").order("nome").order("id").range(de, ate),
-        ),
-        todas((de, ate) =>
-          supabase
-            .from("cidade_feriados")
-            .select("*")
-            .order("cidade_id")
-            .order("mes")
-            .order("dia")
-            .range(de, ate),
-        ),
-        todas((de, ate) =>
-          supabase
-            .from("cidade_passagens")
-            .select("*")
-            .order("cidade_id")
-            .order("origem_id")
-            .range(de, ate),
-        ),
-      ]);
-      const ferPor = agrupar(fer, (f) => f.cidade_id);
-      const pasPor = agrupar(pas, (p) => p.cidade_id);
-      return cidades.map((c) => ({
-        ...c,
-        feriados: (ferPor.get(c.id) ?? []).map((f) => ({ mes: f.mes, dia: f.dia, nome: f.nome })),
-        passagens: Object.fromEntries(
-          (pasPor.get(c.id) ?? []).map((p) => [p.origem_id, Number(p.valor)]),
-        ),
-      }));
-    },
+    queryFn: () => carregarCidades(supabase),
   });
 }
 
-export const nomeCidade = (c: { nome: string; uf: string }) => `${c.nome}/${c.uf}`;
 /** Nome curto da CCT, sem o prefixo comum "Construção civil · ". */
 export const nomeCurtoCct = (nome: string) => nome.replace(/^Construção civil · /, "");
 

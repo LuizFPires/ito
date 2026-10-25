@@ -52,6 +52,11 @@ jobs:
           pnpm gen:types
           git diff --exit-code apps/web/src/lib/tipos-banco.ts
 
+      - name: Cálculo da aprovação em dia (Edge Function = código da tela)
+        run: |
+          pnpm gen:calculo
+          git diff --exit-code supabase/functions/projecoes/calculo.gerado.js
+
       - name: Variáveis do Supabase local
         run: |
           pnpm exec supabase status -o env \
