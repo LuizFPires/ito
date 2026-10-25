@@ -1647,6 +1647,7 @@ export type Database = {
         Args: { p_escala_area?: boolean; p_id: string; p_nome: string; p_sinonimo?: string };
         Returns: string;
       };
+      dados_calculo_obras: { Args: { p_ids: string[] }; Returns: Json };
       data_base_editavel: { Args: { p_ano: number }; Returns: boolean };
       definir_situacao: {
         Args: { p_id: string; p_situacao: Database["public"]["Enums"]["situacao_projecao"] };

@@ -76,7 +76,7 @@ select throws_ok($$select public.gravar_resumos((select jsonb_agg(jsonb_build_ob
 -- M14 · S07: cota de convites (20 por hora por administrador), só pela chave de serviço
 reset role;
 select is((select count(*)::int from generate_series(1, 21) i
-           where public.usar_cota('00000000-0000-4000-8000-000000000001', 'convite', 20, '1 hour')),
+           where public.usar_cota('00000000-0000-4000-8000-0000000000c0', 'convite', 20, '1 hour')),
   20, 'o 21º convite na mesma hora é recusado');
 set local role authenticated;
 select throws_ok($$select public.usar_cota('00000000-0000-4000-8000-000000000001', 'convite', 99, '1 hour')$$,

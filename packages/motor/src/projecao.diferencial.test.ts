@@ -123,3 +123,22 @@ describe("golden SPEC §8 de ponta a ponta: projeção em Vespasiano, mar/27 a n
     expect(diaria.obra.vtDiariaPorFuncao!.ped).toBeCloseTo(24.8, 10);
   });
 });
+
+// M14: agregados das referências guardados entre mexidas não mudam número nenhum
+describe("cache das referências (M14)", () => {
+  const p = P.D.projecoes[0];
+  const params = parametrosProjecao(p);
+  it("mexida com as mesmas referências = cálculo do zero com referências novas", () => {
+    const e = entradaProjecaoDe(P, p);
+    projetar(e, params, ctx); // enche o cache
+    for (const mexida of [
+      { ajustesPct: { ped: 30, serv: -40 } },
+      { estatistica: "mediana" as const },
+      { heMedia: 22, absenteismoPct: 7 },
+    ]) {
+      const comCache = projetar({ ...e, ...mexida }, params, ctx);
+      const doZero = projetar({ ...entradaProjecaoDe(P, p), ...mexida }, params, ctx);
+      expect(comCache).toEqual(doZero);
+    }
+  });
+});

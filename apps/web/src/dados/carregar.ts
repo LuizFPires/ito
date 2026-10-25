@@ -263,12 +263,13 @@ export function montarPrecos(
 // ── obras com os dados de cálculo ────────────────────────────────────────────
 
 /**
- * Dados de cálculo de várias obras (resumo, referências da projeção), em lotes de 50, até 4 lotes
- * ao mesmo tempo (M12: em sequência, 1.000 obras levavam 20 rodadas). A ordem dos ids fica.
+ * Dados de cálculo de várias obras (resumo, referências da projeção). M14: uma chamada por lote
+ * de 250 (`dados_calculo_obras`, efetivo compacto), até 4 ao mesmo tempo; antes, cada lote de 50
+ * paginava o efetivo de 1.000 em 1.000 linhas (~180 pedidos para 1.000 obras). A ordem dos ids fica.
  */
 export async function carregarObrasBanco(c: Cliente, ids: readonly string[]): Promise<ObraBanco[]> {
   const lotes: string[][] = [];
-  for (let k = 0; k < ids.length; k += 50) lotes.push(ids.slice(k, k + 50));
+  for (let k = 0; k < ids.length; k += 250) lotes.push(ids.slice(k, k + 250));
   const resultados: ObraBanco[][] = Array.from({ length: lotes.length }, () => []);
   let proximo = 0;
   await Promise.all(
@@ -282,63 +283,86 @@ export async function carregarObrasBanco(c: Cliente, ids: readonly string[]): Pr
   return resultados.flat();
 }
 
+type Efetivo = T["efetivo_mes"]["Row"];
+/** [obra, função, meses, equivalente, cabeças, admissões, desligamentos] */
+type EfetivoCompacto = [string, string, number[], number[], number[], number[], number[]];
+type Competencia = T["competencias"]["Row"];
+/** [obra, mês, HE média, absenteísmo, licenças, férias, apropriado, ERP, justificativa] */
+type CompetenciaCompacta = [
+  string,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number | null,
+  number | null,
+  string | null,
+];
+interface DadosCalculo {
+  obras: T["obras"]["Row"][];
+  competencias: CompetenciaCompacta[];
+  efetivo: EfetivoCompacto[];
+  regime: T["obra_regime"]["Row"][];
+  trocas: T["obra_trocas_tabela"]["Row"][];
+  feriados: T["obra_feriados"]["Row"][];
+}
+
+const porObra = <R extends { obra_id: string }>(linhas: readonly R[]) =>
+  agrupar(linhas, (r) => r.obra_id);
+const comparar = (a: string | number, b: string | number) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** Linhas de efetivo como a tabela devolvia (por função e mês). */
+export function expandirEfetivo(compacto: readonly EfetivoCompacto[]): Efetivo[] {
+  // mesma ordem da consulta antiga (obra, função, mês): ordena as listas e os meses de cada uma,
+  // não as 160 mil linhas montadas
+  const listas = [...compacto].sort((x, y) => comparar(x[0], y[0]) || comparar(x[1], y[1]));
+  const linhas: Efetivo[] = [];
+  for (const [obra_id, funcao_id, m, e, cab, adm, desl] of listas) {
+    const ordem = m.map((_, i) => i).sort((i, j) => m[i]! - m[j]!);
+    for (const i of ordem)
+      linhas.push({
+        obra_id,
+        funcao_id,
+        mes_idx: m[i]!,
+        equivalente: e[i]!,
+        cabecas: cab[i]!,
+        admissoes: adm[i]!,
+        desligamentos: desl[i]!,
+      });
+  }
+  return linhas;
+}
+
 async function carregarLote(c: Cliente, lote: readonly string[]): Promise<ObraBanco[]> {
-  const [obras, comps, efetivo, regime, trocas, feriados] = await Promise.all([
-    ok(c.from("obras").select("*").in("id", lote)),
-    // ordem estável entre páginas (LIMIT/OFFSET sem ORDER BY pula ou repete linhas)
-    todas((de, ate) =>
-      c
-        .from("competencias")
-        .select("*")
-        .in("obra_id", lote)
-        .order("obra_id")
-        .order("mes_idx")
-        .range(de, ate),
-    ),
-    todas((de, ate) =>
-      c
-        .from("efetivo_mes")
-        .select("*")
-        .in("obra_id", lote)
-        .order("obra_id")
-        .order("funcao_id")
-        .order("mes_idx")
-        .range(de, ate),
-    ),
-    todas((de, ate) =>
-      c
-        .from("obra_regime")
-        .select("*")
-        .in("obra_id", lote)
-        .order("obra_id")
-        .order("funcao_id")
-        .range(de, ate),
-    ),
-    todas((de, ate) =>
-      c
-        .from("obra_trocas_tabela")
-        .select("*")
-        .in("obra_id", lote)
-        .order("obra_id")
-        .order("mes_idx")
-        .range(de, ate),
-    ),
-    todas((de, ate) =>
-      c
-        .from("obra_feriados")
-        .select("*")
-        .in("obra_id", lote)
-        .order("obra_id")
-        .order("data")
-        .range(de, ate),
-    ),
-  ]);
-  return obras.map((o) => ({
+  const d = (await ok(
+    c.rpc("dados_calculo_obras", { p_ids: [...lote] }),
+  )) as unknown as DadosCalculo;
+  const comps = porObra(
+    d.competencias
+      .map(([obra_id, mes_idx, he, abs, lic, fer, ito, erp, just]): Competencia => ({
+        obra_id,
+        mes_idx,
+        he_media: he,
+        absenteismo_pct: abs,
+        licenca_pessoa_dias: lic,
+        ferias_pessoa_dias: fer,
+        ito_apropriado: ito,
+        erp_realizado: erp,
+        justificativa: just,
+      }))
+      .sort((a, b) => comparar(a.obra_id, b.obra_id) || a.mes_idx - b.mes_idx),
+  );
+  const efetivo = porObra(expandirEfetivo(d.efetivo));
+  const regime = porObra([...d.regime].sort((a, b) => comparar(a.funcao_id, b.funcao_id)));
+  const trocas = porObra([...d.trocas].sort((a, b) => a.mes_idx - b.mes_idx));
+  const feriados = porObra([...d.feriados].sort((a, b) => comparar(a.data, b.data)));
+  return d.obras.map((o) => ({
     obra: o,
-    competencias: comps.filter((x) => x.obra_id === o.id),
-    efetivo: efetivo.filter((x) => x.obra_id === o.id),
-    regime: regime.filter((x) => x.obra_id === o.id),
-    trocas: trocas.filter((x) => x.obra_id === o.id),
-    feriados: feriados.filter((x) => x.obra_id === o.id),
+    competencias: comps.get(o.id) ?? [],
+    efetivo: efetivo.get(o.id) ?? [],
+    regime: regime.get(o.id) ?? [],
+    trocas: trocas.get(o.id) ?? [],
+    feriados: feriados.get(o.id) ?? [],
   }));
 }

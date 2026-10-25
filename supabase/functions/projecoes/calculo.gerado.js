@@ -243,7 +243,7 @@ function montarPrecos(tabela, cidades, cidadeId, origemId, cct) {
 }
 async function carregarObrasBanco(c, ids) {
   const lotes = [];
-  for (let k = 0; k < ids.length; k += 50) lotes.push(ids.slice(k, k + 50));
+  for (let k = 0; k < ids.length; k += 250) lotes.push(ids.slice(k, k + 250));
   const resultados = Array.from({ length: lotes.length }, () => []);
   let proximo = 0;
   await Promise.all(
@@ -256,33 +256,54 @@ async function carregarObrasBanco(c, ids) {
   );
   return resultados.flat();
 }
+var porObra = (linhas) => agrupar(linhas, (r) => r.obra_id);
+var comparar = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+function expandirEfetivo(compacto) {
+  const listas = [...compacto].sort((x, y) => comparar(x[0], y[0]) || comparar(x[1], y[1]));
+  const linhas = [];
+  for (const [obra_id, funcao_id, m, e, cab, adm, desl] of listas) {
+    const ordem = m.map((_, i) => i).sort((i, j) => m[i] - m[j]);
+    for (const i of ordem)
+      linhas.push({
+        obra_id,
+        funcao_id,
+        mes_idx: m[i],
+        equivalente: e[i],
+        cabecas: cab[i],
+        admissoes: adm[i],
+        desligamentos: desl[i]
+      });
+  }
+  return linhas;
+}
 async function carregarLote(c, lote) {
-  const [obras, comps, efetivo, regime, trocas, feriados] = await Promise.all([
-    ok(c.from("obras").select("*").in("id", lote)),
-    // ordem estável entre páginas (LIMIT/OFFSET sem ORDER BY pula ou repete linhas)
-    todas(
-      (de, ate) => c.from("competencias").select("*").in("obra_id", lote).order("obra_id").order("mes_idx").range(de, ate)
-    ),
-    todas(
-      (de, ate) => c.from("efetivo_mes").select("*").in("obra_id", lote).order("obra_id").order("funcao_id").order("mes_idx").range(de, ate)
-    ),
-    todas(
-      (de, ate) => c.from("obra_regime").select("*").in("obra_id", lote).order("obra_id").order("funcao_id").range(de, ate)
-    ),
-    todas(
-      (de, ate) => c.from("obra_trocas_tabela").select("*").in("obra_id", lote).order("obra_id").order("mes_idx").range(de, ate)
-    ),
-    todas(
-      (de, ate) => c.from("obra_feriados").select("*").in("obra_id", lote).order("obra_id").order("data").range(de, ate)
-    )
-  ]);
-  return obras.map((o) => ({
+  const d = await ok(
+    c.rpc("dados_calculo_obras", { p_ids: [...lote] })
+  );
+  const comps = porObra(
+    d.competencias.map(([obra_id, mes_idx, he, abs, lic, fer, ito, erp, just]) => ({
+      obra_id,
+      mes_idx,
+      he_media: he,
+      absenteismo_pct: abs,
+      licenca_pessoa_dias: lic,
+      ferias_pessoa_dias: fer,
+      ito_apropriado: ito,
+      erp_realizado: erp,
+      justificativa: just
+    })).sort((a, b) => comparar(a.obra_id, b.obra_id) || a.mes_idx - b.mes_idx)
+  );
+  const efetivo = porObra(expandirEfetivo(d.efetivo));
+  const regime = porObra([...d.regime].sort((a, b) => comparar(a.funcao_id, b.funcao_id)));
+  const trocas = porObra([...d.trocas].sort((a, b) => a.mes_idx - b.mes_idx));
+  const feriados = porObra([...d.feriados].sort((a, b) => comparar(a.data, b.data)));
+  return d.obras.map((o) => ({
     obra: o,
-    competencias: comps.filter((x) => x.obra_id === o.id),
-    efetivo: efetivo.filter((x) => x.obra_id === o.id),
-    regime: regime.filter((x) => x.obra_id === o.id),
-    trocas: trocas.filter((x) => x.obra_id === o.id),
-    feriados: feriados.filter((x) => x.obra_id === o.id)
+    competencias: comps.get(o.id) ?? [],
+    efetivo: efetivo.get(o.id) ?? [],
+    regime: regime.get(o.id) ?? [],
+    trocas: trocas.get(o.id) ?? [],
+    feriados: feriados.get(o.id) ?? []
   }));
 }
 
@@ -879,6 +900,15 @@ function shares(curva, N) {
   }
   return out;
 }
+var memoRef = /* @__PURE__ */ new WeakMap();
+function lembrar(r, chave, calcular) {
+  let m = memoRef.get(r);
+  if (!m) memoRef.set(r, m = /* @__PURE__ */ new Map());
+  if (m.has(chave)) return m.get(chave);
+  const v = calcular();
+  m.set(chave, v);
+  return v;
+}
 function pessoasInteiras(x) {
   if (!(x > 0)) return 0;
   const base = Math.floor(x + 1e-9);
@@ -896,6 +926,7 @@ function projetar(e, parametros, ctx) {
   const agg = e.estatistica === "mediana" ? mediana : media;
   const N = e.prazo;
   const ids = ctx.funcoes.map((f) => f.id);
+  const chaveIds = ids.join(",");
   const q = {};
   const pmPorMilM2 = {};
   for (const f of ctx.funcoes) {
@@ -909,34 +940,41 @@ function projetar(e, parametros, ctx) {
     const aj = 1 + (e.ajustesPct?.[k] ?? 0) / 100;
     if (!f.escalaArea) {
       const m = agg(
-        refs.map((r) => {
-          const n = nMeses(r);
-          let c = 0;
-          for (let i = 0; i < n; i++) c += cabecasMes(r, k, i);
-          return n ? c / n : 0;
-        })
+        refs.map(
+          (r) => lembrar(r, `cab:${k}`, () => {
+            const n = nMeses(r);
+            let c = 0;
+            for (let i = 0; i < n; i++) c += cabecasMes(r, k, i);
+            return n ? c / n : 0;
+          })
+        )
       );
       q[k] = Array(N).fill(pessoasInteiras(m * aj));
       pmPorMilM2[k] = null;
       continue;
     }
     const comArea = refs.filter((r) => r.area > 0);
-    const pm = agg(comArea.map((r) => soma(r.equivalente[k] ?? []) / r.area * 1e3)) * aj;
-    const curvas = comArea.map((r) => r.equivalente[k] ?? []).filter((c) => soma(c) > 0).map((c) => shares(c, N));
+    const pm = agg(
+      comArea.map(
+        (r) => lembrar(r, `pm:${k}`, () => soma(r.equivalente[k] ?? []) / r.area * 1e3)
+      )
+    ) * aj;
+    const curvas = comArea.filter((r) => lembrar(r, `tem:${k}`, () => soma(r.equivalente[k] ?? []) > 0)).map((r) => lembrar(r, `sh:${k}:${N}`, () => shares(r.equivalente[k] ?? [], N)));
     const shm = Array.from({ length: N }, (_, j) => media(curvas.map((c) => c[j])));
     q[k] = shm.map((s) => pessoasInteiras(pm * e.area / 1e3 * s));
     pmPorMilM2[k] = pm;
   }
-  const heMediaObra = (r) => {
-    const t = totaisPorMes(r, ids);
+  const totaisRef = (r) => lembrar(r, `tot:${chaveIds}`, () => totaisPorMes(r, ids));
+  const heMediaObra = (r) => lembrar(r, `he:${chaveIds}`, () => {
+    const t = totaisRef(r);
     const n = soma(t);
     return n ? soma(t.map((x, i) => x * (r.heMedia[i] ?? 0))) / n : 0;
-  };
-  const absMedio = (r) => {
-    const t = totaisPorMes(r, ids);
+  });
+  const absMedio = (r) => lembrar(r, `abs:${chaveIds}`, () => {
+    const t = totaisRef(r);
     const n = soma(t);
     return n ? soma(t.map((x, i) => x * (r.absenteismoPct[i] ?? 0))) / n : 0;
-  };
+  });
   const heAp = e.heMedia ?? (refs.length ? agg(refs.map(heMediaObra)) : 15);
   const absAp = e.absenteismoPct ?? (refs.length ? agg(refs.map(absMedio)) : 3);
   const turnAp = e.rotatividadePct ?? (refs.length ? agg(refs.map((r) => r.rotatividadePct)) : 5);
@@ -947,10 +985,12 @@ function projetar(e, parametros, ctx) {
     ])
   ) : { ...HE_MIX_PADRAO };
   const taxa = (campo) => refs.length ? agg(
-    refs.map((r) => {
-      const m = soma(totaisPorMes(r, ids));
-      return m ? soma(r[campo]) / m : 0;
-    })
+    refs.map(
+      (r) => lembrar(r, `${campo}:${chaveIds}`, () => {
+        const m = soma(totaisRef(r));
+        return m ? soma(r[campo]) / m : 0;
+      })
+    )
   ) : 0;
   const licAp = e.licencaPorPm ?? taxa("licencaPessoaDias");
   const ferAp = e.feriasPorPm ?? taxa("feriasPessoaDias");
@@ -1109,6 +1149,12 @@ function entradasDaLinha(p) {
     reajuste: p.reajuste_mes === null || p.reajuste_pct === null ? null : { mesIdx: p.reajuste_mes, pct: Number(p.reajuste_pct) }
   };
 }
+var obraDeReferencia = /* @__PURE__ */ new WeakMap();
+var comoReferencia = (b) => {
+  let o = obraDeReferencia.get(b);
+  if (!o) obraDeReferencia.set(b, o = obraDoBanco(b).obra);
+  return o;
+};
 function calcularProjecao(e, referencias, precos, ctx) {
   const { vigente, cidade, cidadeOrigem, cct } = precos;
   const base = cidade && cct ? tabelaDaCidade(vigente, cct, cidade) : vigente;
@@ -1118,7 +1164,7 @@ function calcularProjecao(e, referencias, precos, ctx) {
     inicio: e.inicio,
     prazo: e.prazo,
     area: e.area,
-    referencias: referencias.map((b) => obraDoBanco(b).obra),
+    referencias: referencias.map(comoReferencia),
     estatistica: e.estatistica,
     ajustesPct: e.ajustes,
     quantidadesManuais: e.quantidadesManuais,
@@ -1151,7 +1197,7 @@ var resumoDaProjecao = (c, vigente) => c.r ? {
 } : {};
 
 // apps/web/src/servidor/aprovacao.ts
-var VERSAO_CALCULO = "c282fd29d4e00759";
+var VERSAO_CALCULO = "7c2a42baa239cd99";
 var ErroAprovacao = class extends Error {
 };
 async function calcularAprovacao(c, id) {
