@@ -24,7 +24,10 @@
     "gen:types": "supabase gen types typescript --local > apps/web/src/lib/tipos-banco.ts && prettier --write apps/web/src/lib/tipos-banco.ts",
     "e2e": "playwright test",
     "migrar": "tsx packages/migracao/src/cli.ts",
-    "desempenho": "tsx packages/migracao/src/desempenho.ts"
+    "desempenho": "tsx packages/migracao/src/desempenho.ts",
+    "perf:motor": "tsx packages/motor/src/desempenho.medicao.ts",
+    "perf:bundle": "node scripts/medir-bundle.mjs",
+    "perf": "pnpm perf:motor && playwright test -c playwright.perf.config.ts && pnpm perf:bundle"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
