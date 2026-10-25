@@ -285,6 +285,8 @@ const parser = new XMLParser({
   removeNSPrefix: true,
   parseTagValue: false,
 });
+// M13 · S07: nota fiscal não traz DTD; sem ele, nenhuma entidade expande o XML na leitura
+const COM_DTD = /<!(DOCTYPE|ENTITY)/i;
 
 /** Primeiro valor (em profundidade) de uma das tags. */
 function buscar(no: unknown, tags: readonly string[]): string | null {
@@ -337,6 +339,17 @@ export function lerNotasFiscais(
   arquivo: string,
 ): { notas: NotaFiscal[]; erros: ErroLeitura[] } {
   const erros: ErroLeitura[] = [];
+  if (COM_DTD.test(xml))
+    return {
+      notas: [],
+      erros: [
+        {
+          aba: arquivo,
+          linha: 0,
+          mensagem: "XML com DTD não é aceito: envie o XML da nota como o emissor gerou.",
+        },
+      ],
+    };
   let doc: unknown;
   try {
     if (XMLValidator.validate(xml) !== true) throw new Error("xml");

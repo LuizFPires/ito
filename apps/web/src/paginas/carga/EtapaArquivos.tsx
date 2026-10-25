@@ -3,6 +3,7 @@ import type { ErroLeitura, Leituras, TipoArquivo } from "@ito/carga";
 import { lerErp, lerFolha, lerNotasFiscais, lerPonto, lerVt } from "@ito/carga";
 import { moeda, numero } from "@ito/formato";
 import { baixarModelo, decodificarTexto, planilhaDe } from "../../lib/arquivos";
+import { foraDoLimite, LIMITES_ARQUIVO } from "../../lib/limitesArquivos";
 import { Badge, Botao, Cartao } from "../../ui/componentes";
 import f from "../../ui/formulario.module.css";
 import u from "../../ui/ui.module.css";
@@ -68,6 +69,11 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
 
   async function ler(tipo: TipoArquivo, arquivos: FileList | null) {
     if (!arquivos?.length) return;
+    const limite = foraDoLimite(tipo, [...arquivos]);
+    if (limite) {
+      avisar(limite);
+      return;
+    }
     setLendo(tipo);
     try {
       const nomes = [...arquivos].map((a) => a.name).join(", ");
@@ -88,6 +94,10 @@ export function EtapaArquivos({ r, mudar }: PropsEtapa) {
         resumo = `${plural(notas.length, "nota", "notas")} · ${soma("valor")} em serviços · ISS ${soma("iss")}, PIS ${soma("pis")} e COFINS ${soma("cofins")} retidos`;
       } else {
         const p = await planilhaDe(arquivos[0]!);
+        if (Object.keys(p).length > LIMITES_ARQUIVO.abas) {
+          avisar(`Planilha com mais de ${LIMITES_ARQUIVO.abas} abas: use o modelo do ITO.`);
+          return;
+        }
         if (tipo === "folha") {
           const folha = lerFolha(p);
           erros = folha.erros;

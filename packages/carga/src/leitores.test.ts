@@ -207,5 +207,8 @@ describe("NF de prestador (XML)", () => {
 
   it("XML quebrado", () => {
     expect(lerNotasFiscais("<a><b></a>", "x.xml").erros[0]!.mensagem).toContain("XML inválido");
+    // M13 · S07: DTD e entidades recusados antes da leitura
+    const bomba = '<?xml version="1.0"?><!DOCTYPE a [<!ENTITY x "xxxxxxxx">]><a>&x;&x;</a>';
+    expect(lerNotasFiscais(bomba, "x.xml").erros[0]!.mensagem).toContain("DTD");
   });
 });
