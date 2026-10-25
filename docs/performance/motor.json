@@ -1,0 +1,96 @@
+{
+  "medidoEm": "2026-10-25T01:54:07.259Z",
+  "node": "v24.18.1",
+  "linhas": [
+    {
+      "caso": "projeção 9 meses · 5 referências",
+      "mediana": 2.1,
+      "p95": 3.8
+    },
+    {
+      "caso": "cenários de origem 9 meses · 5 referências",
+      "mediana": 7.5,
+      "p95": 10.7
+    },
+    {
+      "caso": "projeção 9 meses · 23 referências",
+      "mediana": 2.4,
+      "p95": 3.7
+    },
+    {
+      "caso": "cenários de origem 9 meses · 23 referências",
+      "mediana": 8.1,
+      "p95": 8.8
+    },
+    {
+      "caso": "projeção 9 meses · 100 referências",
+      "mediana": 2.9,
+      "p95": 3.2
+    },
+    {
+      "caso": "cenários de origem 9 meses · 100 referências",
+      "mediana": 11.1,
+      "p95": 13
+    },
+    {
+      "caso": "projeção 9 meses · 1000 referências",
+      "mediana": 13.7,
+      "p95": 14.1
+    },
+    {
+      "caso": "cenários de origem 9 meses · 1000 referências",
+      "mediana": 60.1,
+      "p95": 64.5
+    },
+    {
+      "caso": "projeção 36 meses · 5 referências",
+      "mediana": 6.4,
+      "p95": 7.4
+    },
+    {
+      "caso": "cenários de origem 36 meses · 5 referências",
+      "mediana": 24.3,
+      "p95": 32.2
+    },
+    {
+      "caso": "projeção 36 meses · 23 referências",
+      "mediana": 6.5,
+      "p95": 7
+    },
+    {
+      "caso": "cenários de origem 36 meses · 23 referências",
+      "mediana": 27.8,
+      "p95": 58.3
+    },
+    {
+      "caso": "projeção 36 meses · 100 referências",
+      "mediana": 16.5,
+      "p95": 21.2
+    },
+    {
+      "caso": "cenários de origem 36 meses · 100 referências",
+      "mediana": 75.2,
+      "p95": 94.9
+    },
+    {
+      "caso": "projeção 36 meses · 1000 referências",
+      "mediana": 95.3,
+      "p95": 106.7
+    },
+    {
+      "caso": "cenários de origem 36 meses · 1000 referências",
+      "mediana": 251.2,
+      "p95": 316.2
+    },
+    {
+      "caso": "obra 9 meses (calcularObra)",
+      "mediana": 3.3,
+      "p95": 6.5
+    },
+    {
+      "caso": "obra 36 meses (calcularObra)",
+      "mediana": 12.5,
+      "p95": 23.8
+    }
+  ]
+}

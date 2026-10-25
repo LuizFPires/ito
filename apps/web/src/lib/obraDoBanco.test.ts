@@ -186,6 +186,22 @@ describe("revisão do M5", () => {
     expect(desatualizado(null, 2025, i1)).toBe(true);
   });
 
+  it("impressão não depende da ordem das listas e das chaves (tela e scripts leem em ordens diferentes)", () => {
+    const i1 = impressaoContexto(CTX, { 2025: TABELA }, 2025);
+    const embaralhado = {
+      ...CTX,
+      funcoes: [...CTX.funcoes].reverse(),
+      beneficios: [...CTX.beneficios].reverse(),
+    };
+    const salariosInvertidos = Object.fromEntries(Object.entries(TABELA.salarios).reverse());
+    const i2 = impressaoContexto(
+      embaralhado,
+      { 2025: { ...TABELA, salarios: salariosInvertidos } },
+      2025,
+    );
+    expect(i2).toBe(i1);
+  });
+
   it("apropriação: a soma das contas é o custo total (competência) de cada mês", () => {
     const r = calcular(base, CTX, { 2025: TABELA }, 2025, "epoca");
     const fun = (id: string) => ({

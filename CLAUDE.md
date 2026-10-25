@@ -300,6 +300,13 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Pessoas sempre inteiras** nas projeções: até ,2 arredonda para baixo, de ,3 em diante para cima (SPEC §5, `pessoasInteiras` no motor); a validação diferencial aplica a mesma regra ao protótipo. Projeções salvas mudam de número ao serem abertas de novo.
 - Editar uma projeção abre no passo Histograma. Sem digitar nada, a tabela segue as referências; o primeiro número digitado fixa o histograma informado (a régua passa a valer sobre ele). (auto — recomendado)
 
+### M12 — Desempenho (24/10/2026)
+- **Medir antes de mexer** (usuário, plano `ITO_Plano_Implementacao_Performance.md`): primeiro o baseline e a lista de gargalos; só depois correções, cada uma com o número de antes e depois. O que o plano genérico não cobre no ITO (atualização otimista, feature flags, Web Worker, virtualização) só entra se a medição pedir.
+- **Medição sobre o build de produção** (`vite preview`), com os dados sintéticos do M10 (`pnpm desempenho gerar`) e as obras reais da homologação; a medição fica fora da suíte normal (`pnpm perf`). (auto — recomendado)
+- **Sem dependência nova** para medir: Performance API do navegador e Playwright. Monitoramento em produção (Vercel Speed Insights) fica para decisão do usuário. (auto — recomendado)
+- Correções do M12 (baseline em `docs/performance/baseline.md`): o resultado da projeção usa o **resumo em cache** das referências quando ele está em dia (6,4 s → 0,3 s com 1.000 referências) e mostra 50 linhas na tela (todas no .xlsx); a **impressão digital do resumo ignora a ordem** das listas e das chaves (tela e scripts gravavam impressões diferentes e a tela recalculava tudo); referências baixadas em até 4 lotes ao mesmo tempo (3,3 s → 1,8 s); detalhe da obra numa rodada de busca só. (auto — recomendado)
+- Ficam para quando a medição na produção pedir: paginação da base no servidor (G5) e abrir o app carregando só os cadastros da tela (G6).
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:

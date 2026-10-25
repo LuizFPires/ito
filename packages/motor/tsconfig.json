@@ -3,5 +3,5 @@
   // código do motor: puro, sem tipos do Node (regra 5)
   "compilerOptions": { "types": [] },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/prototipo.harness.ts"]
+  "exclude": ["src/**/*.test.ts", "src/prototipo.harness.ts", "src/desempenho.medicao.ts"]
 }

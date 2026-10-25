@@ -5,7 +5,8 @@ import type { CustoMes, Soma } from "@ito/motor";
 import { anoMes, indicadores, PREMISSAS_PADRAO, somar, tabelaDoMes } from "@ito/motor";
 import type { ContextoCarga } from "../../dados/carga";
 import type { ObraBanco } from "../../lib/obraDoBanco";
-import { resumoDaObra } from "../../lib/obraDoBanco";
+import { impressaoContexto, resumoDaObra } from "../../lib/obraDoBanco";
+import { desatualizado, useListaObras } from "../../dados/obras";
 import type { Calculo, Entradas } from "../../lib/projecaoDoBanco";
 import { cenarios } from "../../lib/projecaoDoBanco";
 import { BarrasMensais, Legenda } from "../../ui/BarrasMensais";
@@ -76,17 +77,24 @@ export function Resultado({
   const manual = manualValido(e.quantidadesManuais, e.prazo);
 
   const cen = useMemo(() => (cidade ? cenarios(calc, ctx) : []), [calc, ctx, cidade]);
-  const refs = useMemo(
-    () =>
-      referencias.flatMap((b) => {
-        try {
-          return [{ b, r: resumoDaObra(b, ctx, contexto.tabelas, contexto.vigente) }];
-        } catch {
-          return [];
-        }
-      }),
-    [referencias, ctx, contexto.tabelas, contexto.vigente],
-  );
+  // resumo de cada referência: o da base (cache do M5), se estiver em dia; senão, calculado aqui
+  // (M12: com 1.000 referências, recalcular todas levava 6 s)
+  const lista = useListaObras();
+  const refs = useMemo(() => {
+    const imp = impressaoContexto(ctx, contexto.tabelas, contexto.vigente);
+    const cache = new Map((lista.data ?? []).map((x) => [x.id, x.resumo]));
+    return referencias.flatMap((b) => {
+      const c = cache.get(b.obra.id);
+      if (c && c.revisao === b.obra.revisao && !desatualizado(c, contexto.vigente, imp))
+        return [{ b, r: c }];
+      try {
+        return [{ b, r: resumoDaObra(b, ctx, contexto.tabelas, contexto.vigente, imp) }];
+      } catch {
+        return [];
+      }
+    });
+  }, [referencias, ctx, contexto.tabelas, contexto.vigente, lista.data]);
+  const MAX_LINHAS_REFS = 50;
 
   if (!r)
     return (
@@ -627,7 +635,7 @@ export function Resultado({
               </tr>
             </thead>
             <tbody>
-              {refs.map(({ b, r: x }) => {
+              {refs.slice(0, MAX_LINHAS_REFS).map(({ b, r: x }) => {
                 const area = Number(b.obra.area_m2);
                 return (
                   <tr key={b.obra.id}>
@@ -647,6 +655,14 @@ export function Resultado({
                   </tr>
                 );
               })}
+              {refs.length > MAX_LINHAS_REFS && (
+                <tr>
+                  <td colSpan={4} className="sub">
+                    E mais {numero(refs.length - MAX_LINHAS_REFS)} obras de referência (todas no
+                    .xlsx).
+                  </td>
+                </tr>
+              )}
               <tr className={s.destaque}>
                 <td>
                   <strong>{e.nome || "Esta projeção"}</strong>

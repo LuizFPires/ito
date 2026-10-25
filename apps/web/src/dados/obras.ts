@@ -99,11 +99,29 @@ export function useListaObras() {
 export const desatualizado = (r: Resumo | null, vigente: number, contexto: string) =>
   !r || r.versao !== VERSAO_RESUMO || r.vigente !== vigente || r.contexto !== contexto;
 
-/** Dados de cálculo de várias obras (para o resumo), em lotes de 50. */
+/**
+ * Dados de cálculo de várias obras (resumo, referências da projeção), em lotes de 50, até 4 lotes
+ * ao mesmo tempo (M12: em sequência, 1.000 obras levavam 20 rodadas). A ordem dos ids fica.
+ */
 export async function carregarObrasBanco(ids: readonly string[]): Promise<ObraBanco[]> {
+  const lotes: string[][] = [];
+  for (let k = 0; k < ids.length; k += 50) lotes.push(ids.slice(k, k + 50));
+  const resultados: ObraBanco[][] = Array.from({ length: lotes.length }, () => []);
+  let proximo = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(4, lotes.length) }, async () => {
+      while (proximo < lotes.length) {
+        const i = proximo++;
+        resultados[i] = await carregarLote(lotes[i]!);
+      }
+    }),
+  );
+  return resultados.flat();
+}
+
+async function carregarLote(lote: readonly string[]): Promise<ObraBanco[]> {
   const saida: ObraBanco[] = [];
-  for (let k = 0; k < ids.length; k += 50) {
-    const lote = ids.slice(k, k + 50);
+  {
     const [obras, comps, efetivo, regime, trocas, feriados] = await Promise.all([
       ok(supabase.from("obras").select("*").in("id", lote)),
       // ordem estável entre páginas (LIMIT/OFFSET sem ORDER BY pula ou repete linhas)
@@ -214,13 +232,14 @@ export function useObra(id: string | undefined) {
     queryKey: chavesObras.obra(id ?? ""),
     enabled: !!id,
     queryFn: async (): Promise<DetalheObra | null> => {
-      const [b] = await carregarObrasBanco([id!]);
-      if (!b) return null;
-      const [realocacoes, notas, erp] = await Promise.all([
+      // tudo numa rodada só (M12: antes, a obra e depois o resto)
+      const [[b], realocacoes, notas, erp] = await Promise.all([
+        carregarObrasBanco([id!]),
         ok(supabase.from("realocacoes").select("*").eq("obra_id", id!).order("mes_ini")),
         ok(supabase.from("notas_fiscais").select("*").eq("obra_id", id!).order("mes_idx")),
         ok(supabase.from("erp_realizado").select("*").eq("obra_id", id!).order("mes_idx")),
       ]);
+      if (!b) return null;
       return { ...b, realocacoes, notas, erp };
     },
   });

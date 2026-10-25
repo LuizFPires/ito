@@ -191,12 +191,37 @@ export function diasDoPeriodo(inicioIso: string, meses: number): number {
  * Impressão digital dos parâmetros do cálculo (FNV-1a sobre o JSON): muda quando a controladoria
  * edita salários, encargos, benefícios, funções ou calendário, e o resumo em cache fica velho.
  */
+/**
+ * Forma canônica para a impressão: chaves em ordem alfabética e listas de cadastros (itens com
+ * `id`) e de feriados (itens com `data`) ordenadas. A tela e os scripts (migração, desempenho)
+ * leem os mesmos dados em ordens diferentes; sem isso, o resumo gravado por um parecia velho ao
+ * outro e era recalculado (M12). Listas de números (meses, séries) mantêm a ordem.
+ */
+function canonico(v: unknown): unknown {
+  if (Array.isArray(v)) {
+    const itens = v.map(canonico);
+    const chave = (x: unknown, k: "id" | "data") =>
+      x && typeof x === "object" && k in x ? String((x as Record<string, unknown>)[k]) : null;
+    for (const k of ["id", "data"] as const)
+      if (itens.length > 1 && itens.every((x) => chave(x, k) !== null))
+        return [...itens].sort((a, b) => chave(a, k)!.localeCompare(chave(b, k)!));
+    return itens;
+  }
+  if (v && typeof v === "object")
+    return Object.fromEntries(
+      Object.keys(v)
+        .sort()
+        .map((k) => [k, canonico((v as Record<string, unknown>)[k])]),
+    );
+  return v;
+}
+
 export function impressaoContexto(
   ctx: Contexto,
   tabelas: Readonly<Record<number, Tabela>>,
   vigente: number,
 ): string {
-  const txt = JSON.stringify({ v: VERSAO_RESUMO, vigente, tabelas, ctx });
+  const txt = JSON.stringify(canonico({ v: VERSAO_RESUMO, vigente, tabelas, ctx }));
   let h = 0x811c9dc5;
   for (let i = 0; i < txt.length; i++) {
     h ^= txt.charCodeAt(i);
