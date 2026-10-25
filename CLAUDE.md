@@ -300,6 +300,11 @@ Não use "praça" para cidade ou CCT; o usuário pediu esses dois nomes.
 - **Pessoas sempre inteiras** nas projeções: até ,2 arredonda para baixo, de ,3 em diante para cima (SPEC §5, `pessoasInteiras` no motor); a validação diferencial aplica a mesma regra ao protótipo. Projeções salvas mudam de número ao serem abertas de novo.
 - Editar uma projeção abre no passo Histograma. Sem digitar nada, a tabela segue as referências; o primeiro número digitado fixa o histograma informado (a régua passa a valer sobre ele). (auto — recomendado)
 
+### M12 — Desempenho (24/10/2026)
+- **Medir antes de mexer** (usuário, plano `ITO_Plano_Implementacao_Performance.md`): primeiro o baseline e a lista de gargalos; só depois correções, cada uma com o número de antes e depois. O que o plano genérico não cobre no ITO (atualização otimista, feature flags, Web Worker, virtualização) só entra se a medição pedir.
+- **Medição sobre o build de produção** (`vite preview`), com os dados sintéticos do M10 (`pnpm desempenho gerar`) e as obras reais da homologação; a medição fica fora da suíte normal (`pnpm perf`). (auto — recomendado)
+- **Sem dependência nova** para medir: Performance API do navegador e Playwright. Monitoramento em produção (Vercel Speed Insights) fica para decisão do usuário. (auto — recomendado)
+
 ## Design system "Canteiro" (ITO)
 
 - Cores:
