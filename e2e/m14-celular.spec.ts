@@ -20,6 +20,7 @@ const ROTAS = [
 ];
 
 test("telas principais em 390 px sem rolagem lateral da página", async ({ page }) => {
+  test.setTimeout(90_000); // 12 telas num teste só
   await entrar(page, "admin@ito.local");
   for (const rota of ROTAS) {
     await page.goto(rota);
